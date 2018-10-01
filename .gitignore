@@ -32,9 +32,9 @@
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
-# .idea/modules.xml
-# .idea/*.iml
-# .idea/modules
+ .idea/modules.xml
+ .idea/*.iml
+ .idea/modules
 
 # CMake
 cmake-build-*/
@@ -136,3 +136,18 @@ gradle-app.setting
 
 
 # End of https://www.gitignore.io/api/java,intellij,kotlin,gradle
+
+# Created by https://www.gitignore.io/api/floobit
+
+#!! ERROR: floobit is undefined. Use list command to see defined gitignore types !!#
+
+
+# End of https://www.gitignore.io/api/floobit
+
+# Created by https://www.gitignore.io/api/floobits
+
+### floobits ###
+.floo
+
+
+# End of https://www.gitignore.io/api/floobits
