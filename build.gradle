@@ -15,6 +15,9 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile ('net.dv8tion:JDA:VERSION') {
+        exclude module: 'opus-java'
+    }
 }
 
 compileKotlin {
