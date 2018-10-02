@@ -1,5 +1,6 @@
 package com.dongtronic.diabot;
 
+import com.dongtronic.diabot.commands.ConvertCommand;
 import com.dongtronic.diabot.commands.PingCommand;
 import com.dongtronic.diabot.commands.TestCommand;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
@@ -53,9 +54,9 @@ public class Main {
 
         new TestCommand(),
 
+        new ConvertCommand(),
         // command to check bot latency
         new PingCommand());
-
 
     // start getting a bot account set up
     new JDABuilder(AccountType.BOT)
