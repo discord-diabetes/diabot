@@ -1,17 +1,19 @@
 package com.dongtronic.diabot;
 
-import javax.security.auth.login.LoginException;
-
 import com.dongtronic.diabot.commands.PingCommand;
-import com.dongtronic.diabot.listener.RoleListener;
+import com.dongtronic.diabot.commands.TestCommand;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
-import net.dv8tion.jda.core.*;
+import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.OnlineStatus;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Game;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.LoginException;
 import java.awt.*;
 
 public class Main {
@@ -45,8 +47,11 @@ public class Main {
     client.addCommands(
         // command to show information about the bot
         new AboutCommand(Color.BLUE, "an example bot",
-            new String[]{"Cool commands","Nice examples","Lots of fun!"},
+            new String[]{"Cool commands", "Nice examples", "Lots of fun!"},
             new Permission[]{Permission.ADMINISTRATOR}),
+
+
+        new TestCommand(),
 
         // command to check bot latency
         new PingCommand());
