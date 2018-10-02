@@ -1,4 +1,3 @@
-# discord-rolebot
-testing lol
-henlo fren
-i meme man
+# Diabot
+
+A diabetes bot for Discord
