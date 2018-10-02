@@ -1,4 +1,8 @@
+package com.dongtronic.diabot;
+
 import javax.security.auth.login.LoginException;
+
+import com.dongtronic.diabot.listener.RoleListener;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import org.slf4j.Logger;

@@ -1,3 +1,5 @@
+package com.dongtronic.diabot.listener;
+
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
@@ -11,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class RoleListener extends ListenerAdapter {
-  Logger logger = LoggerFactory.getLogger(RoleListener.class);
+  private Logger logger = LoggerFactory.getLogger(RoleListener.class);
 
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {

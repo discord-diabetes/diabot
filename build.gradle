@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
 }
 
-group 'com.reddit.diabetes'
+group 'com.dongtronic.diabot'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
