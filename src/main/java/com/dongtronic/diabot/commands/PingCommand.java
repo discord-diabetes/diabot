@@ -16,7 +16,7 @@ public class PingCommand extends Command {
   public PingCommand() {
     this.name = "ping";
     this.help = "checks the bot's latency";
-    this.guildOnly = false;
+    this.guildOnly = true;
     this.aliases = new String[]{"pong"};
   }
 

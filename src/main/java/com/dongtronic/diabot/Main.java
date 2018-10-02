@@ -36,7 +36,7 @@ public class Main {
     client.useDefaultGame();
 
     // sets emojis used throughout the bot on successes, warnings, and failures
-    client.setEmojis("\uD83D\uDE03", "\uD83D\uDE2E", "\uD83D\uDE26");
+    client.setEmojis("\uD83D\uDE03", "\uD83D\uDE2E", "");
 
     // sets the bot prefix
     client.setPrefix("69");

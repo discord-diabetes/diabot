@@ -15,10 +15,9 @@ import java.time.temporal.ChronoUnit;
 public class TestCommand extends Command {
 
   public TestCommand() {
-    this.name = "ping";
+    this.name = "test";
     this.help = "checks the bot's latency";
-    this.guildOnly = false;
-    this.aliases = new String[]{"pong"};
+    this.guildOnly = true;
     this.userPermissions = new Permission[]{Permission.ADMINISTRATOR};
   }
 
