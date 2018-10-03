@@ -22,9 +22,6 @@ public class Main {
   private static Logger logger = LoggerFactory.getLogger(Main.class);
 
   public static void main(String[] args) throws LoginException {
-
-    //TODO: configure logging levels
-
     String token = System.getenv("discord-rolebot-token");
 
     // define an eventwaiter, dont forget to add this to the JDABuilder!
@@ -37,10 +34,10 @@ public class Main {
     client.useDefaultGame();
 
     // sets emojis used throughout the bot on successes, warnings, and failures
-    client.setEmojis("\uD83D\uDE03", "\uD83D\uDE2E", "");
+    client.setEmojis("", "", "");
 
     // sets the bot prefix
-    client.setPrefix("69");
+    client.setPrefix("diabot ");
 
     client.setOwnerId("125616270254014464");
 
@@ -48,7 +45,7 @@ public class Main {
     client.addCommands(
         // command to show information about the bot
         new AboutCommand(Color.BLUE, "an example bot",
-            new String[]{"Cool commands", "Nice examples", "Lots of fun!"},
+            new String[]{"BG conversions", "A1c estimations", "Secret admin features :blobcoy:"},
             new Permission[]{Permission.ADMINISTRATOR}),
 
 

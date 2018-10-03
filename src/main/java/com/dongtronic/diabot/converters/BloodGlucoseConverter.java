@@ -1,78 +1,66 @@
 package com.dongtronic.diabot.converters;
 
-import com.dongtronic.diabot.exceptions.AmbiguousUnitException;
+import com.dongtronic.diabot.data.ConversionDTO;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
 
 /**
  * BG conversion logic
  */
 public class BloodGlucoseConverter {
-  public static double convert(String value) throws AmbiguousUnitException {
+
+  public static ConversionDTO convert(String value, String unit) throws UnknownUnitException {
     double input = Double.valueOf(value);
 
     if (input < 0 || input > 999) {
       throw new IllegalArgumentException();
     }
 
-    if (input < 25) { //Convert to mg/dL
-      double result = input * 18.016;
-      return (int) result;
-    } else if (input > 50) { //Convert to mmol/L
-      double result = input / 1.8016;
-      return ((int) result) / 10;
+    if (unit != null && unit.length() > 1) {
+      return convert(input, unit);
     } else {
-      throw new AmbiguousUnitException();
+      return convert(input);
     }
   }
 
-  @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-  public static double convert(String value, String unit) throws UnknownUnitException {
-    double input = Double.valueOf(value);
 
-    if (input < 0 || input > 999) {
-      throw new IllegalArgumentException();
+  private static ConversionDTO convert(double originalValue) {
+    ConversionDTO result = null;
+    try {
+      if (originalValue < 25) {
+        //Convert to mg/dL
+        result = convert(originalValue, "mmol");
+      } else if (originalValue > 50) {
+        //Convert to mmol/L
+        result = convert(originalValue, "mgdl");
+      } else {
+        result = convertAmbiguous(originalValue);
+      }
+    } catch (UnknownUnitException ex) {
+      // Ignored on purpose
     }
 
+    return result;
+  }
+
+  private static ConversionDTO convert(double originalValue, String unit) throws UnknownUnitException {
+
     if (unit.toUpperCase().contains("MMOL")) { //Convert to mg/dL
-      double result = input * 18.016;
-      return (int) result;
+      double result = originalValue * 18.016;
+      return new ConversionDTO(originalValue, result, GlucoseUnit.MMOL);
     } else if (unit.toUpperCase().contains("MG")) { //Convert to mmol/L
-      double result = input / 1.8016;
-      return ((int) result) / 10;
+      double result = originalValue / 1.8016;
+      return new ConversionDTO(originalValue, result, GlucoseUnit.MGDL);
     } else {
       throw new UnknownUnitException();
     }
   }
 
-  public static Double[] convertAmbiguous(String value) {
-    double input = Double.valueOf(value);
+  private static ConversionDTO convertAmbiguous(double originalValue) {
 
-    if (input < 0 || input > 999) {
-      throw new IllegalArgumentException();
-    }
+    double toMgdl = originalValue * 18.016;
+    double toMmol = originalValue / 18.016;
 
-    Double[] returned = new Double[2];
+    return new ConversionDTO(originalValue, toMmol, toMgdl);
 
-
-    returned[0] = (double) Math.round(input * 18.016);
-    returned[1] = (double) Math.round(input / 18.016);
-
-    return returned;
-  }
-
-  public static GlucoseUnit detectUnit(String value){
-    double input = Double.valueOf(value);
-
-    if (input < 0 || input > 999) {
-      throw new IllegalArgumentException();
-    }
-
-    if (input < 25) {
-      return GlucoseUnit.MMOL;
-    } else if (input > 50) {
-      return GlucoseUnit.MGDL;
-    } else {
-      return GlucoseUnit.AMBIGUOUS;
-    }
   }
 }
