@@ -3,9 +3,11 @@ package com.dongtronic.diabot;
 import com.dongtronic.diabot.commands.ConvertCommand;
 import com.dongtronic.diabot.commands.PingCommand;
 import com.dongtronic.diabot.commands.TestCommand;
+import com.dongtronic.diabot.listener.ConversionListener;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
+import com.jagrosh.jdautilities.examples.command.ShutdownCommand;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
@@ -52,8 +54,10 @@ public class Main {
         new TestCommand(),
 
         new ConvertCommand(),
+        new ShutdownCommand(),
         // command to check bot latency
         new PingCommand());
+
 
     // start getting a bot account set up
     new JDABuilder(AccountType.BOT)
@@ -67,6 +71,7 @@ public class Main {
         // add the listeners
         .addEventListener(waiter)
         .addEventListener(client.build())
+        .addEventListener(new ConversionListener())
 
         // start it up!
         .build();

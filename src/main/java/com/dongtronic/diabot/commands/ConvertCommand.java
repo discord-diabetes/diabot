@@ -3,15 +3,12 @@ package com.dongtronic.diabot.commands;
 import com.dongtronic.diabot.converters.BloodGlucoseConverter;
 import com.dongtronic.diabot.converters.GlucoseUnit;
 import com.dongtronic.diabot.data.ConversionDTO;
-import com.dongtronic.diabot.exceptions.AmbiguousUnitException;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.temporal.ChronoUnit;
 
 @CommandInfo(
     name = {"Convert"},
@@ -26,7 +23,7 @@ public class ConvertCommand extends Command {
     this.name = "convert";
     this.help = "convert blood glucose between mmol/L and mg/dL";
     this.guildOnly = false;
-    this.arguments = "<value>";
+    this.arguments = "<value> <unit>";
   }
 
   @Override
@@ -50,12 +47,13 @@ public class ConvertCommand extends Command {
         } else if (result.getInputUnit() == GlucoseUnit.MGDL) {
           event.replySuccess(String.format("%s mg/dL is %s mmol/L", result.getOriginal(), result.getConverted()));
         } else {
-          String reply = String.join("%n",
-              "I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.",
-              "%s mg/dL is %s mmol/L",
-              "%s mmol/L is %s mg/dL");
+          String reply = String.join(
+              "%n",
+              "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
+              "%s mg/dL is **%s mmol/L**",
+              "%s mmol/L is **%s mg/dL**");
 
-          event.replySuccess(String.format(reply,result.getOriginal(), result.getMmol(), result.getOriginal(),
+          event.replySuccess(String.format(reply, result.getOriginal(), result.getMmol(), result.getOriginal(),
               result.getMgdl()));
         }
       } catch (IllegalArgumentException ex) {
