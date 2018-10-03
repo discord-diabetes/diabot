@@ -22,7 +22,6 @@ public class BloodGlucoseConverter {
     }
   }
 
-
   private static ConversionDTO convert(double originalValue) {
     ConversionDTO result = null;
     try {

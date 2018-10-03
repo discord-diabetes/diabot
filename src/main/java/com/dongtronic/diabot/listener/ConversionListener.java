@@ -20,6 +20,7 @@ public class ConversionListener extends ListenerAdapter {
 
   private static Pattern inlinePattern = Pattern.compile("^.*_([0-9]{1,3}\\.?[0-9]?)_.*$");
   private static Pattern separatePattern = Pattern.compile("^([0-9]{1,3}\\.?[0-9]?)$");
+  private static Pattern unitPattern = Pattern.compile("^.*\\s([0-9\\.]+)\\s?((mmol)|(mg)).*$");
 
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
@@ -32,8 +33,15 @@ public class ConversionListener extends ListenerAdapter {
 
     Matcher inlineMatcher = inlinePattern.matcher(messageText);
     Matcher separateMatcher = separatePattern.matcher(messageText);
+    Matcher unitMatcher = unitPattern.matcher(messageText);
 
     String number = "";
+    String unit = "";
+
+    if(unitMatcher.matches()) {
+      number = unitMatcher.group(1);
+      unit = unitMatcher.group(2);
+    }
 
     if(inlineMatcher.matches()) {
       number = inlineMatcher.group(1);
@@ -46,7 +54,12 @@ public class ConversionListener extends ListenerAdapter {
     }
 
     try {
-      ConversionDTO result = BloodGlucoseConverter.convert(number, null);
+      ConversionDTO result;
+      if(unit.length() > 1) {
+        result = BloodGlucoseConverter.convert(number, unit);
+      } else {
+        result = BloodGlucoseConverter.convert(number, null);
+      }
 
       if (result.getInputUnit() == GlucoseUnit.MMOL) {
         channel.sendMessage(String.format("%s mmol/L is %s mg/dL", result.getOriginal(), result.getConverted())).queue();
