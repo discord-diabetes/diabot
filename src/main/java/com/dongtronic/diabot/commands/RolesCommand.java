@@ -39,6 +39,6 @@ public class RolesCommand extends Command {
 
     returned.append("\n```");
 
-    event.replySuccess(returned.toString());
+    event.reply(returned.toString());
   }
 }

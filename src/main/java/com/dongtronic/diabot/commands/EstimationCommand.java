@@ -63,7 +63,7 @@ public class EstimationCommand extends Command {
 
     result = A1cConverter.estimateAverage(number);
 
-    event.replySuccess(String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**", result.getDcct(), result.getIfcc(), result.getOriginal().getMgdl(), result.getOriginal().getMmol()));
+    event.reply(String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**", result.getDcct(), result.getIfcc(), result.getOriginal().getMgdl(), result.getOriginal().getMmol()));
 
   }
 
@@ -84,18 +84,18 @@ public class EstimationCommand extends Command {
       }
 
       if (result.getOriginal().getInputUnit() == MMOL) {
-        event.replySuccess(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMmol(), result.getDcct(), result.getIfcc()));
-//          event.replySuccess("suh");
+        event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMmol(), result.getDcct(), result.getIfcc()));
+//          event.reply("suh");
       } else if (result.getOriginal().getInputUnit() == MGDL) {
-        event.replySuccess(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMgdl(), result.getDcct(), result.getIfcc()));
-//          event.replySuccess("dude");
+        event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMgdl(), result.getDcct(), result.getIfcc()));
+//          event.reply("dude");
       } else {
         //TODO: Make arguments for result.getDcct and result.getIfcc less confusing
         //TODO: ie: not wrong
         String reply =
             String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.getOriginal().getOriginal(), result.getDcct(MGDL), result.getIfcc(MGDL)) +
                 String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getOriginal(), result.getDcct(MMOL), result.getIfcc(MMOL));
-        event.replySuccess(reply);
+        event.reply(reply);
       }
 
     } catch (IllegalArgumentException ex) {

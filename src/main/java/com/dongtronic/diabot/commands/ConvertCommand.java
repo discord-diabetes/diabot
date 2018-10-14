@@ -44,9 +44,9 @@ public class ConvertCommand extends Command {
         result = BloodGlucoseConverter.convert(items[0], (items.length == 2 ? items[1] : null));
 
         if (result.getInputUnit() == GlucoseUnit.MMOL) {
-          event.replySuccess(String.format("%s mmol/L is %s mg/dL", result.getOriginal(), result.getConverted()));
+          event.reply(String.format("%s mmol/L is %s mg/dL", result.getOriginal(), result.getConverted()));
         } else if (result.getInputUnit() == GlucoseUnit.MGDL) {
-          event.replySuccess(String.format("%s mg/dL is %s mmol/L", result.getOriginal(), result.getConverted()));
+          event.reply(String.format("%s mg/dL is %s mmol/L", result.getOriginal(), result.getConverted()));
         } else {
           String reply = String.join(
               "%n",
@@ -54,7 +54,7 @@ public class ConvertCommand extends Command {
               "%s mg/dL is **%s mmol/L**",
               "%s mmol/L is **%s mg/dL**");
 
-          event.replySuccess(String.format(reply, result.getOriginal(), result.getMmol(), result.getOriginal(),
+          event.reply(String.format(reply, result.getOriginal(), result.getMmol(), result.getOriginal(),
               result.getMgdl()));
         }
       } catch (IllegalArgumentException ex) {
