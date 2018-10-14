@@ -77,6 +77,7 @@ public class Main {
 
         // Fun
         new ExcuseCommand(funCategory),
+        new AwyissCommand(funCategory),
 
         // Admin
         new ShutdownCommand(adminCategory),
