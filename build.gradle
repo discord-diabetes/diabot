@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.dongtronic'
-version '1.1-SNAPSHOT'
+version '1.0.1-RELEASE'
 
 sourceCompatibility = 1.8
 
@@ -44,7 +44,7 @@ task fatJar(type: Jar) {
                 'Implementation-Version': version,
                 'Main-Class': 'com.dongtronic.diabot.Main'
     }
-    baseName = project.name + '-all'
+    baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
