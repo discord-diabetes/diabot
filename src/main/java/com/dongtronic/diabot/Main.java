@@ -54,7 +54,7 @@ public class Main {
 
 
 //        new A1cTestClass(),
-        new A1cEstimationCommand(),
+        new EstimationCommand(),
         new ConvertCommand(),
         new ShutdownCommand(),
         new PingCommand());

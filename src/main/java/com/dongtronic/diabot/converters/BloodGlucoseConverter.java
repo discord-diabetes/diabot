@@ -47,7 +47,7 @@ public class BloodGlucoseConverter {
       double result = originalValue * 18.016;
       return new ConversionDTO(originalValue, result, GlucoseUnit.MMOL);
     } else if (unit.toUpperCase().contains("MG")) { //Convert to mmol/L
-      double result = originalValue / 1.8016;
+      double result = originalValue / 18.016;
       return new ConversionDTO(originalValue, result, GlucoseUnit.MGDL);
     } else {
       throw new UnknownUnitException();

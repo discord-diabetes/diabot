@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.data;
 
 import com.dongtronic.diabot.converters.GlucoseUnit;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("Duplicates")
 public class A1cDTO {
@@ -11,7 +12,7 @@ public class A1cDTO {
   private double ifcc_mmol;
 
 
-  public A1cDTO(ConversionDTO original, double dcct_mgdl, double ifcc_mgdl, double dcct_mmol, double ifcc_mmol) {
+  public A1cDTO(ConversionDTO original, double dcct_mgdl, double ifcc_mgdl, @Nullable double dcct_mmol, @Nullable double ifcc_mmol) {
     this.original = original;
 
     this.dcct_mgdl = round(dcct_mgdl,1);

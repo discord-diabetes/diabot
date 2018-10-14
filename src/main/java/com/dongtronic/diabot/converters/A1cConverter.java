@@ -2,7 +2,6 @@ package com.dongtronic.diabot.converters;
 
 import com.dongtronic.diabot.data.A1cDTO;
 import com.dongtronic.diabot.data.ConversionDTO;
-import com.dongtronic.diabot.exceptions.AmbiguousUnitException;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +21,46 @@ public class A1cConverter {
     return estimateA1c(glucoseConversionResult);
   }
 
-  public static A1cDTO estimateAverage(double originalValue) {
-    //TODO
-    throw new UnsupportedOperationException();
+  public static A1cDTO estimateAverage(String originalValue) {
+    double a1c = Double.valueOf(originalValue);
+
+    if (a1c < 0 || a1c > 375) {
+      throw new IllegalArgumentException();
+    }
+
+    A1cDTO result = null;
+
+    try {
+      if (a1c < 25) {
+        result = estimateAverageDcct(a1c);
+      } else {
+        result = estimateAverageIfcc(a1c);
+      }
+    } catch (UnknownUnitException e) {
+      // Ignored on purpose
+    }
+
+    return result;
   }
+
+  private static A1cDTO estimateAverageDcct(double dcct) throws UnknownUnitException {
+    double mgdl = convertDcctToMgdl(dcct);
+    double ifcc = convertDcctToIfcc(dcct);
+
+    ConversionDTO conversion = BloodGlucoseConverter.convert(String.valueOf(mgdl), "mgdl");
+
+    return new A1cDTO(conversion, dcct, ifcc, 0, 0);
+  }
+
+  private static A1cDTO estimateAverageIfcc(double ifcc) throws UnknownUnitException {
+    double mgdl = convertIfccToMgdl(ifcc);
+    double dcct = convertIfccToDcct(ifcc);
+
+    ConversionDTO conversion = BloodGlucoseConverter.convert(String.valueOf(mgdl), "mgdl");
+
+    return new A1cDTO(conversion, dcct, ifcc, 0, 0);
+  }
+
 
   private static A1cDTO estimateA1c(ConversionDTO glucose) {
     double ifcc_mgdl = 0;
