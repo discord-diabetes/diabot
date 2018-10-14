@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.commands;
 
+import com.dongtronic.diabot.ServerRoles;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.jagrosh.jdautilities.command.Command;
@@ -23,6 +24,7 @@ public class AwyissCommand extends Command {
     this.help = "muther f'in breadcrumbs";
     this.guildOnly = true;
     this.aliases = new String[]{"duck", "breadcrumbs"};
+    this.requiredRole = ServerRoles.required;
     this.category = category;
   }
 
