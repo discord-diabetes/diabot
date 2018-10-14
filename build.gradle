@@ -22,7 +22,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     compile 'org.apache.commons:commons-lang3:3.8.1'
     compile 'commons-configuration:commons-configuration:1.6'
-
+    compile 'org.jsoup:jsoup:1.11.3'
 }
 
 

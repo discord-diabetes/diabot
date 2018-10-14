@@ -21,11 +21,12 @@ public class EstimationCommand extends Command {
 
   private Logger logger = LoggerFactory.getLogger(EstimationCommand.class);
 
-  public EstimationCommand() {
+  public EstimationCommand(Category category) {
     this.name = "estimate";
     this.help = "estimate A1c from average blood glucose, or average blood glucose from A1c";
     this.guildOnly = false;
     this.arguments = "<a1c/average> <number> [unit]";
+    this.category = category;
 //    this.aliases = new String[]{"estimate a1c", "estimate a1c from average"};
   }
 

@@ -13,11 +13,12 @@ import java.time.temporal.ChronoUnit;
 
 public class PingCommand extends Command {
 
-  public PingCommand() {
+  public PingCommand(Category category) {
     this.name = "ping";
     this.help = "checks the bot's latency";
     this.guildOnly = true;
     this.aliases = new String[]{"pong"};
+    this.category = category;
   }
 
   @Override

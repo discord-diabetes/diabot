@@ -17,12 +17,13 @@ public class ShutdownCommand extends Command {
 
   private static final Logger logger = LoggerFactory.getLogger(ShutdownCommand.class);
 
-  public ShutdownCommand() {
+  public ShutdownCommand(Category category) {
     this.name = "shutdown";
     this.help = "safely shuts off the bot";
     this.guildOnly = false;
     this.ownerCommand = false;
     this.aliases = new String[] {"heckoff", "fuckoff", "removethyself", "remove"};
+    this.category = category;
   }
 
   @Override

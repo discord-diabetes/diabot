@@ -19,11 +19,12 @@ public class ConvertCommand extends Command {
 
   private Logger logger = LoggerFactory.getLogger(ConvertCommand.class);
 
-  public ConvertCommand() {
+  public ConvertCommand(Category category) {
     this.name = "convert";
     this.help = "convert blood glucose between mmol/L and mg/dL";
     this.guildOnly = false;
     this.arguments = "<value> <unit>";
+    this.category = category;
   }
 
   @Override

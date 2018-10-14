@@ -11,13 +11,15 @@ import java.time.temporal.ChronoUnit;
     name = {"Test"},
     description = "Only admins should be allowed to run this"
 )
+public class SampleCommand extends Command {
 
-public class TestCommand extends Command {
-
-  public TestCommand() {
+  public SampleCommand(Category category) {
     this.name = "test";
     this.help = "checks the bot's latency";
     this.guildOnly = true;
+    this.ownerCommand = false;
+    this.aliases = new String[] {"tast", "tost"};
+    this.category = category;
     this.userPermissions = new Permission[]{Permission.ADMINISTRATOR};
   }
 

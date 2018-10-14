@@ -2,6 +2,7 @@ package com.dongtronic.diabot;
 
 import com.dongtronic.diabot.commands.*;
 import com.dongtronic.diabot.listener.ConversionListener;
+import com.jagrosh.jdautilities.command.Command.Category;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
@@ -26,7 +27,12 @@ public class Main {
       token = System.getenv("DIABOTTOKEN"); // token on dokku
     }
 
-    System.out.println("token = " + token.substring(0, 10));
+    // create command categories
+    Category adminCategory = new Category("Admin");
+    Category bgCategory = new Category("BG conversions");
+    Category a1cCategory = new Category("A1c estimations");
+    Category funCategory = new Category("Fun");
+    Category utilitiesCategory = new Category("Utilities");
 
     // define an eventwaiter, dont forget to add this to the JDABuilder!
     EventWaiter waiter = new EventWaiter();
@@ -38,14 +44,21 @@ public class Main {
     client.useDefaultGame();
 
     // sets emojis used throughout the bot on successes, warnings, and failures
-    client.setEmojis("", "", "");
+    client.setEmojis("\uD83D\uDC4C", "\uD83D\uDE2E", "\u274C");
+
 
     // sets the bot prefix
-    client.setPrefix("diabot ");
+    if(System.getenv("DIABOT_DEBUG") != null) {
+      client.setPrefix("dl ");
+    } else {
+      client.setPrefix("diabot ");
+    }
 
     client.setOwnerId("125616270254014464");
 
     // adds commands
+
+    // A1c
     client.addCommands(
         // command to show information about the bot
         new AboutCommand(Color.BLUE, "a diabetes bot",
@@ -53,13 +66,23 @@ public class Main {
             new Permission[]{Permission.ADMINISTRATOR}),
 
 
-        new TestCommand(),
+        // A1c
+        new EstimationCommand(a1cCategory),
 
+        // BG
+        new ConvertCommand(bgCategory),
 
-        new EstimationCommand(),
-        new ConvertCommand(),
-        new ShutdownCommand(),
-        new PingCommand());
+        // Utility
+        new PingCommand(utilitiesCategory),
+
+        // Fun
+        new ExcuseCommand(funCategory),
+
+        // Admin
+        new ShutdownCommand(adminCategory),
+        new ReplyCommand(adminCategory),
+        new RolesCommand(adminCategory));
+
 
 
     // start getting a bot account set up
