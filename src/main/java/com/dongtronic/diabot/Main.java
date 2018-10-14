@@ -5,7 +5,6 @@ import com.dongtronic.diabot.listener.ConversionListener;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
-import com.jagrosh.jdautilities.examples.command.ShutdownCommand;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
@@ -23,6 +22,11 @@ public class Main {
 
   public static void main(String[] args) throws LoginException {
     String token = System.getenv("discord-rolebot-token");
+    if(System.getenv("DIABOTTOKEN") != null) {
+      token = System.getenv("DIABOTTOKEN"); // token on dokku
+    }
+
+    System.out.println("token = " + token.substring(0, 10));
 
     // define an eventwaiter, dont forget to add this to the JDABuilder!
     EventWaiter waiter = new EventWaiter();
@@ -44,7 +48,7 @@ public class Main {
     // adds commands
     client.addCommands(
         // command to show information about the bot
-        new AboutCommand(Color.BLUE, "an example bot",
+        new AboutCommand(Color.BLUE, "a diabetes bot",
             new String[]{"BG conversions", "A1c estimations", "Secret admin features :blobcoy:"},
             new Permission[]{Permission.ADMINISTRATOR}),
 
@@ -52,8 +56,6 @@ public class Main {
         new TestCommand(),
 
 
-
-//        new A1cTestClass(),
         new EstimationCommand(),
         new ConvertCommand(),
         new ShutdownCommand(),

@@ -11,7 +11,7 @@ public class BloodGlucoseConverterTest {
   }
 
   @Test
-  public void convertMmolWithUnit() throws Exception {
+  public void mmolWithUnit() throws Exception {
 
     ConversionDTO actual = BloodGlucoseConverter.convert("5.5", "mmol");
 
