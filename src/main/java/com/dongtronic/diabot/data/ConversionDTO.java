@@ -26,8 +26,10 @@ public class ConversionDTO {
 
     if(inputUnit == GlucoseUnit.MMOL) {
       setMgdl(conversion);
+      setMmol(original);
     } else if (inputUnit == GlucoseUnit.MGDL) {
       setMmol(conversion);
+      setMgdl(original);
     }
   }
 
@@ -72,26 +74,16 @@ public class ConversionDTO {
   /**
    * Get the conversion result in mmol/L
    * @return conversion result in mmol/L
-   * @throws IllegalStateException when called on a non-ambiguous conversion
    */
-  public double getMmol() throws IllegalStateException {
-    if(inputUnit != GlucoseUnit.AMBIGUOUS) {
-      throw new IllegalStateException("specific unit getters are only available for ambiguous conversion");
-    }
-
+  public double getMmol() {
     return mmol;
   }
 
   /**
    * Get the conversion result in mg/dL
    * @return conversion result in mg/dL
-   * @throws IllegalStateException when called on a non-ambiguous conversion
    */
-  public int getMgdl() throws IllegalStateException {
-    if(inputUnit != GlucoseUnit.AMBIGUOUS) {
-      throw new IllegalStateException("specific unit getters are only available for ambiguous conversion");
-    }
-
+  public int getMgdl() {
     return mgdl;
   }
 

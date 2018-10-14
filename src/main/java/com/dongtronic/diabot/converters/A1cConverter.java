@@ -2,51 +2,89 @@ package com.dongtronic.diabot.converters;
 
 import com.dongtronic.diabot.data.A1cDTO;
 import com.dongtronic.diabot.data.ConversionDTO;
+import com.dongtronic.diabot.exceptions.AmbiguousUnitException;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A1c conversion logic
  */
-public class A1cConverter{
+public class A1cConverter {
 
-  private static A1cDTO convert(double originalValue) {
-    A1cDTO result = null;
-    try {
-      if (originalValue < 25) {
-        //Convert to mg/dL
-        result = convert(originalValue, "mmol");
-      } else if (originalValue > 50) {
-        //Convert to mmol/L
-        result = convert(originalValue, "mgdl");
-      } else {
-        result = convertAmbiguous(originalValue);
-      }
-    } catch (UnknownUnitException ex) {
-      // Ignored on purpose
-    }
+  private static final Logger logger = LoggerFactory.getLogger(A1cConverter.class);
 
-    return result;
+  public static A1cDTO estimateA1c(String originalValue, String unit) throws UnknownUnitException {
+    logger.info("Estimating A1c for BG " + originalValue);
+
+    ConversionDTO glucoseConversionResult = BloodGlucoseConverter.convert(originalValue, unit);
+
+    return estimateA1c(glucoseConversionResult);
   }
 
-  private static A1cDTO convert(double originalValue, String unit) throws UnknownUnitException {
+  public static A1cDTO estimateAverage(double originalValue) {
+    //TODO
+    throw new UnsupportedOperationException();
+  }
 
-    if (unit.toUpperCase().contains("MMOL")) { //Convert to mg/dL
-      double result = originalValue * 18.016;
-      return new A1cDTO(originalValue, result, GlucoseUnit.MMOL);
-    } else if (unit.toUpperCase().contains("MG")) { //Convert to mmol/L
-      double result = originalValue / 1.8016;
-      return new A1cDTO(originalValue, result, GlucoseUnit.MGDL);
+  private static A1cDTO estimateA1c(ConversionDTO glucose) {
+    double ifcc_mgdl = 0;
+    double dcct_mgdl = 0;
+    double ifcc_mmol = 0;
+    double dcct_mmol = 0;
+
+    if (glucose.getInputUnit() == GlucoseUnit.MGDL) {
+      ifcc_mgdl = convertMgdlToIfcc(glucose.getOriginal());
+      dcct_mgdl = convertMgdlToDcct(glucose.getOriginal());
+    } else if (glucose.getInputUnit() == GlucoseUnit.MMOL) {
+      ifcc_mmol = convertMgdlToIfcc(glucose.getConverted());
+      dcct_mmol = convertMgdlToDcct(glucose.getConverted());
     } else {
-      throw new UnknownUnitException();
+      return estimateA1cAmbiguous(glucose);
     }
+
+    return new A1cDTO(glucose, dcct_mgdl, ifcc_mgdl, dcct_mmol, ifcc_mmol);
   }
 
-  private static A1cDTO convertAmbiguous(double originalValue) {
+  private static A1cDTO estimateA1cAmbiguous(ConversionDTO glucose) {
 
-    double toMgdl = originalValue * 18.016;
-    double toMmol = originalValue / 18.016;
+    double ifcc_mgdl = convertMgdlToIfcc(glucose.getMgdl());
+    double dcct_mgdl = convertMgdlToDcct(glucose.getMgdl());
+    double ifcc_mmol = convertMmolToIfcc(glucose.getMmol());
+    double dcct_mmol = convertMmolToDcct(glucose.getMmol());
 
-    return new A1cDTO(originalValue, toMmol, toMgdl);
+    return new A1cDTO(glucose, dcct_mgdl, ifcc_mgdl, dcct_mmol, ifcc_mmol);
+  }
 
+  private static double convertMmolToDcct(double glucose) {
+    return convertMgdlToDcct(glucose * 18.016);
+  }
+
+  private static double convertMmolToIfcc(double glucose) {
+    return convertMgdlToIfcc(glucose * 18.016);
+  }
+
+  private static double convertMgdlToDcct(double glucose) {
+    return (glucose + 46.7) / 28.7;
+  }
+
+  private static double convertMgdlToIfcc(double glucose) {
+    return (convertMgdlToDcct(glucose) - 2.15) * 10.929;
+  }
+
+  private static double convertDcctToMgdl(double dcct) {
+    return (dcct * 28.7) - 46.7;
+  }
+
+  private static double convertIfccToMgdl(double ifcc) {
+    return convertDcctToMgdl(convertIfccToDcct(ifcc));
+  }
+
+  private static double convertIfccToDcct(double ifcc) {
+    return (ifcc / 10.929) + 2.15;
+  }
+
+  private static double convertDcctToIfcc(double dcct) {
+    return (dcct - 2.15) * 10.929;
   }
 }
