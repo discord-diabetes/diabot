@@ -19,7 +19,7 @@ public class BloodGlucoseConverter {
     double input = Double.valueOf(value);
 
     if (input < 0 || input > 999) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("value must be between 0 and 999");
     }
 
     if (unit != null && unit.length() > 1) {

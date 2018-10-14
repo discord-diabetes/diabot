@@ -126,7 +126,11 @@ public class ConversionDTO {
       return false;
     }
 
-    if (other.getConverted() != this.getConverted()) {
+    if (other.getMgdl() != this.getMgdl()) {
+      return false;
+    }
+
+    if(other.getMmol() != this.getMmol()) {
       return false;
     }
 
