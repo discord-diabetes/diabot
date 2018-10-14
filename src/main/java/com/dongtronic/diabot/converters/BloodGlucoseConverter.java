@@ -2,6 +2,8 @@ package com.dongtronic.diabot.converters;
 
 import com.dongtronic.diabot.data.ConversionDTO;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  * BG conversion logic
@@ -9,6 +11,11 @@ import com.dongtronic.diabot.exceptions.UnknownUnitException;
 public class BloodGlucoseConverter {
 
   public static ConversionDTO convert(String value, String unit) throws UnknownUnitException {
+
+    if(!NumberUtils.isCreatable(value)) {
+      throw new IllegalArgumentException("value must be numeric");
+    }
+
     double input = Double.valueOf(value);
 
     if (input < 0 || input > 999) {

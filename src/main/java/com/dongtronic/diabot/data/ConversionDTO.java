@@ -12,19 +12,20 @@ public class ConversionDTO {
 
   /**
    * Create a ConversionDTO object with explicit unit
-   * @param original original BG value
+   *
+   * @param original   original BG value
    * @param conversion converted BG value
-   * @param inputUnit original unit
+   * @param inputUnit  original unit
    */
   public ConversionDTO(@NotNull double original, @NotNull double conversion, @NotNull GlucoseUnit inputUnit) {
-    if(inputUnit == GlucoseUnit.AMBIGUOUS) {
+    if (inputUnit == GlucoseUnit.AMBIGUOUS) {
       throw new IllegalArgumentException("single conversion constructor must contain explicit input unit");
     }
 
     setOriginal(original);
     this.inputUnit = inputUnit;
 
-    if(inputUnit == GlucoseUnit.MMOL) {
+    if (inputUnit == GlucoseUnit.MMOL) {
       setMgdl(conversion);
       setMmol(original);
     } else if (inputUnit == GlucoseUnit.MGDL) {
@@ -35,7 +36,8 @@ public class ConversionDTO {
 
   /**
    * Create a ConversionDTO object with ambiguous unit
-   * @param original original BG value
+   *
+   * @param original       original BG value
    * @param mmolConversion BG value converted to mmol/L
    * @param mgdlConversion BG value converted to mg/dL
    */
@@ -48,6 +50,7 @@ public class ConversionDTO {
 
   /**
    * Get the unit of the original BG value
+   *
    * @return unit of the original BG value
    */
   public GlucoseUnit getInputUnit() {
@@ -56,15 +59,16 @@ public class ConversionDTO {
 
   /**
    * Get the converted BG value
+   *
    * @return double converted value
    * @throws IllegalStateException when the DTO contains an ambiguous conversion
    */
   public double getConverted() {
-    if(inputUnit == GlucoseUnit.AMBIGUOUS) {
+    if (inputUnit == GlucoseUnit.AMBIGUOUS) {
       throw new IllegalStateException("cannot retrieve specific unit result for ambiguous conversion");
     }
 
-    if(inputUnit == GlucoseUnit.MGDL) {
+    if (inputUnit == GlucoseUnit.MGDL) {
       return mmol;
     } else {
       return mgdl;
@@ -73,6 +77,7 @@ public class ConversionDTO {
 
   /**
    * Get the conversion result in mmol/L
+   *
    * @return conversion result in mmol/L
    */
   public double getMmol() {
@@ -81,6 +86,7 @@ public class ConversionDTO {
 
   /**
    * Get the conversion result in mg/dL
+   *
    * @return conversion result in mg/dL
    */
   public int getMgdl() {
@@ -88,7 +94,7 @@ public class ConversionDTO {
   }
 
   private void setMgdl(double input) {
-    this.mgdl = (int) round(input,0);
+    this.mgdl = (int) round(input, 0);
   }
 
   private void setMmol(double input) {
@@ -103,8 +109,32 @@ public class ConversionDTO {
     this.original = round(original, 1);
   }
 
-  private static double round (double value, int precision) {
+  private static double round(double value, int precision) {
     int scale = (int) Math.pow(10, precision);
     return (double) Math.round(value * scale) / scale;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj.getClass() != this.getClass()) {
+      return false;
+    }
+
+    ConversionDTO other = (ConversionDTO) obj;
+
+    if (other.getOriginal() != this.getOriginal()) {
+      return false;
+    }
+
+    if (other.getConverted() != this.getConverted()) {
+      return false;
+    }
+
+    if (other.getInputUnit() != this.getInputUnit()) {
+      return false;
+    }
+
+    return true;
+
   }
 }
