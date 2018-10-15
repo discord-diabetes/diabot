@@ -7,17 +7,10 @@ import java.util.TreeMap;
 
 import javax.security.auth.login.LoginException;
 
+import com.dongtronic.diabot.commands.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dongtronic.diabot.commands.AwyissCommand;
-import com.dongtronic.diabot.commands.ConvertCommand;
-import com.dongtronic.diabot.commands.EstimationCommand;
-import com.dongtronic.diabot.commands.ExcuseCommand;
-import com.dongtronic.diabot.commands.PingCommand;
-import com.dongtronic.diabot.commands.ReplyCommand;
-import com.dongtronic.diabot.commands.RolesCommand;
-import com.dongtronic.diabot.commands.ShutdownCommand;
 import com.dongtronic.diabot.listener.ConversionListener;
 import com.dongtronic.diabot.listener.HelpListener;
 import com.jagrosh.jdautilities.command.Command;
@@ -93,6 +86,7 @@ public class Main {
         // Fun
         new ExcuseCommand(funCategory),
         new AwyissCommand(funCategory),
+        new DiacastCommand(funCategory),
 
         // Admin
         new ShutdownCommand(adminCategory),
