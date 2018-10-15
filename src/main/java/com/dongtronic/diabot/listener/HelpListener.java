@@ -28,13 +28,12 @@ public class HelpListener implements Consumer<CommandEvent> {
 		List<Command> allCommands = event.getClient().getCommands();
 
 		if(event.getArgs().length() == 0) {
+		  // Show generic help card
 		  buildGeneralHelp(embedBuilder, allCommands, event);
     } else {
+		  // Show extended help card
 		  buildSpecificHelp(embedBuilder, allCommands, event);
     }
-
-
-
 
 		event.reply(embedBuilder.build());
 	}

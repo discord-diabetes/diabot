@@ -26,7 +26,7 @@ public class EstimationCommand extends DiabotCommand {
     this.guildOnly = false;
     this.arguments = "<a1c/average> <number> [unit]";
     this.category = category;
-//    this.aliases = new String[]{"estimate a1c", "estimate a1c from average"};
+    this.examples = new String[]{"diabot estimate a1c 120", "diabot estimate a1c 5.7", "diabot estimate a1c 120 mg/dL", "diabot estimate average 6.7", "diabot estimate average 42"};
   }
 
   @Override
@@ -41,12 +41,16 @@ public class EstimationCommand extends DiabotCommand {
         event.replyWarning("Required arguments: `mode` & `value`\nexample: diabot estimate a1c 6.9");
       }
 
-      if(items[0].toUpperCase().equals("A1C")) {
-        estimateA1c(event);
-      } else if(items[0].toUpperCase().equals("AVERAGE")) {
-        estimateAverage(event);
-      } else {
-        event.replyError("Unknown mode. Choose either `a1c` or `average`");
+      switch (items[0].toUpperCase()) {
+        case "A1C":
+          estimateA1c(event);
+          break;
+        case "AVERAGE":
+          estimateAverage(event);
+          break;
+        default:
+          event.replyError("Unknown mode. Choose either `a1c` or `average`");
+          break;
       }
 
 
@@ -84,13 +88,10 @@ public class EstimationCommand extends DiabotCommand {
 
       if (result.getOriginal().getInputUnit() == MMOL) {
         event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMmol(), result.getDcct(), result.getIfcc()));
-//          event.reply("suh");
       } else if (result.getOriginal().getInputUnit() == MGDL) {
         event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getMgdl(), result.getDcct(), result.getIfcc()));
-//          event.reply("dude");
       } else {
-        //TODO: Make arguments for result.getDcct and result.getIfcc less confusing
-        //TODO: ie: not wrong
+        //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
         String reply =
             String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.getOriginal().getOriginal(), result.getDcct(MGDL), result.getIfcc(MGDL)) +
                 String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.getOriginal().getOriginal(), result.getDcct(MMOL), result.getIfcc(MMOL));

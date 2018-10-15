@@ -32,7 +32,7 @@ public class RolesCommand extends DiabotCommand {
     StringBuilder returned = new StringBuilder().append("```");
 
     for(Role role : roles) {
-      returned.append("\n" + role.getId() + " - " + role.getName());
+      returned.append("\n").append(role.getId()).append(" - ").append(role.getName());
     }
 
     returned.append("\n```");
