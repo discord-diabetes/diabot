@@ -4,6 +4,7 @@ import com.dongtronic.diabot.converters.BloodGlucoseConverter;
 import com.dongtronic.diabot.converters.GlucoseUnit;
 import com.dongtronic.diabot.data.ConversionDTO;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
+import com.dongtronic.diabot.util.Patterns;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -18,10 +19,6 @@ import java.util.regex.Pattern;
 public class ConversionListener extends ListenerAdapter {
   private Logger logger = LoggerFactory.getLogger(ConversionListener.class);
 
-  private static Pattern inlinePattern = Pattern.compile("^.*_([0-9]{1,3}\\.?[0-9]?)_.*$");
-  private static Pattern separatePattern = Pattern.compile("^([0-9]{1,3}\\.?[0-9]?)$");
-  private static Pattern unitPattern = Pattern.compile("^.*\\s?([0-9\\.]+)\\s?((mmol)|(mg)).*$");
-
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
     if (event.getAuthor().isBot()) return;
@@ -31,16 +28,16 @@ public class ConversionListener extends ListenerAdapter {
     Message message = event.getMessage();
     String messageText = message.getContentRaw();
 
-    Matcher inlineMatcher = inlinePattern.matcher(messageText);
-    Matcher separateMatcher = separatePattern.matcher(messageText);
-    Matcher unitMatcher = unitPattern.matcher(messageText);
+    Matcher inlineMatcher = Patterns.inlineBgPattern.matcher(messageText);
+    Matcher separateMatcher = Patterns.separateBgPattern.matcher(messageText);
+    Matcher unitMatcher = Patterns.unitBgPattern.matcher(messageText);
 
     String number = "";
     String unit = "";
 
     if(unitMatcher.matches()) {
-      number = unitMatcher.group(1);
-      unit = unitMatcher.group(2);
+      number = unitMatcher.group(4);
+      unit = unitMatcher.group(5);
     }
 
     if(inlineMatcher.matches()) {
