@@ -1,12 +1,16 @@
 package com.dongtronic.diabot;
 
+import java.util.List;
+
 import com.dongtronic.diabot.commands.*;
 import com.dongtronic.diabot.listener.ConversionListener;
+import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.Command.Category;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
 import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
@@ -15,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
 
 public class Main {
 
@@ -57,11 +60,9 @@ public class Main {
     client.setOwnerId("125616270254014464");
 
     // adds commands
-
-    // A1c
     client.addCommands(
         // command to show information about the bot
-        new AboutCommand(Color.BLUE, "a diabetes bot",
+        new AboutCommand(new java.awt.Color(0, 0, 255), "a diabetes bot",
             new String[]{"BG conversions", "A1c estimations", "Secret admin features :blobcoy:"},
             new Permission[]{Permission.ADMINISTRATOR}),
 
@@ -83,6 +84,24 @@ public class Main {
         new ShutdownCommand(adminCategory),
         new ReplyCommand(adminCategory),
         new RolesCommand(adminCategory));
+
+
+    // Custom help handler
+    client.setHelpConsumer((event) -> {
+      // event == com.jagrosh.jdautilities.command.CommandEvent
+      List<Command> commands = event.getClient().getCommands();
+      EmbedBuilder embedBuilder = new EmbedBuilder();
+
+      for (Command command : commands) {
+        // filter de commands
+        embedBuilder
+                .appendDescription(command.getName())
+                .appendDescription(" => ")
+                .appendDescription(command.getHelp());
+      }
+
+      event.reply(embedBuilder.build());
+    });
 
 
 
