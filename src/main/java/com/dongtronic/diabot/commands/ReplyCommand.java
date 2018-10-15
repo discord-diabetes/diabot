@@ -43,7 +43,6 @@ public class ReplyCommand extends DiabotCommand {
     builder.setDescription("the description");
     builder.appendDescription("\nSome more description");
     builder.appendDescription("\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\n");
-    builder.appendDescription("שלום חבר שלי");
 
     builder.setFooter("this is the footer", "https://i.eliens.co/1539537165227.gif");
 
