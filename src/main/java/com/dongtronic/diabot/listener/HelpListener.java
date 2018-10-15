@@ -82,6 +82,9 @@ public class HelpListener implements Consumer<CommandEvent> {
 		builder.appendDescription("\n");
 	}
 
+  /**
+   * Build a basic command help line
+   */
 	private void buildCommandHelp(EmbedBuilder builder, Command command) {
 		builder.appendDescription(command.getName());
 		if(command.getArguments() != null ) {
@@ -93,6 +96,9 @@ public class HelpListener implements Consumer<CommandEvent> {
 		builder.appendDescription("\n");
 	}
 
+  /**
+   * Build extended command help card. This includes arguments, permissions, aliases, and examples
+   */
 	private void buildExtendedCommandHelp(EmbedBuilder builder, Command command) {
 	  boolean isExtendedCommand = command instanceof DiabotCommand;
 	  DiabotCommand extendedCommand = null;
