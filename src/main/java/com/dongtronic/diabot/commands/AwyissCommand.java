@@ -3,7 +3,6 @@ package com.dongtronic.diabot.commands;
 import com.dongtronic.diabot.ServerRoles;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -17,11 +16,12 @@ import java.awt.*;
     name = {"Awyiss"},
     description = "aww yissss"
 )
-public class AwyissCommand extends Command {
+public class AwyissCommand extends DiabotCommand {
 
   public AwyissCommand(Category category) {
     this.name = "awyiss";
     this.help = "muther f'in breadcrumbs";
+    this.arguments = "<phrase> ...";
     this.guildOnly = true;
     this.aliases = new String[]{"duck", "breadcrumbs"};
     this.requiredRole = ServerRoles.required;

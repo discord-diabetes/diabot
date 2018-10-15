@@ -3,7 +3,6 @@ package com.dongtronic.diabot.commands;
 import com.dongtronic.diabot.converters.A1cConverter;
 import com.dongtronic.diabot.data.A1cDTO;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import org.slf4j.Logger;
@@ -17,7 +16,7 @@ import static com.dongtronic.diabot.converters.GlucoseUnit.MMOL;
     description = "estimate A1c from average blood glucose, or average blood glucose from A1c"
 )
 
-public class EstimationCommand extends Command {
+public class EstimationCommand extends DiabotCommand {
 
   private Logger logger = LoggerFactory.getLogger(EstimationCommand.class);
 

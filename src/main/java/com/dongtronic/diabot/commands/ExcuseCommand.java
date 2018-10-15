@@ -4,7 +4,6 @@ import com.dongtronic.diabot.ServerRoles;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
-import net.dv8tion.jda.core.Permission;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 

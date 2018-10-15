@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.commands;
 
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -8,7 +7,6 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 
 import java.awt.*;
-import java.time.temporal.TemporalAccessor;
 
 @CommandInfo(
     name = {"Reply"},
@@ -16,7 +14,7 @@ import java.time.temporal.TemporalAccessor;
     requirements = {"You must be cool"},
     usage = "what is this even for"
 )
-public class ReplyCommand extends Command {
+public class ReplyCommand extends DiabotCommand {
 
   public ReplyCommand(Category category) {
     this.name = "reply";
@@ -36,8 +34,8 @@ public class ReplyCommand extends Command {
 
     builder.setTitle("cool title");
     builder.setAuthor("Cas Eliëns", "https://dongtronic.com");
-    builder.addField("field 1", "the first field value, inline false", false);
-    builder.addField("Field 2", "the second field value, inline true", true);
+    builder.addField("field 1", "the first field value, inline `false`", false);
+    builder.addField("Field 2", "the second field value, inline `true`", true);
 
     builder.setImage("https://i.eliens.co/1539536815557.jpg");
     builder.setThumbnail("https://i.eliens.co/1539536815557.jpg");

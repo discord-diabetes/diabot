@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.commands;
 
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 
@@ -11,7 +10,7 @@ import java.time.temporal.ChronoUnit;
     description = "Checks the bot's latency"
 )
 
-public class PingCommand extends Command {
+public class PingCommand extends DiabotCommand {
 
   public PingCommand(Category category) {
     this.name = "ping";

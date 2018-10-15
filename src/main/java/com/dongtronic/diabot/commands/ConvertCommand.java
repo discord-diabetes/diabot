@@ -4,7 +4,6 @@ import com.dongtronic.diabot.converters.BloodGlucoseConverter;
 import com.dongtronic.diabot.converters.GlucoseUnit;
 import com.dongtronic.diabot.data.ConversionDTO;
 import com.dongtronic.diabot.exceptions.UnknownUnitException;
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import org.slf4j.Logger;
@@ -15,7 +14,7 @@ import org.slf4j.LoggerFactory;
     description = "Convert blood glucose between mmol/L and mg/dL"
 )
 
-public class ConvertCommand extends Command {
+public class ConvertCommand extends DiabotCommand {
 
   private Logger logger = LoggerFactory.getLogger(ConvertCommand.class);
 
@@ -25,6 +24,7 @@ public class ConvertCommand extends Command {
     this.guildOnly = false;
     this.arguments = "<value> <unit>";
     this.category = category;
+    this.examples = new String[]{"diabot convert 5", "My BG this morning was _127_", "How much is 7 mmol?"};
   }
 
   @Override

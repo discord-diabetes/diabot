@@ -1,8 +1,8 @@
 package com.dongtronic.diabot.commands;
 
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
+import net.dv8tion.jda.core.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
     name = "Shutdown",
     description = "Safely shuts down the bot."
 )
-public class ShutdownCommand extends Command {
+public class ShutdownCommand extends DiabotCommand {
 
   private static final Logger logger = LoggerFactory.getLogger(ShutdownCommand.class);
 
@@ -24,6 +24,7 @@ public class ShutdownCommand extends Command {
     this.ownerCommand = false;
     this.aliases = new String[] {"heckoff", "fuckoff", "removethyself", "remove"};
     this.category = category;
+    this.userPermissions = new Permission[]{Permission.ADMINISTRATOR};
   }
 
   @Override

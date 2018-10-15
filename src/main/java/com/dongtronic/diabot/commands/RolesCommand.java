@@ -1,20 +1,18 @@
 package com.dongtronic.diabot.commands;
 
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.doc.standard.CommandInfo;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @CommandInfo(
     name = {"Roles"},
     description = "Get all roles in the server"
 )
-public class RolesCommand extends Command {
+public class RolesCommand extends DiabotCommand {
 
   public RolesCommand(Category category) {
     this.name = "roles";

@@ -1,24 +1,38 @@
 package com.dongtronic.diabot;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import com.dongtronic.diabot.commands.*;
+import javax.security.auth.login.LoginException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.dongtronic.diabot.commands.AwyissCommand;
+import com.dongtronic.diabot.commands.ConvertCommand;
+import com.dongtronic.diabot.commands.EstimationCommand;
+import com.dongtronic.diabot.commands.ExcuseCommand;
+import com.dongtronic.diabot.commands.PingCommand;
+import com.dongtronic.diabot.commands.ReplyCommand;
+import com.dongtronic.diabot.commands.RolesCommand;
+import com.dongtronic.diabot.commands.ShutdownCommand;
 import com.dongtronic.diabot.listener.ConversionListener;
+import com.dongtronic.diabot.listener.HelpListener;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.Command.Category;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.examples.command.AboutCommand;
+
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Game;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginException;
 
 public class Main {
 
@@ -87,21 +101,7 @@ public class Main {
 
 
     // Custom help handler
-    client.setHelpConsumer((event) -> {
-      // event == com.jagrosh.jdautilities.command.CommandEvent
-      List<Command> commands = event.getClient().getCommands();
-      EmbedBuilder embedBuilder = new EmbedBuilder();
-
-      for (Command command : commands) {
-        // filter de commands
-        embedBuilder
-                .appendDescription(command.getName())
-                .appendDescription(" => ")
-                .appendDescription(command.getHelp());
-      }
-
-      event.reply(embedBuilder.build());
-    });
+    client.setHelpConsumer(new HelpListener());
 
 
 
