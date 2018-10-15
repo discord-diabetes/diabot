@@ -20,7 +20,7 @@ public class ConversionListener extends ListenerAdapter {
 
   private static Pattern inlinePattern = Pattern.compile("^.*_([0-9]{1,3}\\.?[0-9]?)_.*$");
   private static Pattern separatePattern = Pattern.compile("^([0-9]{1,3}\\.?[0-9]?)$");
-  private static Pattern unitPattern = Pattern.compile("^.*\\s([0-9\\.]+)\\s?((mmol)|(mg)).*$");
+  private static Pattern unitPattern = Pattern.compile("^.*\\s?([0-9\\.]+)\\s?((mmol)|(mg)).*$");
 
   @Override
   public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
