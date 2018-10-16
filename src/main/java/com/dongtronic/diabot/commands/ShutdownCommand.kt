@@ -18,6 +18,7 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand() {
         this.aliases = arrayOf("heckoff", "fuckoff", "removethyself", "remove")
         this.category = category
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
+        this.hidden = true
     }
 
     override fun execute(event: CommandEvent) {

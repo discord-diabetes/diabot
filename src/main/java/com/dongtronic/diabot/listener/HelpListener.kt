@@ -91,7 +91,7 @@ class HelpListener : Consumer<CommandEvent> {
     private fun buildCommandHelp(builder: EmbedBuilder, command: Command) {
         builder.appendDescription(command.name)
         if (command.arguments != null) {
-            builder.appendDescription(command.arguments)
+            builder.appendDescription(" " + command.arguments)
         }
 
         builder.appendDescription(" => ")
@@ -147,6 +147,10 @@ class HelpListener : Consumer<CommandEvent> {
         val allowedCommands = ArrayList<Command>()
 
         for (command in commands) {
+            if(command.isHidden) {
+                continue
+            }
+
             val requiredPermissions = command.userPermissions
 
             if (requiredPermissions.isEmpty()) {

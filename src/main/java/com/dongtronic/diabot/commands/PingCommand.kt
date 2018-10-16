@@ -12,6 +12,7 @@ class PingCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = true
         this.aliases = arrayOf("pong")
         this.category = category
+        this.hidden = true
     }
 
     override fun execute(event: CommandEvent) {
