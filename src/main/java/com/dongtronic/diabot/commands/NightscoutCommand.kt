@@ -34,11 +34,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if (args[0] == null) {
-            event.reply("Please pass a partial heroku url (eg: casscout)")
-            return
-        }
-
         try {
             val urlTemplate = "https://%s.herokuapp.com/api/v1/"
             val endpoint = String.format(urlTemplate, args[0])
