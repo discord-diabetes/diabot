@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 
 public class NightscoutCommand extends DiabotCommand {
 
@@ -56,23 +58,30 @@ public class NightscoutCommand extends DiabotCommand {
 
       EmbedBuilder builder = new EmbedBuilder();
 
-      buildResponse(dto, builder, event);
+      buildResponse(dto, builder);
 
       MessageEmbed embed = builder.build();
 
       event.reply(embed);
     } catch (Exception e) {
       event.reactError();
-      e.printStackTrace(System.err);
+      logger.error("Error while responding to Nightscout request");
+      e.printStackTrace();
     }
   }
 
-  private void buildResponse(NightscoutDTO dto, EmbedBuilder builder, CommandEvent event) {
+  private void buildResponse(NightscoutDTO dto, EmbedBuilder builder) {
     builder.setTitle("Nightscout");
 
-    String mmolString = buildGlucoseString(dto.getGlucose().getMmol(), dto.getDelta().getMmol(), dto.getDeltaIsNegative());
-    String mgdlString = buildGlucoseString(dto.getGlucose().getMgdl(), dto.getDelta().getMgdl(), dto.getDeltaIsNegative());
-
+    String mmolString;
+    String mgdlString;
+    if(dto.getDelta() != null) {
+      mmolString = buildGlucoseString(dto.getGlucose().getMmol(), dto.getDelta().getMmol(), dto.getDeltaIsNegative());
+      mgdlString = buildGlucoseString(dto.getGlucose().getMgdl(), dto.getDelta().getMgdl(), dto.getDeltaIsNegative());
+    } else {
+      mmolString = buildGlucoseString(dto.getGlucose().getMmol(), 999L, false);
+      mgdlString = buildGlucoseString(dto.getGlucose().getMgdl(), 999L, false);
+    }
 
     builder.addField("mmol/L", mmolString, true);
     builder.addField("mg/dL", mgdlString, true);
@@ -80,6 +89,7 @@ public class NightscoutCommand extends DiabotCommand {
     setResponseColor(dto, builder);
 
     builder.setTimestamp(dto.getDateTime());
+    builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png");
 
     if(dto.getDateTime().plusMinutes(15).toInstant().isBefore(ZonedDateTime.now().toInstant())) {
       builder.setDescription("**BG data is more than 15 minutes old**");
@@ -88,20 +98,24 @@ public class NightscoutCommand extends DiabotCommand {
 
   }
 
-  private String buildGlucoseString(double glucose, double delta, boolean negative) {
+  private String buildGlucoseString(double glucose, @Nullable double delta, boolean negative) {
     StringBuilder builder = new StringBuilder();
 
     builder.append(glucose);
-    builder.append(" (");
 
-    if(negative) {
-      builder.append("-");
-    } else {
-      builder.append("+");
+    if(delta != 999L) {
+      // 999L is placeholder for absent delta
+      builder.append(" (");
+
+      if (negative) {
+        builder.append("-");
+      } else {
+        builder.append("+");
+      }
+
+      builder.append(delta);
+      builder.append(")");
     }
-
-    builder.append(delta);
-    builder.append(")");
 
     return builder.toString();
   }
@@ -161,14 +175,21 @@ public class NightscoutCommand extends DiabotCommand {
     JsonObject jsonObject = new JsonParser().parse(json).getAsJsonArray().get(0).getAsJsonObject();
     String sgv = jsonObject.get("sgv").getAsString();
     long timestamp = jsonObject.get("date").getAsLong();
-    String delta = jsonObject.get("delta").getAsString();
+
+    String delta = "";
+    if(jsonObject.has("delta")) {
+      delta = jsonObject.get("delta").getAsString();
+    }
     ZonedDateTime dateTime = getTimestamp(timestamp);
 
     ConversionDTO convertedBg = BloodGlucoseConverter.convert(sgv, "mg");
-    ConversionDTO convertedDelta = BloodGlucoseConverter.convert(delta.replaceAll("-", ""), "mg");
+
+    if(delta.length() > 0) {
+      ConversionDTO convertedDelta = BloodGlucoseConverter.convert(delta.replaceAll("-", ""), "mg");
+      dto.setDelta(convertedDelta);
+    }
 
     dto.setGlucose(convertedBg);
-    dto.setDelta(convertedDelta);
     dto.setDeltaIsNegative(delta.contains("-"));
     dto.setDateTime(dateTime);
   }

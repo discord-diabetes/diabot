@@ -12,13 +12,6 @@ public class NightscoutDTO {
   private int top;
   private int high;
 
-  public NightscoutDTO(ConversionDTO glucose, ConversionDTO delta, boolean deltaIsNegative, ZonedDateTime dateTime) {
-    this.glucose = glucose;
-    this.delta = delta;
-    this.deltaIsNegative = deltaIsNegative;
-    this.dateTime = dateTime;
-  }
-
   public NightscoutDTO() {}
 
 
