@@ -59,11 +59,20 @@ public class HelpListener implements Consumer<CommandEvent> {
 	      found = true;
 	      break;
       }
+
+      for(String alias : command.getAliases()) {
+      	if(alias.toUpperCase().equals(commandName.toUpperCase())) {
+      		buildExtendedCommandHelp(builder, command);
+      		found = true;
+      		break;
+				}
+			}
+
     }
 
     if(!found) {
       builder.setTitle("error");
-      builder.addField("Error", "Command " + commandName + " does not exist", false);
+      builder.setDescription("Command " + commandName + " does not exist");
       builder.setColor(Color.red);
     }
   }
