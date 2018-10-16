@@ -17,8 +17,8 @@ import java.util.regex.Pattern
 class ConversionListener : ListenerAdapter() {
     private val logger = LoggerFactory.getLogger(ConversionListener::class.java)
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent?) {
-        if (event!!.author.isBot) return
+    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+        if (event.author.isBot) return
 
         val channel = event.channel
 

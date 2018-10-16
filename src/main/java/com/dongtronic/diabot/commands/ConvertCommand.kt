@@ -24,6 +24,10 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
     }
 
     override fun execute(event: CommandEvent) {
+        if(event.author.isBot) {
+            return
+        }
+
         if (event.args.isEmpty()) {
             event.replyWarning("You didn't give me a value!")
         } else {
