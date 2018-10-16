@@ -23,7 +23,7 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
     private val episodes: List<SyndEntry>
         @Throws(FeedException::class, IOException::class)
         get() {
-            val feedSource = URL(url)
+            val feedSource = URL("https://diacast.xyz/?format=rss")
             val input = SyndFeedInput()
             val feed = input.build(XmlReader(feedSource))
             return feed.entries
@@ -38,9 +38,9 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
     }
 
     override fun execute(event: CommandEvent) {
+        var episodeNumber = 0
         try {
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            var episodeNumber = 0
 
             if (args.isNotEmpty() && StringUtils.isNumeric(args[0])) {
                 episodeNumber = Integer.valueOf(args[0])
@@ -54,7 +54,10 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
 
             event.reply(builder.build())
 
-        } catch (ex: Exception) {
+        } catch (ex: NoSuchEpisodeException) {
+            event.replyError("Episode $episodeNumber does not exist")
+        }
+        catch (ex: Exception) {
             event.replyError("Something went wrong: " + ex.message)
         }
 
@@ -80,9 +83,11 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
     @Throws(NoSuchEpisodeException::class, IOException::class, FeedException::class)
     private fun getEpisode(episode: Int): SyndEntry {
         val episodes = episodes
+
         if (episode == 0) {
             return episodes[0]
         }
+
 
         for (entry in episodes) {
             for (element in entry.foreignMarkup) {
@@ -96,11 +101,6 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
         }
 
         throw NoSuchEpisodeException()
-    }
-
-    companion object {
-
-        private const val url = "https://diacast.xyz/?format=rss"
     }
 
 

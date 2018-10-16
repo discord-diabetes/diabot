@@ -44,7 +44,7 @@ object Main {
         client.useDefaultGame()
 
         // sets emojis used throughout the bot on successes, warnings, and failures
-        client.setEmojis("\uD83D\uDC4C", "\uD83D\uDE2E", "\u274C")
+        client.setEmojis("\uD83D\uDC4C", "\uD83D\uDE2E", "\uD83D\uDE22")
 
 
         // sets the bot prefix
