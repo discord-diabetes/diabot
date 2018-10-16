@@ -79,6 +79,7 @@ public class Main {
 
         // BG
         new ConvertCommand(bgCategory),
+        new NightscoutCommand(bgCategory),
 
         // Utility
         new PingCommand(utilitiesCategory),
