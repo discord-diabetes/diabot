@@ -1,0 +1,107 @@
+package com.dongtronic.diabot.commands
+
+import com.dongtronic.diabot.exceptions.NoSuchEpisodeException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.doc.standard.CommandInfo
+import com.rometools.rome.feed.synd.SyndContent
+import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndFeed
+import com.rometools.rome.io.FeedException
+import com.rometools.rome.io.SyndFeedInput
+import com.rometools.rome.io.XmlReader
+import net.dv8tion.jda.core.EmbedBuilder
+import org.apache.commons.lang3.StringUtils
+import org.jdom2.Attribute
+import org.jdom2.Element
+
+import java.io.IOException
+import java.net.URL
+
+class DiacastCommand(category: Command.Category) : DiabotCommand() {
+
+    private val episodes: List<SyndEntry>
+        @Throws(FeedException::class, IOException::class)
+        get() {
+            val feedSource = URL(url)
+            val input = SyndFeedInput()
+            val feed = input.build(XmlReader(feedSource))
+            return feed.entries
+        }
+
+    init {
+        this.name = "diacast"
+        this.help = "Get information about a diacast episode"
+        this.guildOnly = true
+        this.category = category
+        this.examples = arrayOf("diabot diacast", "diabot diacast 6")
+    }
+
+    override fun execute(event: CommandEvent) {
+        try {
+            val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            var episodeNumber = 0
+
+            if (args.isNotEmpty() && StringUtils.isNumeric(args[0])) {
+                episodeNumber = Integer.valueOf(args[0])
+            }
+
+            val episode = getEpisode(episodeNumber)
+
+            val builder = EmbedBuilder()
+
+            buildEpisodeCard(episode, builder)
+
+            event.reply(builder.build())
+
+        } catch (ex: Exception) {
+            event.replyError("Something went wrong: " + ex.message)
+        }
+
+    }
+
+    private fun buildEpisodeCard(episode: SyndEntry, builder: EmbedBuilder) {
+        builder.setTitle(episode.title, episode.link)
+        builder.setAuthor("Diacast")
+
+        for (element in episode.foreignMarkup) {
+            if (element.name == "summary") {
+                builder.setDescription(element.value)
+            }
+
+            if (element.name == "image") {
+                val imageUrl = element.getAttributeValue("href")
+                builder.setThumbnail(imageUrl)
+            }
+
+        }
+    }
+
+    @Throws(NoSuchEpisodeException::class, IOException::class, FeedException::class)
+    private fun getEpisode(episode: Int): SyndEntry {
+        val episodes = episodes
+        if (episode == 0) {
+            return episodes[0]
+        }
+
+        for (entry in episodes) {
+            for (element in entry.foreignMarkup) {
+                if (element.name == "episode") {
+                    val number = element.value
+                    if (Integer.valueOf(number) == episode) {
+                        return entry
+                    }
+                }
+            }
+        }
+
+        throw NoSuchEpisodeException()
+    }
+
+    companion object {
+
+        private const val url = "https://diacast.xyz/?format=rss"
+    }
+
+
+}
