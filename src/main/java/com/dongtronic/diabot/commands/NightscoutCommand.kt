@@ -1,17 +1,21 @@
 package com.dongtronic.diabot.commands
 
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
+import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
+import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.core.entities.User
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
+import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -27,16 +31,39 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = true
         this.aliases = arrayOf("ns", "bg")
         this.category = category
-        this.examples = arrayOf("diabot nightscout casscout", "diabot ns casscout")
+        this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com")
     }
 
     override fun execute(event: CommandEvent) {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
+        var customHostname = false
+        var hostname = ""
+        val urlTemplate = "https://%s.herokuapp.com/api/v1/"
+        val endpoint: String?
+
+        if (args.isEmpty()) {
+            try {
+                hostname = getNightscoutHost(event.author)
+                customHostname = true
+            } catch (ex: UnconfiguredNightscoutException) {
+                event.reply("Please set your nightscout hostname using `diabot nightscout set <hostname>`")
+            }
+        } else if (args[0].toUpperCase() == "SET" && args[1].isNotEmpty()) {
+            setNightscoutUrl(event.author, args[1])
+            event.reply("Changed URL for ${event.author.name} to " + args[1])
+            return
+        }
+
         try {
-            val urlTemplate = "https://%s.herokuapp.com/api/v1/"
-            val endpoint = String.format(urlTemplate, args[0])
+            endpoint = if (!customHostname) {
+                String.format(urlTemplate, args[0])
+            } else {
+                "$hostname/api/v1/"
+            }
+
+            logger.debug(endpoint)
 
             val dto = NightscoutDTO()
 
@@ -117,6 +144,34 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             builder.setColor(Color.orange)
         } else {
             builder.setColor(Color.green)
+        }
+    }
+
+    private fun validateNightscoutUrl(url: String): String {
+        var finalUrl = url
+        if(!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
+            throw IllegalArgumentException("Url must contain scheme")
+        }
+
+        if(finalUrl.endsWith("/")) {
+            finalUrl = finalUrl.trimEnd('/')
+        }
+
+        return finalUrl
+    }
+
+    private fun setNightscoutUrl(user: User, url: String) {
+        val finalUrl = validateNightscoutUrl(url)
+        NightscoutDAO.getInstance().setNightscoutUrl(user, finalUrl)
+    }
+
+    private fun getNightscoutHost(user: User): String {
+        val url = NightscoutDAO.getInstance().getNightscoutUrl(user)
+
+        if (url == null) {
+            throw UnconfiguredNightscoutException()
+        } else {
+            return url
         }
     }
 
