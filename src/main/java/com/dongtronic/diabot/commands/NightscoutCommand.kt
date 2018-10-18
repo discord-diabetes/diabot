@@ -42,21 +42,18 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         var hostname = ""
         val urlTemplate = "https://%s.herokuapp.com/api/v1/"
         val endpoint: String?
-
-        if (args.isEmpty()) {
-            try {
+        try {
+            if (args.isEmpty()) {
                 hostname = getNightscoutHost(event.author)
                 customHostname = true
-            } catch (ex: UnconfiguredNightscoutException) {
-                event.reply("Please set your nightscout hostname using `diabot nightscout set <hostname>`")
+            } else if (args[0].toUpperCase() == "SET" && args[1].isNotEmpty()) {
+                setNightscoutUrl(event.author, args[1])
+                event.message.delete().reason("privacy").queue()
+                event.reply("Set nightscout URL for ${event.author.name}")
+                return
             }
-        } else if (args[0].toUpperCase() == "SET" && args[1].isNotEmpty()) {
-            setNightscoutUrl(event.author, args[1])
-            event.reply("Changed URL for ${event.author.name} to " + args[1])
-            return
-        }
 
-        try {
+
             endpoint = if (!customHostname) {
                 String.format(urlTemplate, args[0])
             } else {
@@ -77,10 +74,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             val embed = builder.build()
 
             event.reply(embed)
-        } catch (e: Exception) {
-            event.reactError()
-            logger.error("Error while responding to Nightscout request")
-            e.printStackTrace()
+        } catch (ex: UnconfiguredNightscoutException) {
+            event.reply("Please set your nightscout hostname using `diabot nightscout set <hostname>`")
+        } catch (ex: IllegalArgumentException) {
+            event.reply("Error: " + ex.message)
         }
 
     }
@@ -149,11 +146,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
     private fun validateNightscoutUrl(url: String): String {
         var finalUrl = url
-        if(!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
+        if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
             throw IllegalArgumentException("Url must contain scheme")
         }
 
-        if(finalUrl.endsWith("/")) {
+        if (finalUrl.endsWith("/")) {
             finalUrl = finalUrl.trimEnd('/')
         }
 
