@@ -15,7 +15,6 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
-import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -42,6 +41,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         var hostname = ""
         val urlTemplate = "https://%s.herokuapp.com/api/v1/"
         val endpoint: String?
+
         try {
             if (args.isEmpty()) {
                 hostname = getNightscoutHost(event.author)
@@ -50,6 +50,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
                 setNightscoutUrl(event.author, args[1])
                 event.message.delete().reason("privacy").queue()
                 event.reply("Set nightscout URL for ${event.author.name}")
+                return
+            } else if (args[0].toUpperCase() == "DELETE" || args[0].toUpperCase() == "REMOVE") {
+                removeNightscoutUrl(event.author)
+                event.reply("Removed Nightscout URL for ${event.author.name}")
                 return
             }
 
@@ -170,6 +174,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         } else {
             return url
         }
+    }
+
+    private fun removeNightscoutUrl(user: User) {
+        NightscoutDAO.getInstance().removeNIghtscoutUrl(user)
     }
 
     @Throws(IOException::class)

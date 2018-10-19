@@ -80,8 +80,10 @@ object Main {
                 DiacastCommand(funCategory),
 
                 // Admin
+                AdminCommand(adminCategory),
                 ShutdownCommand(adminCategory),
                 ReplyCommand(adminCategory),
+                NightscoutAdminCommand(adminCategory),
                 RolesCommand(adminCategory))
 
 

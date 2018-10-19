@@ -2,10 +2,13 @@ package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
 import net.dv8tion.jda.core.entities.User
+import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
+import java.util.*
 
 class NightscoutDAO private constructor() {
     private var jedis: Jedis? = null
+    private val logger = LoggerFactory.getLogger(NightscoutDAO::class.java)
 
 
     init {
@@ -26,6 +29,25 @@ class NightscoutDAO private constructor() {
         val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", user.id)
 
         jedis!!.set(redisKey, url)
+    }
+
+    fun removeNIghtscoutUrl(user: User) {
+        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", user.id)
+
+        jedis!!.del(redisKey)
+    }
+
+    fun listUsers(): TreeMap<String, String> {
+        val keys = jedis!!.keys(RedisKeyFormats.allNightscoutUrlsFormat)
+        val result = TreeMap<String, String>()
+
+        for(key in keys) {
+            val value = jedis!!.get(key)
+            result[key] = value
+        }
+
+        return result
+
     }
 
     companion object {
