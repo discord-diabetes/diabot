@@ -37,53 +37,71 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        var customHostname = false
-        var hostname = ""
-        val urlTemplate = "https://%s.herokuapp.com/api/v1/"
-        val endpoint: String?
-
         try {
             if (args.isEmpty()) {
-                hostname = getNightscoutHost(event.author)
-                customHostname = true
-            } else if (args[0].toUpperCase() == "SET" && args[1].isNotEmpty()) {
-                setNightscoutUrl(event.author, args[1])
-                event.message.delete().reason("privacy").queue()
-                event.reply("Set nightscout URL for ${event.author.name}")
-                return
-            } else if (args[0].toUpperCase() == "DELETE" || args[0].toUpperCase() == "REMOVE") {
-                removeNightscoutUrl(event.author)
-                event.reply("Removed Nightscout URL for ${event.author.name}")
+                getStoredData(event)
                 return
             }
 
+            val command = args[0].toUpperCase()
 
-            endpoint = if (!customHostname) {
-                String.format(urlTemplate, args[0])
-            } else {
-                "$hostname/api/v1/"
+            when (command) {
+                "SET", "S" -> setNightscoutUrl(event)
+                "DELETE", "REMOVE", "DELET", "D", "R" -> deleteNightscoutUrl(event)
+                else -> getUnstoredData(event)
             }
-
-            logger.debug(endpoint)
-
-            val dto = NightscoutDTO()
-
-            getData(endpoint, dto, event)
-            getRanges(endpoint, dto, event)
-
-            val builder = EmbedBuilder()
-
-            buildResponse(dto, builder)
-
-            val embed = builder.build()
-
-            event.reply(embed)
         } catch (ex: UnconfiguredNightscoutException) {
             event.reply("Please set your nightscout hostname using `diabot nightscout set <hostname>`")
         } catch (ex: IllegalArgumentException) {
             event.reply("Error: " + ex.message)
+        } catch (ex: Exception) {
+            event.reactError()
         }
 
+    }
+
+    private fun buildNightscoutResponse(endpoint: String, event: CommandEvent) {
+        val dto = NightscoutDTO()
+
+        getData(endpoint, dto, event)
+        getRanges(endpoint, dto, event)
+
+        val builder = EmbedBuilder()
+
+        buildResponse(dto, builder)
+
+        val embed = builder.build()
+
+        event.reply(embed)
+    }
+
+    private fun getStoredData(event: CommandEvent) {
+        val endpoint = getNightscoutHost(event.author) + "/api/v1/"
+
+        buildNightscoutResponse(endpoint, event)
+    }
+
+    private fun setNightscoutUrl(event: CommandEvent) {
+        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        setNightscoutUrl(event.author, args[1])
+
+        event.message.delete().reason("privacy").queue()
+        event.reply("Set nightscout URL for ${event.author.name}")
+    }
+
+    private fun deleteNightscoutUrl(event: CommandEvent) {
+        removeNightscoutUrl(event.author)
+        event.reply("Removed Nightscout URL for ${event.author.name}")
+    }
+
+    private fun getUnstoredData(event: CommandEvent) {
+        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        val hostname = args[0]
+        val endpoint = "https://$hostname.herokuapp.com/api/v1/"
+
+        buildNightscoutResponse(endpoint, event)
     }
 
     private fun buildResponse(dto: NightscoutDTO, builder: EmbedBuilder) {
