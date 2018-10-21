@@ -87,7 +87,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         setNightscoutUrl(event.author, args[1])
 
         event.message.delete().reason("privacy").queue()
-        event.reply("Set nightscout URL for ${event.author.name}")
+        event.reply("Set Nightscout URL for ${event.author.name}")
     }
 
     private fun deleteNightscoutUrl(event: CommandEvent) {
