@@ -35,9 +35,9 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
         try {
             when (category) {
                 "C", "CHANNELS" -> when (command) {
-                    "LIST" -> listChannels(event)
-                    "DELETE", "REMOVE" -> deleteChannel(event)
-                    "ADD" -> addChannel(event)
+                    "LIST", "L" -> listChannels(event)
+                    "DELETE", "REMOVE", "D", "R" -> deleteChannel(event)
+                    "ADD", "A" -> addChannel(event)
                     else -> {
                         throw IllegalArgumentException("unknown command $category $command")
                     }
