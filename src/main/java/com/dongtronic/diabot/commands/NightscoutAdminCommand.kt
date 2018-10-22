@@ -16,7 +16,7 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
 
     init {
         this.name = "nightscoutadmin"
-        this.help = "Administrator commands for nightscout"
+        this.help = "Administrator commands for Nightscout"
         this.guildOnly = true
         this.aliases = arrayOf("nsadmin", "na")
         this.category = category
@@ -53,7 +53,7 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
             return
         }
 
-        logger.info("Listing all nightscout URLs for ${event.author.name}")
+        logger.info("Listing all Nightscout URLs for ${event.author.name}")
         val users = NightscoutDAO.getInstance().listUsers()
 
         val builder = EmbedBuilder()
@@ -88,18 +88,18 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
 
             val user = event.jda.getUserById(userId) ?: throw IllegalArgumentException("User with ID `$userId` does not exist in this server")
 
-            logger.info("Deleting nightscout URL for user $userId [requested by ${event.author.name}]")
+            logger.info("Deleting Nightscout URL for user $userId [requested by ${event.author.name}]")
 
             val existingUrl = NightscoutDAO.getInstance().getNightscoutUrl(user)
 
             if(existingUrl.isNullOrBlank()) {
-                event.reply("User **${user.name}** (`$userId`) does not have a nightscout URL configured")
+                event.reply("User **${user.name}** (`$userId`) does not have a Nightscout URL configured")
                 return
             }
 
             NightscoutDAO.getInstance().removeNIghtscoutUrl(user)
 
-            event.replySuccess("Deleted nightscout URL for user **${user.name}** (`$userId`)")
+            event.replySuccess("Deleted Nightscout URL for user **${user.name}** (`$userId`)")
 
         } catch (ex: NullPointerException) {
             throw IllegalArgumentException("Invalid user ID provided")
@@ -125,7 +125,7 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
 
         NightscoutDAO.getInstance().setNightscoutUrl(user, url)
 
-        event.reply("Admin set nightscout URL for ${user.name} [requested by ${event.author.name}]")
+        event.reply("Admin set Nightscout URL for ${user.name} [requested by ${event.author.name}]")
     }
 
 

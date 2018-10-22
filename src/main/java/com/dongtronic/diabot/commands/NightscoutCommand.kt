@@ -25,8 +25,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
     init {
         this.name = "nightscout"
-        this.help = "Get the most recent info from any nightscout site"
-        this.arguments = "Partial nightscout url (part before .herokuapp.com)"
+        this.help = "Get the most recent info from any Nightscout site"
+        this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
         this.guildOnly = true
         this.aliases = arrayOf("ns", "bg")
         this.category = category
@@ -51,7 +51,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
                 else -> getUnstoredData(event)
             }
         } catch (ex: UnconfiguredNightscoutException) {
-            event.reply("Please set your nightscout hostname using `diabot nightscout set <hostname>`")
+            event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
         } catch (ex: IllegalArgumentException) {
             event.reply("Error: " + ex.message)
         } catch (ex: Exception) {
