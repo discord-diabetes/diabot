@@ -1,3 +1,6 @@
+### Local logback config ###
+logback-test.xml
+
 
 # Created by https://www.gitignore.io/api/java,intellij,kotlin,gradle
 
