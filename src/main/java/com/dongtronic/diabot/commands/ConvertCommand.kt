@@ -43,8 +43,8 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
                 result = BloodGlucoseConverter.convert(items[0], if (items.size == 2) items[1] else null)
 
                 when {
-                    result!!.inputUnit === GlucoseUnit.MMOL -> event.reply(String.format("%s mmol/L is %s mg/dL", result!!.original, result.converted))
-                    result!!.inputUnit === GlucoseUnit.MGDL -> event.reply(String.format("%s mg/dL is %s mmol/L", result!!.original, result.converted))
+                    result!!.inputUnit === GlucoseUnit.MMOL -> event.reply(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl))
+                    result!!.inputUnit === GlucoseUnit.MGDL -> event.reply(String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol))
                     else -> {
                         val reply = arrayOf(
                                 "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
@@ -52,7 +52,7 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
                                 "%s mmol/L is **%s mg/dL**").joinToString(
                                 "%n")
 
-                        event.reply(String.format(reply, result!!.original, result.mmol, result.original,
+                        event.reply(String.format(reply, result!!.mgdl, result.mmol, result.mmol,
                                 result.mgdl))
                     }
                 }

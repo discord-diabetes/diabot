@@ -55,8 +55,8 @@ class ConversionListener : ListenerAdapter() {
             }
 
             when {
-                result!!.inputUnit === GlucoseUnit.MMOL -> channel.sendMessage(String.format("%s mmol/L is %s mg/dL", result!!.original, result.converted)).queue()
-                result!!.inputUnit === GlucoseUnit.MGDL -> channel.sendMessage(String.format("%s mg/dL is %s mmol/L", result!!.original, result.converted)).queue()
+                result!!.inputUnit === GlucoseUnit.MMOL -> channel.sendMessage(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl)).queue()
+                result!!.inputUnit === GlucoseUnit.MGDL -> channel.sendMessage(String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol)).queue()
                 else -> {
                     val reply = arrayOf(
                             "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
@@ -64,7 +64,7 @@ class ConversionListener : ListenerAdapter() {
                             "%s mmol/L is **%s mg/dL**").joinToString(
                             "%n")
 
-                    channel.sendMessage(String.format(reply, result!!.original, result.mmol, result.original,
+                    channel.sendMessage(String.format(reply, result!!.mgdl, result.mmol, result.mmol,
                             result.mgdl)).queue()
                 }
             }

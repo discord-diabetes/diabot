@@ -110,11 +110,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val mmolString: String
         val mgdlString: String
         if (dto.delta != null) {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol, dto.delta!!.mmol, dto.deltaIsNegative)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toDouble(), dto.delta!!.mgdl.toDouble(), dto.deltaIsNegative)
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
         } else {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol, 999.0, false)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toDouble(), 999.0, false)
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
         }
 
         builder.addField("mmol/L", mmolString, true)
@@ -132,12 +132,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
     }
 
-    private fun buildGlucoseString(glucose: Double, delta: Double, negative: Boolean): String {
+    private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
         val builder = StringBuilder()
 
         builder.append(glucose)
 
-        if (delta != 999.0) {
+        if (delta != "999.0") {
             // 999L is placeholder for absent delta
             builder.append(" (")
 
