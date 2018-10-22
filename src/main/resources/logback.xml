@@ -1,0 +1,17 @@
+<configuration debug="false">
+
+    <appender name="Console-Appender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%-5level] %logger{36} ## %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.dongtronic.diabot.*" level="info" additivity="false">
+        <appender-ref ref="Console-Appender"/>
+    </logger>
+    <root level="info">
+        <appender-ref ref="Console-Appender"/>
+    </root>
+</configuration>
