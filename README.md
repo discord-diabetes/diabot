@@ -10,10 +10,10 @@ To run Diabot, you need access to the following:
 
 ### Creating a Discord bot account
 1. Visit https://discordapp.com/developers/applications/
-2. Create a new application
+2. Create a new application ![](/docs/create_application.png)
 3. In the menu to the side, click the "bot button"
-4. On the bot page, click the "create bot account" button
-5. Copy the newly created token into an environment variable called `DIABOTTOKEN`
+4. On the bot page, click the "create bot account" button ![](/docs/build_a_bot.png)
+5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/copy_token.png)
 
 ### Setting up a Redis database
 TODO.
@@ -25,6 +25,7 @@ To invite Diabot to your test server, create an invitation URL by replacing `<cl
 
 `https://discordapp.com/oauth2/authorize?&client_id=<client_id>&scope=bot&permissions=0`
 
+![](/docs/copy_id.png)
 
 ## Logging
 
