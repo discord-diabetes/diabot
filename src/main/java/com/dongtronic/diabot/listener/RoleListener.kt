@@ -1,5 +1,7 @@
 package com.dongtronic.diabot.listener
 
+import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.util.RoleUtils
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
 import net.dv8tion.jda.core.managers.GuildController
@@ -13,22 +15,24 @@ class RoleListener : ListenerAdapter() {
 
         val author = event.author
         val guild = event.guild
-        val mod = GuildController(event.guild)
-        val roleName = "cool role" // TODO: make configurable with a command
-        val roles = guild.getRolesByName(roleName, true)
-
-        logger.debug("{} roles found", roles.size)
-
-        if (roles.size == 0) {
-            logger.error("Couldn't find role {}", roleName)
-            return
-        }
-
         val member = guild.getMember(author)
+        val userRoles = member.roles
+        val guildManager = GuildController(event.guild)
 
-        logger.trace("member.getEffectiveName() = " + member.effectiveName)
+        val potentialRewards = RewardDAO.getInstance().getSimpleRewards(guild.id)
 
-        mod.addSingleRoleToMember(member, roles[0]).queue()
+        val rewards = RoleUtils.buildRewardsMap(potentialRewards, guild)
+
+        // Check if user applies for new rewards
+        for ((required, rewardList) in rewards) {
+            if (userRoles.contains(required)) {
+                // Give member all reward roles for given requirement
+                guildManager.addRolesToMember(member, rewardList).queue()
+
+                logger.info("Assigning reward roles $rewardList to ${author.name}")
+            }
+        }
     }
+
 
 }
