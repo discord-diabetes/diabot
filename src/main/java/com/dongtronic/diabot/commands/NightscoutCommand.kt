@@ -109,7 +109,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val mmolString: String
         val mgdlString: String
-        val trend: String
         if (dto.delta != null) {
             mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
@@ -118,7 +117,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
         }
         val TrendArrow: CharArray = charArrayOf('','↟','↑','↗','→','↘','↓','↡','↮','↺')
-        trend =  TrendArrow[dto.trend]
+        val trend =  TrendArrow[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         builder.addField("trend", trend, true)
