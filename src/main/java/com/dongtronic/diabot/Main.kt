@@ -3,6 +3,7 @@ package com.dongtronic.diabot
 import com.dongtronic.diabot.commands.*
 import com.dongtronic.diabot.listener.ConversionListener
 import com.dongtronic.diabot.listener.HelpListener
+import com.dongtronic.diabot.listener.RoleListener
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
@@ -104,6 +105,7 @@ object Main {
                 .addEventListener(waiter)
                 .addEventListener(client.build())
                 .addEventListener(ConversionListener())
+                .addEventListener(RoleListener())
 
                 // start it up!
                 .build()

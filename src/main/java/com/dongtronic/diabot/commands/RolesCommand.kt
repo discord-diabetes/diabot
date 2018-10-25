@@ -17,16 +17,13 @@ class RolesCommand(category: Command.Category) : DiabotCommand() {
     override fun execute(event: CommandEvent) {
 
         val guild = event.guild
-
         val roles = guild.roles
 
-        val returned = StringBuilder().append("```")
+        val returned = StringBuilder()
 
         for (role in roles) {
             returned.append("\n").append(role.id).append(" - ").append(role.name)
         }
-
-        returned.append("\n```")
 
         event.reply(returned.toString())
     }
