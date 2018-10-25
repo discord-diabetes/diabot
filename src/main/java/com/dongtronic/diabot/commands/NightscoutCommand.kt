@@ -135,7 +135,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
     }
 
     private fun getTrendArrow(trend: Int): String {
-        val TrendArro = charArrayOf('','↟','↑','↗','→','↘','↓','↡','↮','↺')
+        val TrendArrow = charArrayOf('','↟','↑','↗','→','↘','↓','↡','↮','↺')
         return TrendArrow[trend].toString()
     }
 
