@@ -2,6 +2,7 @@ package com.dongtronic.diabot.commands
 
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.Permission
 
 class RolesCommand(category: Command.Category) : DiabotCommand() {
@@ -17,17 +18,16 @@ class RolesCommand(category: Command.Category) : DiabotCommand() {
     override fun execute(event: CommandEvent) {
 
         val guild = event.guild
-
         val roles = guild.roles
 
-        val returned = StringBuilder().append("```")
+        val builder = EmbedBuilder()
+
+        builder.setTitle("Roles for ${event.guild.name}")
 
         for (role in roles) {
-            returned.append("\n").append(role.id).append(" - ").append(role.name)
+            builder.addField(role.name, role.id, true)
         }
 
-        returned.append("\n```")
-
-        event.reply(returned.toString())
+        event.reply(builder.build())
     }
 }
