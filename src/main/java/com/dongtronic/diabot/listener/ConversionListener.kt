@@ -64,7 +64,7 @@ class ConversionListener : ListenerAdapter() {
                             "%s mmol/L is **%s mg/dL**").joinToString(
                             "%n")
 
-                    channel.sendMessage(String.format(reply, result!!.mgdl, result.mmol, result.mmol,
+                    channel.sendMessage(String.format(reply, number, result!!.mmol, number,
                             result.mgdl)).queue()
                 }
             }

@@ -52,7 +52,7 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
                                 "%s mmol/L is **%s mg/dL**").joinToString(
                                 "%n")
 
-                        event.reply(String.format(reply, result!!.mgdl, result.mmol, result.mmol,
+                        event.reply(String.format(reply, items[0], result!!.mmol, items[0],
                                 result.mgdl))
                     }
                 }
