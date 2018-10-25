@@ -2,6 +2,7 @@ package com.dongtronic.diabot
 
 import com.dongtronic.diabot.commands.*
 import com.dongtronic.diabot.listener.ConversionListener
+import com.dongtronic.diabot.listener.FeelListener
 import com.dongtronic.diabot.listener.HelpListener
 import com.dongtronic.diabot.listener.RoleListener
 import com.jagrosh.jdautilities.command.Command.Category
@@ -106,6 +107,9 @@ object Main {
                 .addEventListener(client.build())
                 .addEventListener(ConversionListener())
                 .addEventListener(RoleListener())
+
+                // fun listeners
+                .addEventListener(FeelListener())
 
                 // start it up!
                 .build()
