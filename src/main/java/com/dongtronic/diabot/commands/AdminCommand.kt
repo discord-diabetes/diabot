@@ -5,7 +5,6 @@ import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.util.RoleUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import javafx.scene.paint.Color
 import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Role
@@ -140,19 +139,21 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
     private fun addReward(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if(args.size != 4) {
+        if (args.size != 4) {
             throw IllegalArgumentException("Required and reward role IDs are required")
         }
 
-        if(!StringUtils.isNumeric(args[2]) || !StringUtils.isNumeric(args[3])) {
+        if (!StringUtils.isNumeric(args[2]) || !StringUtils.isNumeric(args[3])) {
             throw IllegalArgumentException("Role IDs must be numeric")
         }
 
         val requiredId = args[2]
         val rewardId = args[3]
 
-        val requiredRole = event.jda.getRoleById(requiredId) ?: throw IllegalArgumentException("Role $requiredId does not exist")
-        val rewardRole = event.jda.getRoleById(rewardId) ?: throw IllegalArgumentException("Role $rewardId does not exist")
+        val requiredRole = event.jda.getRoleById(requiredId)
+                ?: throw IllegalArgumentException("Role $requiredId does not exist")
+        val rewardRole = event.jda.getRoleById(rewardId)
+                ?: throw IllegalArgumentException("Role $rewardId does not exist")
 
         RewardDAO.getInstance().addSimpleReward(event.guild.id, requiredId, rewardId)
 
@@ -162,19 +163,21 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
     private fun deleteReward(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if(args.size != 4) {
+        if (args.size != 4) {
             throw IllegalArgumentException("Required and reward role IDs are required")
         }
 
-        if(!StringUtils.isNumeric(args[2]) || !StringUtils.isNumeric(args[3])) {
+        if (!StringUtils.isNumeric(args[2]) || !StringUtils.isNumeric(args[3])) {
             throw IllegalArgumentException("Role IDs must be numeric")
         }
 
         val requiredId = args[2]
         val rewardId = args[3]
 
-        val requiredRole = event.jda.getRoleById(requiredId) ?: throw IllegalArgumentException("Role $requiredId does not exist")
-        val rewardRole = event.jda.getRoleById(rewardId) ?: throw IllegalArgumentException("Role $rewardId does not exist")
+        val requiredRole = event.jda.getRoleById(requiredId)
+                ?: throw IllegalArgumentException("Role $requiredId does not exist")
+        val rewardRole = event.jda.getRoleById(rewardId)
+                ?: throw IllegalArgumentException("Role $rewardId does not exist")
 
         RewardDAO.getInstance().removeSimpleReward(event.guild.id, requiredId, rewardId)
 
@@ -185,9 +188,9 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
         builder.setTitle("${rewards.size} Rewards for ${event.guild.name}")
         builder.setColor(java.awt.Color.ORANGE)
 
-        for((required, rewardList) in rewards) {
+        for ((required, rewardList) in rewards) {
             val rewardString = StringBuilder()
-            for(reward in rewardList) {
+            for (reward in rewardList) {
                 rewardString.append(reward.name)
                 rewardString.append(", ")
             }

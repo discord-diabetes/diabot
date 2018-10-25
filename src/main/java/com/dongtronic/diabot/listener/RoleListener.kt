@@ -26,10 +26,12 @@ class RoleListener : ListenerAdapter() {
         // Check if user applies for new rewards
         for ((required, rewardList) in rewards) {
             if (userRoles.contains(required)) {
-                // Give member all reward roles for given requirement
-                guildManager.addRolesToMember(member, rewardList).queue()
-
-                logger.info("Assigning reward roles $rewardList to ${author.name}")
+                for(reward in rewardList) {
+                    if(!userRoles.contains(reward)) {
+                        guildManager.addSingleRoleToMember(member, reward).queue()
+                        logger.info("Assigning reward roles ${reward.name} (${reward.id}) to ${author.name}")
+                    }
+                }
             }
         }
     }
