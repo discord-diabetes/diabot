@@ -109,6 +109,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val mmolString: String
         val mgdlString: String
+        val trend: String
         if (dto.delta != null) {
             mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
@@ -116,9 +117,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
         }
-
+        trend = getTrendArrow(dto.trend)
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
+        builder.addField("trend", trend, true)
 
         setResponseColor(dto, builder)
 
@@ -130,6 +132,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         }
 
 
+    }
+
+    private fun getTrendArrow(trend: Int): String {
+        val TrendArro = charArrayOf('','↟','↑','↗','→','↘','↓','↡','↮','↺')
+        return TrendArrow[trend].toString()
     }
 
     private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
@@ -225,6 +232,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         dto.high = high
     }
 
+
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getData(url: String, dto: NightscoutDTO, event: CommandEvent) {
         val client = HttpClient()
@@ -243,6 +251,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val jsonObject = JsonParser().parse(json).asJsonArray.get(0).asJsonObject
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
+        val trend = jsonObject.get("trend").asInt
 
         var delta = ""
         if (jsonObject.has("delta")) {
@@ -260,6 +269,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         dto.glucose = convertedBg
         dto.deltaIsNegative = delta.contains("-")
         dto.dateTime = dateTime
+        dto.trend = trend
     }
 
     private fun getTimestamp(epoch: Long?): ZonedDateTime {

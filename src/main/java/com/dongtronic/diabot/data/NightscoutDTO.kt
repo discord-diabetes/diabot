@@ -11,4 +11,5 @@ class NightscoutDTO {
     var bottom: Int = 0
     var top: Int = 0
     var high: Int = 0
+    var trend: Int = 0
 }
