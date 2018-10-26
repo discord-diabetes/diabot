@@ -65,7 +65,7 @@ class ConversionListener : ListenerAdapter() {
             }
 
             // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if(numberString == "6.9" || numberString == "69") {
+            if (numberString == "6.9" || numberString == "69") {
                 event.message.addReaction("\uD83D\uDE0F").queue()
             }
 

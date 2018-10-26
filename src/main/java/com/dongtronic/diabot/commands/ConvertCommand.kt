@@ -22,7 +22,7 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
     }
 
     override fun execute(event: CommandEvent) {
-        if(event.author.isBot) {
+        if (event.author.isBot) {
             return
         }
 
@@ -56,7 +56,7 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
                 }
 
                 // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-                if(args[0] == "6.9" || args[0] == "69") {
+                if (args[0] == "6.9" || args[0] == "69") {
                     event.message.addReaction("\uD83D\uDE0F").queue()
                 }
 
