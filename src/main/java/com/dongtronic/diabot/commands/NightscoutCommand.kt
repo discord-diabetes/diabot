@@ -117,10 +117,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
         }
         val trendArrows: Array<String> = arrayOf("","↟","↑","↗","→","↘","↓","↡","↮","↺")
-        val trend =  trendArrows[dto.trend]
+        val trendString =  trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        builder.addField("trend", trend, true)
+        builder.addField("trend", trendString, true)
 
         setResponseColor(dto, builder)
 
