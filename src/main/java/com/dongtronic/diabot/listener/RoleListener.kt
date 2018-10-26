@@ -19,6 +19,11 @@ class RoleListener : ListenerAdapter() {
         val userRoles = member.roles
         val guildManager = GuildController(event.guild)
 
+        if(RewardDAO.getInstance().getOptOut(guild.id, author.id)) {
+            // Skip users that have opted out
+            return
+        }
+
         val potentialRewards = RewardDAO.getInstance().getSimpleRewards(guild.id)
 
         val rewards = RoleUtils.buildRewardsMap(potentialRewards, guild)

@@ -1,7 +1,9 @@
 package com.dongtronic.diabot.commands
 
 import com.dongtronic.diabot.data.AdminDAO
+import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.util.CommandUtils
 import com.dongtronic.diabot.util.RoleUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -50,12 +52,15 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
                     "LIST", "L" -> listRewards(event)
                     "ADD", "A" -> addReward(event)
                     "DELETE", "REMOVE", "D", "R" -> deleteReward(event)
+                    "OPTIN", "OI", "I" -> optIn(event)
+                    "OPTOUT", "OO", "O" -> optOut(event)
+                    "LISTOPTOUT", "LO" -> listOptOuts(event)
                     else -> {
                         throw IllegalArgumentException("unknown command $category $command")
                     }
                 }
                 else -> {
-                    throw java.lang.IllegalArgumentException("unknown command $category $command")
+                    throw IllegalArgumentException("unknown command $category $command")
                 }
             }
 
@@ -182,6 +187,69 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
         RewardDAO.getInstance().removeSimpleReward(event.guild.id, requiredId, rewardId)
 
         event.reply("Removed reward **${rewardRole.name}** for **${requiredRole.name}**")
+    }
+
+    private fun optIn(event: CommandEvent) {
+        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        if (args.size != 3) {
+            throw IllegalArgumentException("UserID is required")
+        }
+
+        if (!StringUtils.isNumeric(args[2])) {
+            throw IllegalArgumentException("UserID must be numeric")
+        }
+
+        val userId = args[2]
+        val guildId = event.guild.id
+
+        val user = event.guild.getMemberById(userId) ?: throw IllegalArgumentException("User `$userId` does not exist")
+
+        RewardDAO.getInstance().optIn(guildId, userId)
+
+        event.reply("User ${user.effectiveName} (`$userId`) opted in for rewards")
+    }
+
+    private fun optOut(event: CommandEvent) {
+        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        if (args.size != 3) {
+            throw IllegalArgumentException("UserID is required")
+        }
+
+        if (!StringUtils.isNumeric(args[2])) {
+            throw IllegalArgumentException("UserID must be numeric")
+        }
+
+        val userId = args[2]
+        val guildId = event.guild.id
+
+        val user = event.guild.getMemberById(userId) ?: throw IllegalArgumentException("User `$userId` does not exist")
+
+        RewardDAO.getInstance().optOut(guildId, userId)
+
+        event.reply("User ${user.effectiveName} (`$userId`) opted out of rewards")
+    }
+
+    private fun listOptOuts(event: CommandEvent) {
+        if(!CommandUtils.requireAdminChannel(event)) {
+            return
+        }
+
+        logger.info("Listing all reward opt-outs for ${event.author.name}")
+        val optouts = RewardDAO.getInstance().getOptOuts(event.guild.id)
+
+        val builder = EmbedBuilder()
+
+        builder.setTitle("Reward opt-outs")
+
+        optouts?.forEach { optout ->
+            val user = event.guild.getMemberById(optout)
+
+            builder.appendDescription("**${user.effectiveName}** (`${user.user.id}`)")
+        }
+
+        event.reply(builder.build())
     }
 
     private fun buildRewardResponse(builder: EmbedBuilder, rewards: TreeMap<Role, MutableList<Role>>, event: CommandEvent) {

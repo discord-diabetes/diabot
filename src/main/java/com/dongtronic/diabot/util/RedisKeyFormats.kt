@@ -5,4 +5,5 @@ object RedisKeyFormats {
     const val allNightscoutUrlsFormat = "*:nightscouturl"
     const val adminChannelIds = "{{guildid}}:adminchannels"
     const val simpleRewards = "{{guildid}}:simplerewards"
+    const val rewardOptout = "{{guildid}}:rewardoptouts"
 }

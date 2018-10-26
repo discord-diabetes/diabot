@@ -75,6 +75,7 @@ object Main {
 
                 // Utility
                 PingCommand(utilitiesCategory),
+                RewardsCommand(utilitiesCategory),
 
                 // Fun
                 ExcuseCommand(funCategory),

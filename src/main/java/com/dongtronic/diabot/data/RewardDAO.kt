@@ -44,6 +44,39 @@ class RewardDAO private constructor() {
         jedis!!.lrem(key, 0, rewardString)
     }
 
+    fun optOut(guildId: String, userId: String) {
+        val key = RedisKeyFormats.rewardOptout.replace("{{guildid}}", guildId)
+
+        val rewards = getSimpleRewards(guildId)
+
+        if (rewards == null || !getOptOut(guildId, userId)) {
+            jedis!!.lpush(key, userId)
+        }
+    }
+
+    fun optIn(guildId: String, userId: String) {
+        val key = RedisKeyFormats.rewardOptout.replace("{{guildid}}", guildId)
+
+        jedis!!.lrem(key, 0, userId)
+    }
+
+    fun getOptOut(guildId: String, userId: String): Boolean {
+        val key = RedisKeyFormats.rewardOptout.replace("{{guildid}}", guildId)
+
+        val optOutListLength = jedis!!.llen(key)
+
+        val optOutList = jedis!!.lrange(key, 0, optOutListLength - 1)
+
+        return optOutList.contains(userId)
+    }
+
+    fun getOptOuts(guildId: String): MutableList<String>? {
+        val key = RedisKeyFormats.rewardOptout.replace("{{guildid}}", guildId)
+
+        val optOutListLength = jedis!!.llen(key)
+
+        return jedis!!.lrange(key, 0, optOutListLength - 1)
+    }
 
     companion object {
         private var instance: RewardDAO? = null
