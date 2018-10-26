@@ -246,30 +246,26 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val jsonObject = JsonParser().parse(json).asJsonArray.get(0).asJsonObject
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
-        val trend: String = ""
-        val driection: String = ""
+        val trend = 0
+        val driection = ""
         if (jsonObject.has("trend")) {
             val trend = jsonObject.get("trend").asInt
         }
-        else {
-            if (jsonObject.has("direction")) {
-                val direction = jsonObject.get("direction").asString
-                val trend = when (direction) {
-                    "NONE" -> 0
-                    "DoubleUp" -> 1
-                    "SingleUp" -> 2
-                    "FortyFiveUp" -> 3
-                    "Flat" -> 4
-                    "FortyFiveDown" -> 5
-                    "SingleDown" -> 6
-                    "Double Down" -> 7
-                    "NOT COMPUTABLE" -> 8
-                    "RATE OUT OF RANGE" -> 9
+        else if (jsonObject.has("direction")) {
+            direction = jsonObject.get("direction").asString
+            trend = when (direction) {
+                "NONE" -> 0
+                "DoubleUp" -> 1
+                "SingleUp" -> 2
+                "FortyFiveUp" -> 3
+                "Flat" -> 4
+                "FortyFiveDown" -> 5
+                "SingleDown" -> 6
+                "Double Down" -> 7
+                "NOT COMPUTABLE" -> 8
+                "RATE OUT OF RANGE" -> 9
                 }
             }
-        }
-
-
 
         var delta = ""
         if (jsonObject.has("delta")) {
