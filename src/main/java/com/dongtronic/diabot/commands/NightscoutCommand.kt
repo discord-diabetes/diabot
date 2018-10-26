@@ -72,7 +72,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val embed = builder.build()
 
-        event.reply(embed)
+        event.reply(embed) {
+            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+            if (dto.glucose!!.original == 69.0 || dto.glucose!!.original == 6.9) {
+                it.addReaction("\uD83D\uDE0F").queue()
+            }
+        }
     }
 
     private fun getStoredData(event: CommandEvent) {
