@@ -6,8 +6,6 @@ import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.doc.standard.CommandInfo
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class ConvertCommand(category: Command.Category) : DiabotCommand() {
@@ -32,15 +30,15 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
             event.replyWarning("You didn't give me a value!")
         } else {
             // split the arguments on all whitespaces
-            val items = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
             val result: ConversionDTO?
 
             try {
 
-                logger.info("converting BG value " + items[0])
+                logger.info("converting BG value " + args[0])
 
-                result = BloodGlucoseConverter.convert(items[0], if (items.size == 2) items[1] else null)
+                result = BloodGlucoseConverter.convert(args[0], if (args.size == 2) args[1] else null)
 
                 when {
                     result!!.inputUnit === GlucoseUnit.MMOL -> event.reply(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl))
@@ -52,16 +50,22 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
                                 "%s mmol/L is **%s mg/dL**").joinToString(
                                 "%n")
 
-                        event.reply(String.format(reply, items[0], result!!.mmol, items[0],
+                        event.reply(String.format(reply, args[0], result!!.mmol, args[0],
                                 result.mgdl))
                     }
                 }
+
+                // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+                if(args[0] == "6.9" || args[0] == "69") {
+                    event.message.addReaction("\uD83D\uDE0F").queue()
+                }
+
             } catch (ex: IllegalArgumentException) {
                 // Ignored on purpose
                 logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
             } catch (ex: UnknownUnitException) {
-                event.replyError("I don't know how to convert from " + items[1])
-                logger.warn("Unknown BG unit " + items[1])
+                event.replyError("I don't know how to convert from " + args[1])
+                logger.warn("Unknown BG unit " + args[1])
             }
 
         }

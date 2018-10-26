@@ -5,14 +5,9 @@ import com.dongtronic.diabot.converters.GlucoseUnit
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.util.Patterns
-import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.core.hooks.ListenerAdapter
-import net.dv8tion.jda.core.managers.GuildController
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 class ConversionListener : ListenerAdapter() {
     private val logger = LoggerFactory.getLogger(ConversionListener::class.java)
@@ -29,29 +24,29 @@ class ConversionListener : ListenerAdapter() {
         val separateMatcher = Patterns.separateBgPattern.matcher(messageText)
         val unitMatcher = Patterns.unitBgPattern.matcher(messageText)
 
-        var number = ""
-        var unit = ""
+        var numberString = ""
+        var unitString = ""
 
         if (unitMatcher.matches()) {
-            number = unitMatcher.group(4)
-            unit = unitMatcher.group(5)
+            numberString = unitMatcher.group(4)
+            unitString = unitMatcher.group(5)
         }
 
         if (inlineMatcher.matches()) {
-            number = inlineMatcher.group(1)
+            numberString = inlineMatcher.group(1)
         } else if (separateMatcher.matches()) {
-            number = separateMatcher.group(1)
+            numberString = separateMatcher.group(1)
         }
 
-        if (number.isEmpty()) {
+        if (numberString.isEmpty()) {
             return
         }
 
         try {
-            val result: ConversionDTO? = if (unit.length > 1) {
-                BloodGlucoseConverter.convert(number, unit)
+            val result: ConversionDTO? = if (unitString.length > 1) {
+                BloodGlucoseConverter.convert(numberString, unitString)
             } else {
-                BloodGlucoseConverter.convert(number, null)
+                BloodGlucoseConverter.convert(numberString, null)
             }
 
             when {
@@ -64,9 +59,14 @@ class ConversionListener : ListenerAdapter() {
                             "%s mmol/L is **%s mg/dL**").joinToString(
                             "%n")
 
-                    channel.sendMessage(String.format(reply, number, result!!.mmol, number,
+                    channel.sendMessage(String.format(reply, numberString, result!!.mmol, numberString,
                             result.mgdl)).queue()
                 }
+            }
+
+            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+            if(numberString == "6.9" || numberString == "69") {
+                event.message.addReaction("\uD83D\uDE0F").queue()
             }
 
         } catch (ex: IllegalArgumentException) {
