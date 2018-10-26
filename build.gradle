@@ -62,6 +62,7 @@ task fatJar(type: Jar) {
     }
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude('logback-test.xml')
     with jar
 }
 
