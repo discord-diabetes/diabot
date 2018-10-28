@@ -72,7 +72,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         val embed = builder.build()
 
-        event.reply(embed)
+        event.reply(embed) {
+            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+            if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
+                it.addReaction("\uD83D\uDE0F").queue()
+            }
+        }
     }
 
     private fun getStoredData(event: CommandEvent) {
@@ -116,8 +121,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
             mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
         }
-        val trendArrows: Array<String> = arrayOf("","↟","↑","↗","→","↘","↓","↡","↮","↺")
-        val trendString =  trendArrows[dto.trend]
+        val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
+        val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         builder.addField("trend", trendString, true)
@@ -246,12 +251,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val jsonObject = JsonParser().parse(json).asJsonArray.get(0).asJsonObject
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
-        val trend = 0
-        val driection = ""
+        var trend = 0
+        var direction: String
         if (jsonObject.has("trend")) {
-            val trend = jsonObject.get("trend").asInt
-        }
-        else if (jsonObject.has("direction")) {
+            trend = jsonObject.get("trend").asInt
+        } else if (jsonObject.has("direction")) {
             direction = jsonObject.get("direction").asString
             trend = when (direction) {
                 "NONE" -> 0
@@ -264,8 +268,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
                 "Double Down" -> 7
                 "NOT COMPUTABLE" -> 8
                 "RATE OUT OF RANGE" -> 9
+                else -> {
+                    throw IllegalArgumentException("Unknown direction $direction")
                 }
             }
+        }
 
         var delta = ""
         if (jsonObject.has("delta")) {
