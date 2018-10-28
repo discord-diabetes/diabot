@@ -252,7 +252,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
         var trend = 0
-        var direction: String
+        val direction: String
         if (jsonObject.has("trend")) {
             trend = jsonObject.get("trend").asInt
         } else if (jsonObject.has("direction")) {
