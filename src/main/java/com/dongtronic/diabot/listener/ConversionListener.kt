@@ -69,6 +69,11 @@ class ConversionListener : ListenerAdapter() {
                 event.message.addReaction("\uD83D\uDE0F").queue()
             }
 
+            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
+            if (numberString == "5.5" || numberString == "100") {
+                event.message.addReaction("\u1F4AF").queue()
+            }
+
         } catch (ex: IllegalArgumentException) {
             // Ignored on purpose
             logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
