@@ -269,7 +269,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
                 "Flat" -> 4
                 "FortyFiveDown" -> 5
                 "SingleDown" -> 6
-                "Double Down" -> 7
+                "DoubleDown" -> 7
                 "NOT COMPUTABLE" -> 8
                 "RATE OUT OF RANGE" -> 9
                 else -> {
