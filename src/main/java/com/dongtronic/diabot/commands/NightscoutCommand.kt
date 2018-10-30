@@ -261,15 +261,15 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             trend = jsonObject.get("trend").asInt
         } else if (jsonObject.has("direction")) {
             direction = jsonObject.get("direction").asString
-            trend = when (direction) {
+            trend = when (direction.toUpperCase()) {
                 "NONE" -> 0
-                "DoubleUp" -> 1
-                "SingleUp" -> 2
-                "FortyFiveUp" -> 3
-                "Flat" -> 4
-                "FortyFiveDown" -> 5
-                "SingleDown" -> 6
-                "Double Down" -> 7
+                "DOUBLEUP" -> 1
+                "SINGLEUP" -> 2
+                "FORTYFIVEUP" -> 3
+                "FLAT" -> 4
+                "FORTYFIVEDOWN" -> 5
+                "SINGLEDOWN" -> 6
+                "DOUBLEDOWN" -> 7
                 "NOT COMPUTABLE" -> 8
                 "RATE OUT OF RANGE" -> 9
                 else -> {
