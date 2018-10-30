@@ -71,7 +71,7 @@ class ConversionListener : ListenerAdapter() {
 
             // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
             if (numberString == "5.5" || numberString == "100") {
-                event.message.addReaction("\u1F4AF").queue()
+                event.message.addReaction("\uD83D\uDCAF").queue()
             }
 
         } catch (ex: IllegalArgumentException) {
