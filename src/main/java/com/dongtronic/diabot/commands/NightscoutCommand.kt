@@ -165,6 +165,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         builder.addField("trend", trendString, true)
         if (dto.iob > 0) {
             builder.addField("iob", dto.iob.toString(), true)
+        } else if (dto.iob < 0) {
+            builder.addField("iob", dto.iob.toString(), true)
         }
 
         setResponseColor(dto, builder)
