@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -65,7 +66,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         getData(endpoint, dto, event)
         getRanges(endpoint, dto, event)
-
+        processPebble(endpoint, dto, event)
         val builder = EmbedBuilder()
 
         buildResponse(dto, builder)
@@ -113,6 +114,38 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         buildNightscoutResponse(endpoint, event)
     }
 
+    private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
+        val client = HttpClient()
+        val url_base = url.replace("/api/v1/", "/pebble")
+        val method = GetMethod(url_base)
+        val statusCode = client.executeMethod(method)
+
+        if (statusCode == -1) {
+            event.reactError()
+        }
+
+        val json = method.getResponseBodyAsString()
+
+        val jsonObject = JsonParser().parse(json).asJsonObject
+        val json2 = jsonObject.get("bgs").asJsonArray.get(0).asJsonObject
+
+
+        val iob = json2.get("iob").asFloat
+        val bgDelta = json2.get("bgdelta").asString
+        dto.iob = iob
+        if (dto.delta == null) {
+            dto.deltaIsNegative = bgDelta.contains("-")
+            if (dto.units == "mmol") {
+                val convertedDelta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), "mmol")
+                dto.delta = convertedDelta
+            }
+            else if (dto.units == "mg/dl") {
+                val convertedDelta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), "mg")
+                dto.delta = convertedDelta
+            }
+        }
+    }
+
     private fun buildResponse(dto: NightscoutDTO, builder: EmbedBuilder) {
         builder.setTitle("Nightscout")
 
@@ -130,6 +163,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         builder.addField("trend", trendString, true)
+        if (dto.iob > 0) {
+            builder.addField("iob", dto.iob.toString(), true)
+        }
 
         setResponseColor(dto, builder)
 
@@ -223,8 +259,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val json = method.responseBodyAsString
 
         val jsonObject = JsonParser().parse(json).asJsonObject
+        val units = jsonObject.get("settings").asJsonObject.get("units").asString
         val ranges = jsonObject.get("settings").asJsonObject.get("thresholds").asJsonObject
-
         val low = ranges.get("bgLow").asInt
         val bottom = ranges.get("bgTargetBottom").asInt
         val top = ranges.get("bgTargetTop").asInt
@@ -234,6 +270,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         dto.bottom = bottom
         dto.top = top
         dto.high = high
+        dto.units = units
     }
 
 
