@@ -124,7 +124,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             event.reactError()
         }
 
-        val json = method.getResponseBodyAsString()
+        val stream = method.responseBodyAsStream
+        val json = stream.bufferedReader().use { it.readText() }
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val json2 = jsonObject.get("bgs").asJsonArray.get(0).asJsonObject
