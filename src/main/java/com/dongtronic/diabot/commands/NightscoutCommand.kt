@@ -123,28 +123,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         if (statusCode == -1) {
             event.reactError()
+            logger.error("Got -1 Status code attempting to get $url_base")
         }
 
         val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
 
-        val jsonObject = JsonParser().parse(json).asJsonObject
-        val json2 = jsonObject.get("bgs").asJsonArray.get(0).asJsonObject
+        val bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
 
-        val cob = json2.get("cob").asInt
-        val iob = json2.get("iob").asFloat
-        val bgDelta = json2.get("bgdelta").asString
-        dto.iob = iob
-        dto.cob = cob
+        dto.cob = bgsJson.get("cob").asInt
+        dto.iob = bgsJson.get("iob").asFloat
+        val bgDelta = bgsJson.get("bgdelta").asString
         if (dto.delta == null) {
             dto.deltaIsNegative = bgDelta.contains("-")
-            if (dto.units == "mmol") {
-                val convertedDelta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), "mmol")
-                dto.delta = convertedDelta
-            }
-            else if (dto.units == "mg/dl") {
-                val convertedDelta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), "mg")
-                dto.delta = convertedDelta
-            }
+            dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
         }
     }
 
@@ -165,9 +156,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         builder.addField("trend", trendString, true)
-        if (dto.iob > 0) {
-            builder.addField("iob", dto.iob.toString(), true)
-        } else if (dto.iob < 0) {
+        if (dto.iob != 0.0F) {
             builder.addField("iob", dto.iob.toString(), true)
         }
         if (dto.cob != 0) {
