@@ -67,6 +67,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         getData(endpoint, dto, event)
         getRanges(endpoint, dto, event)
         processPebble(endpoint, dto, event)
+
         val builder = EmbedBuilder()
 
         buildResponse(dto, builder)
@@ -124,7 +125,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             event.reactError()
         }
 
-        val json = method.getResponseBodyAsString()
+        val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val json2 = jsonObject.get("bgs").asJsonArray.get(0).asJsonObject
