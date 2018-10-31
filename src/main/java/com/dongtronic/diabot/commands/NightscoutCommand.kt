@@ -124,16 +124,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             event.reactError()
         }
 
-        val stream = method.responseBodyAsStream
-        val json = stream.bufferedReader().use { it.readText() }
+        val json = method.getResponseBodyAsString()
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val json2 = jsonObject.get("bgs").asJsonArray.get(0).asJsonObject
 
-
+        val cob = json2.get("cob").asInt
         val iob = json2.get("iob").asFloat
         val bgDelta = json2.get("bgdelta").asString
         dto.iob = iob
+        dto.cob = cob
         if (dto.delta == null) {
             dto.deltaIsNegative = bgDelta.contains("-")
             if (dto.units == "mmol") {
@@ -168,6 +168,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             builder.addField("iob", dto.iob.toString(), true)
         } else if (dto.iob < 0) {
             builder.addField("iob", dto.iob.toString(), true)
+        }
+        if (dto.cob != 0) {
+            builder.addField("cob", dto.cob.toString(), true)
         }
 
         setResponseColor(dto, builder)
