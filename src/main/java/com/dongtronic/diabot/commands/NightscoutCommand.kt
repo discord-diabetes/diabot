@@ -136,12 +136,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             logger.error("Got -1 Status code attempting to get $urlBase")
         }
 
+        var bgsJson :JsonObject
         val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
+        if (JsonParser().parse(json).asJsonObject.has("bgs"))
+             bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
+        else {
+            logger.warn("Failed to get bgs Object from pebbleEndpoint Json")
+            logger.warn("Raw Json:" +json)
+            return
+        }
 
-        val bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
-
-        dto.cob = bgsJson.get("cob").asInt
-        dto.iob = bgsJson.get("iob").asFloat
+        if (bgsJson.has("cob"))
+            dto.cob = bgsJson.get("cob").asInt
+        if (bgsJson.has("iob"))
+            dto.iob = bgsJson.get("iob").asFloat
         val bgDelta = bgsJson.get("bgdelta").asString
         if (dto.delta == null) {
             dto.deltaIsNegative = bgDelta.contains("-")
