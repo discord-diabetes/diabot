@@ -106,20 +106,24 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
     }
 
     private fun getUnstoredData(event: CommandEvent) {
+        var endpoint :String
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         if (event.event.message.mentionedUsers.size == 1) {
             val user = event.event.message.mentionedMembers.get(0).user
-            val endpoint = getNightscoutHost(user) + "/api/v1/"
-            buildNightscoutResponse(endpoint, event)
+            try {
+                endpoint = getNightscoutHost(user) + "/api/v1/"
+            } catch (ex: UnconfiguredNightscoutException) {
+                throw IllegalArgumentException("User does not have a configured Nightscout URL.")
+            }
         } else if (event.event.message.mentionedUsers.size > 1) {
             throw IllegalArgumentException("Too many mentioned users.")
         } else if (event.event.message.mentionsEveryone()) {
             throw IllegalArgumentException("Cannot handle mentioning everyone.")
         } else {
             val hostname = args[0]
-            val endpoint = "https://$hostname.herokuapp.com/api/v1/"
-            buildNightscoutResponse(endpoint, event)
+            endpoint = "https://$hostname.herokuapp.com/api/v1/"
         }
+        buildNightscoutResponse(endpoint, event)
     }
 
     private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
