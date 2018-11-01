@@ -37,7 +37,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
     override fun execute(event: CommandEvent) {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
         try {
             if (args.isEmpty()) {
                 getStoredData(event)
@@ -108,11 +107,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        val hostname = args[0]
-        val endpoint = "https://$hostname.herokuapp.com/api/v1/"
-
-        buildNightscoutResponse(endpoint, event)
+        if (event.event.message.mentionedUsers.size == 1) {
+            val user = event.event.message.mentionedMembers.get(0).user
+            val endpoint = getNightscoutHost(user) + "/api/v1/"
+            buildNightscoutResponse(endpoint, event)
+        } else if (event.event.message.mentionedUsers.size > 1) {
+            throw IllegalArgumentException("Too many mentioned users.")
+        } else if (event.event.message.mentionsEveryone()) {
+            throw IllegalArgumentException("Cannot handle mentioning everyone.")
+        } else {
+            val hostname = args[0]
+            val endpoint = "https://$hostname.herokuapp.com/api/v1/"
+            buildNightscoutResponse(endpoint, event)
+        }
     }
 
     private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
