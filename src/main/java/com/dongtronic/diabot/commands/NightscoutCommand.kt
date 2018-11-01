@@ -5,7 +5,6 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -106,35 +105,35 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
     }
 
     private fun getUnstoredData(event: CommandEvent) {
-        var endpoint :String
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        if (event.event.message.mentionedUsers.size == 1) {
-            val user = event.event.message.mentionedMembers.get(0).user
-            try {
-                endpoint = getNightscoutHost(user) + "/api/v1/"
-            } catch (ex: UnconfiguredNightscoutException) {
-                throw IllegalArgumentException("User does not have a configured Nightscout URL.")
+        val endpoint = when {
+            event.event.message.mentionedUsers.size == 1 -> {
+                val user = event.event.message.mentionedMembers[0].user
+                try {
+                    getNightscoutHost(user) + "/api/v1/"
+                } catch (ex: UnconfiguredNightscoutException) {
+                    throw IllegalArgumentException("User does not have a configured Nightscout URL.")
+                }
             }
-        } else if (event.event.message.mentionedUsers.size > 1) {
-            throw IllegalArgumentException("Too many mentioned users.")
-        } else if (event.event.message.mentionsEveryone()) {
-            throw IllegalArgumentException("Cannot handle mentioning everyone.")
-        } else {
-            val hostname = args[0]
-            endpoint = "https://$hostname.herokuapp.com/api/v1/"
+            event.event.message.mentionedUsers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
+            event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
+            else -> {
+                val hostname = args[0]
+                "https://$hostname.herokuapp.com/api/v1/"
+            }
         }
         buildNightscoutResponse(endpoint, event)
     }
 
     private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
         val client = HttpClient()
-        val url_base = url.replace("/api/v1/", "/pebble")
-        val method = GetMethod(url_base)
+        val urlBase = url.replace("/api/v1/", "/pebble")
+        val method = GetMethod(urlBase)
         val statusCode = client.executeMethod(method)
 
         if (statusCode == -1) {
             event.reactError()
-            logger.error("Got -1 Status code attempting to get $url_base")
+            logger.error("Got -1 Status code attempting to get $urlBase")
         }
 
         val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
