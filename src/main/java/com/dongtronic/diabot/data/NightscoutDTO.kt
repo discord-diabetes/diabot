@@ -12,4 +12,7 @@ class NightscoutDTO {
     var top: Int = 0
     var high: Int = 0
     var trend: Int = 0
+    var iob: Float = 0.0F
+    var cob: Int = 0
+    var units: String = ""
 }

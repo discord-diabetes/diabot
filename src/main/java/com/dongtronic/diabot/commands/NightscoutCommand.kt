@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -65,6 +66,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         getData(endpoint, dto, event)
         getRanges(endpoint, dto, event)
+        processPebble(endpoint, dto, event)
 
         val builder = EmbedBuilder()
 
@@ -113,6 +115,30 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         buildNightscoutResponse(endpoint, event)
     }
 
+    private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
+        val client = HttpClient()
+        val url_base = url.replace("/api/v1/", "/pebble")
+        val method = GetMethod(url_base)
+        val statusCode = client.executeMethod(method)
+
+        if (statusCode == -1) {
+            event.reactError()
+            logger.error("Got -1 Status code attempting to get $url_base")
+        }
+
+        val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
+
+        val bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
+
+        dto.cob = bgsJson.get("cob").asInt
+        dto.iob = bgsJson.get("iob").asFloat
+        val bgDelta = bgsJson.get("bgdelta").asString
+        if (dto.delta == null) {
+            dto.deltaIsNegative = bgDelta.contains("-")
+            dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
+        }
+    }
+
     private fun buildResponse(dto: NightscoutDTO, builder: EmbedBuilder) {
         builder.setTitle("Nightscout")
 
@@ -130,6 +156,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         builder.addField("trend", trendString, true)
+        if (dto.iob != 0.0F) {
+            builder.addField("iob", dto.iob.toString(), true)
+        }
+        if (dto.cob != 0) {
+            builder.addField("cob", dto.cob.toString(), true)
+        }
 
         setResponseColor(dto, builder)
 
@@ -223,8 +255,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         val json = method.responseBodyAsString
 
         val jsonObject = JsonParser().parse(json).asJsonObject
+        val units = jsonObject.get("settings").asJsonObject.get("units").asString
         val ranges = jsonObject.get("settings").asJsonObject.get("thresholds").asJsonObject
-
         val low = ranges.get("bgLow").asInt
         val bottom = ranges.get("bgTargetBottom").asInt
         val top = ranges.get("bgTargetTop").asInt
@@ -234,6 +266,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         dto.bottom = bottom
         dto.top = top
         dto.high = high
+        dto.units = units
     }
 
 
