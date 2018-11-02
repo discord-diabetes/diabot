@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.Permission
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
+class NightscoutAdminCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutAdminCommand::class.java)
 
@@ -19,7 +19,6 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand() {
         this.help = "Administrator commands for Nightscout"
         this.guildOnly = true
         this.aliases = arrayOf("nsadmin", "na")
-        this.category = category
         this.examples = arrayOf("diabot nsadmin list", "diabot nsadmin set <userId> <url>", "diabot nsadmin delete <userId>")
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
     }

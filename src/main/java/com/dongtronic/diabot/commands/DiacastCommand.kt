@@ -18,7 +18,7 @@ import org.jdom2.Element
 import java.io.IOException
 import java.net.URL
 
-class DiacastCommand(category: Command.Category) : DiabotCommand() {
+class DiacastCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val episodes: List<SyndEntry>
         @Throws(FeedException::class, IOException::class)
@@ -33,7 +33,6 @@ class DiacastCommand(category: Command.Category) : DiabotCommand() {
         this.name = "diacast"
         this.help = "Get information about a diacast episode"
         this.guildOnly = true
-        this.category = category
         this.examples = arrayOf("diabot diacast", "diabot diacast 6")
     }
 

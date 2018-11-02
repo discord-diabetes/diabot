@@ -9,7 +9,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class ConvertCommand(category: Command.Category) : DiabotCommand() {
+class ConvertCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(ConvertCommand::class.java)
 
@@ -18,7 +18,6 @@ class ConvertCommand(category: Command.Category) : DiabotCommand() {
         this.help = "convert blood glucose between mmol/L and mg/dL"
         this.guildOnly = false
         this.arguments = "<value> <unit>"
-        this.category = category
         this.examples = arrayOf("diabot convert 5", "My BG this morning was _127_", "How much is 7 mmol?")
     }
 

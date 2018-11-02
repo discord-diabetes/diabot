@@ -4,14 +4,13 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import java.time.temporal.ChronoUnit
 
-class PingCommand(category: Command.Category) : DiabotCommand() {
+class PingCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "ping"
         this.help = "checks the bot's latency"
         this.guildOnly = true
         this.aliases = arrayOf("pong")
-        this.category = category
         this.hidden = true
     }
 

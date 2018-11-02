@@ -46,30 +46,44 @@ class HelpListener : Consumer<CommandEvent> {
     private fun buildSpecificHelp(builder: EmbedBuilder, allCommands: List<Command>, event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val commandName = args[0]
+        val subcommandName = when (args.size) {
+            2 -> args[1]
+            else -> ""
+        }
+
         var found = false
 
         for (command in allCommands) {
-            if (command.name.toUpperCase() == commandName.toUpperCase()) {
-                buildExtendedCommandHelp(builder, command)
+            val foundCommand = getHelpCommand(command, commandName, subcommandName)
+            if (foundCommand != null) {
+                buildExtendedCommandHelp(builder, foundCommand)
                 found = true
                 break
             }
-
-            for (alias in command.aliases) {
-                if (alias.toUpperCase() == commandName.toUpperCase()) {
-                    buildExtendedCommandHelp(builder, command)
-                    found = true
-                    break
-                }
-            }
-
         }
 
         if (!found) {
             builder.setTitle("error")
-            builder.setDescription("Command $commandName does not exist")
+            builder.setDescription("Command $commandName $subcommandName does not exist")
             builder.setColor(Color.red)
         }
+    }
+
+    private fun getHelpCommand(command: Command, commandName: String, subcommandName: String): Command? {
+
+        if(command.isCommandFor(commandName) && subcommandName.isEmpty()) {
+            return command
+        }
+
+
+        for (subCommand in command.children) {
+            val foundCommand = getHelpCommand(subCommand, subcommandName, "")
+            if (foundCommand != null) {
+                return foundCommand
+            }
+        }
+
+        return null
     }
 
     private fun buildCategoryHelp(builder: EmbedBuilder, category: kotlin.collections.Map.Entry<String, ArrayList<Command>>) {
@@ -79,7 +93,7 @@ class HelpListener : Consumer<CommandEvent> {
         builder.appendDescription("**$categoryName**\n")
 
         for (command in commands) {
-            buildCommandHelp(builder, command)
+            buildCommandHelp(builder, command, null)
         }
 
         builder.appendDescription("\n")
@@ -88,7 +102,12 @@ class HelpListener : Consumer<CommandEvent> {
     /**
      * Build a basic command help line
      */
-    private fun buildCommandHelp(builder: EmbedBuilder, command: Command) {
+    private fun buildCommandHelp(builder: EmbedBuilder, command: Command, parentName: String?) {
+        if (parentName != null) {
+            builder.appendDescription(parentName)
+            builder.appendDescription(" ")
+        }
+
         builder.appendDescription(command.name)
         if (command.arguments != null) {
             builder.appendDescription(" " + command.arguments)
@@ -97,6 +116,13 @@ class HelpListener : Consumer<CommandEvent> {
         builder.appendDescription(" => ")
         builder.appendDescription(command.help)
         builder.appendDescription("\n")
+
+        if (command.children.isNotEmpty()) {
+            for (subcommand in command.children) {
+                builder.appendDescription("   ")
+                buildCommandHelp(builder, subcommand, command.name)
+            }
+        }
     }
 
     /**

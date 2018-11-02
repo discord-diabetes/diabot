@@ -13,7 +13,7 @@ import org.apache.commons.httpclient.methods.PostMethod
 
 import java.awt.*
 
-class AwyissCommand(category: Command.Category) : DiabotCommand() {
+class AwyissCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "awyiss"
@@ -22,7 +22,6 @@ class AwyissCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = true
         this.aliases = arrayOf("duck", "breadcrumbs")
         this.requiredRole = ServerRoles.required
-        this.category = category
     }
 
     override fun execute(event: CommandEvent) {

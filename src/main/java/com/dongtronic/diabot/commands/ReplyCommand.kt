@@ -6,13 +6,13 @@ import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.Permission
 import java.awt.Color
 
-class ReplyCommand(category: Command.Category) : DiabotCommand() {
+class ReplyCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "reply"
         this.help = "replies in a bunch of weird ways"
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
-        this.category = category
+        this.hidden = true
     }
 
     override fun execute(event: CommandEvent) {

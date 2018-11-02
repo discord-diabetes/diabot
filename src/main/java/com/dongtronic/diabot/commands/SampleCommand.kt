@@ -5,7 +5,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.Permission
 import org.slf4j.LoggerFactory
 
-class SampleCommand(category: Command.Category) : DiabotCommand() {
+class SampleCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(SampleCommand::class.java)
 
@@ -15,7 +15,6 @@ class SampleCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("tast", "tost")
-        this.category = category
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.hidden = true
     }

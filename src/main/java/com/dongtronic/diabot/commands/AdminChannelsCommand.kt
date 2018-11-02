@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class AdminChannelsCommand(category: Command.Category) : DiabotCommand() {
+class AdminChannelsCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(AdminChannelsCommand::class.java)
 

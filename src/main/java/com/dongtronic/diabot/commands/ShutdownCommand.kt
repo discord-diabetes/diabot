@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author John Grosh (jagrosh)
  */
-class ShutdownCommand(category: Command.Category) : DiabotCommand() {
+class ShutdownCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "shutdown"
@@ -16,7 +16,6 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = false
         this.ownerCommand = false
         this.aliases = arrayOf("heckoff", "fuckoff", "removethyself", "remove")
-        this.category = category
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.hidden = true
     }
@@ -26,7 +25,8 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand() {
         var allowed = false
 
         //TODO: replace list of allowed admins with config file
-        val allowedUsers = arrayOf("125616270254014464", //Adi
+        val allowedUsers = arrayOf(
+                "125616270254014464", //Adi
                 "189436077793083392"  //Cas
         )
 

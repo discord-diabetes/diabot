@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class AdminCommand(category: Command.Category) : DiabotCommand() {
+class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(AdminCommand::class.java)
 
@@ -22,13 +22,12 @@ class AdminCommand(category: Command.Category) : DiabotCommand() {
         this.help = "Administrator commands"
         this.guildOnly = true
         this.aliases = arrayOf("a")
-        this.category = category
         this.examples = arrayOf()
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.children = arrayOf(
-                AdminUsernameCommand(category),
-                AdminRewardsCommand(category),
-                AdminChannelsCommand(category))
+                AdminUsernameCommand(category, this),
+                AdminRewardsCommand(category, this),
+                AdminChannelsCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {

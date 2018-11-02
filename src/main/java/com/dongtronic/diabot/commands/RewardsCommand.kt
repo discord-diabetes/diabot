@@ -5,7 +5,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class RewardsCommand(category: Command.Category) : DiabotCommand() {
+class RewardsCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(RewardsCommand::class.java)
 
@@ -14,7 +14,6 @@ class RewardsCommand(category: Command.Category) : DiabotCommand() {
         this.help = "Opt in or out of automatic role rewards"
         this.guildOnly = true
         this.aliases = arrayOf("reward", "r")
-        this.category = category
         this.examples = arrayOf("diabot rewards optout", "diabot rewards optin")
     }
 

@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class AdminRewardsCommand(category: Command.Category) : DiabotCommand() {
+class AdminRewardsCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(AdminRewardsCommand::class.java)
 
@@ -21,7 +21,6 @@ class AdminRewardsCommand(category: Command.Category) : DiabotCommand() {
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("r", "roles")
-        this.category = category
         this.examples = arrayOf("diabot admin rewards list", "diabot admin rewards add <required role ID> <reward role ID>")
     }
 

@@ -20,7 +20,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class NightscoutCommand(category: Command.Category) : DiabotCommand() {
+class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
 
@@ -30,7 +30,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
         this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
         this.guildOnly = true
         this.aliases = arrayOf("ns", "bg")
-        this.category = category
         this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com")
     }
 

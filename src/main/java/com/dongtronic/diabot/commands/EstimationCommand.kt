@@ -9,7 +9,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class EstimationCommand(category: Command.Category) : DiabotCommand() {
+class EstimationCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(EstimationCommand::class.java)
 
@@ -18,7 +18,6 @@ class EstimationCommand(category: Command.Category) : DiabotCommand() {
         this.help = "estimate A1c from average blood glucose, or average blood glucose from A1c"
         this.guildOnly = false
         this.arguments = "<a1c/average> <number> [unit]"
-        this.category = category
         this.examples = arrayOf("diabot estimate a1c 120", "diabot estimate a1c 5.7", "diabot estimate a1c 120 mg/dL", "diabot estimate average 6.7", "diabot estimate average 42")
     }
 

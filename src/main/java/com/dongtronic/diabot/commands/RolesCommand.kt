@@ -4,13 +4,12 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.Permission
 
-class RolesCommand(category: Command.Category) : DiabotCommand() {
+class RolesCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "roles"
         this.help = "Get all roles in the server"
         this.guildOnly = true
-        this.category = category
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
     }
 
