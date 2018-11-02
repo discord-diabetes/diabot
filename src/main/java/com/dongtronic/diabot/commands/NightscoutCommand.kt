@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -55,6 +56,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
             event.reply("Error: " + ex.message)
         } catch (ex: Exception) {
             event.reactError()
+            logger.warn("Unexpected error: " + ex.message)
         }
 
     }
@@ -133,15 +135,24 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
         if (statusCode == -1) {
             event.reactError()
-            logger.error("Got -1 Status code attempting to get $urlBase")
+            logger.warn("Got -1 Status code attempting to get $urlBase")
         }
 
+        val bgsJson: JsonObject
         val json = method.responseBodyAsStream.bufferedReader().use { it.readText() }
+        if (JsonParser().parse(json).asJsonObject.has("bgs"))
+            bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
+        else {
+            logger.warn("Failed to get bgs Object from pebbleEndpoint JSON:\n$json")
+            return
+        }
 
-        val bgsJson = JsonParser().parse(json).asJsonObject.get("bgs").asJsonArray.get(0).asJsonObject
-
-        dto.cob = bgsJson.get("cob").asInt
-        dto.iob = bgsJson.get("iob").asFloat
+        if (bgsJson.has("cob")) {
+            dto.cob = bgsJson.get("cob").asInt
+        }
+        if (bgsJson.has("iob")) {
+            dto.iob = bgsJson.get("iob").asFloat
+        }
         val bgDelta = bgsJson.get("bgdelta").asString
         if (dto.delta == null) {
             dto.deltaIsNegative = bgDelta.contains("-")
@@ -282,14 +293,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand() {
 
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getData(url: String, dto: NightscoutDTO, event: CommandEvent) {
+        val endpoint = "$url/entries.json"
         val client = HttpClient()
-        val method = GetMethod("$url/entries.json")
+        val method = GetMethod(endpoint)
 
         method.queryString = "count=1"
 
         val statusCode = client.executeMethod(method)
 
         if (statusCode == -1) {
+            logger.warn("Got -1 Status code attempting to get $endpoint")
             event.reactError()
         }
 
