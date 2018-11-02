@@ -6,4 +6,6 @@ object RedisKeyFormats {
     const val adminChannelIds = "{{guildid}}:adminchannels"
     const val simpleRewards = "{{guildid}}:simplerewards"
     const val rewardOptout = "{{guildid}}:rewardoptouts"
+    const val usernamePattern = "{{guildid}}:usernamepattern"
+    const val enforceUsernames = "{{guildid}}:enforceusernames"
 }

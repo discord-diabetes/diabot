@@ -126,6 +126,10 @@ class HelpListener : Consumer<CommandEvent> {
             builder.addField("Aliases", Arrays.toString(command.aliases), false)
         }
 
+        if (command.children.isNotEmpty()) {
+            builder.addField("Sub commands", Arrays.toString(command.children), false)
+        }
+
         if (isExtendedCommand && extendedCommand!!.examples.isNotEmpty()) {
             val examples = StringBuilder()
 
@@ -147,7 +151,7 @@ class HelpListener : Consumer<CommandEvent> {
         val allowedCommands = ArrayList<Command>()
 
         for (command in commands) {
-            if(command.isHidden) {
+            if (command.isHidden) {
                 continue
             }
 
