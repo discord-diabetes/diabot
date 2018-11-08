@@ -1,6 +1,18 @@
 package com.dongtronic.diabot
 
 import com.dongtronic.diabot.commands.*
+import com.dongtronic.diabot.commands.`fun`.AwyissCommand
+import com.dongtronic.diabot.commands.`fun`.DiacastCommand
+import com.dongtronic.diabot.commands.`fun`.ExcuseCommand
+import com.dongtronic.diabot.commands.`fun`.PingCommand
+import com.dongtronic.diabot.commands.admin.AdminCommand
+import com.dongtronic.diabot.commands.admin.RewardsCommand
+import com.dongtronic.diabot.commands.admin.RolesCommand
+import com.dongtronic.diabot.commands.admin.ShutdownCommand
+import com.dongtronic.diabot.commands.diabetes.ConvertCommand
+import com.dongtronic.diabot.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
+import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
 import com.dongtronic.diabot.listener.ConversionListener
 import com.dongtronic.diabot.listener.FeelListener
 import com.dongtronic.diabot.listener.HelpListener
@@ -85,7 +97,6 @@ object Main {
                 // Admin
                 AdminCommand(adminCategory),
                 ShutdownCommand(adminCategory),
-                ReplyCommand(adminCategory),
                 NightscoutAdminCommand(adminCategory),
                 RolesCommand(adminCategory))
 

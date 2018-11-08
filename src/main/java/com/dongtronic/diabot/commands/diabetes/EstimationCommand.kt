@@ -1,5 +1,6 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.diabetes
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.A1cConverter
 import com.dongtronic.diabot.converters.GlucoseUnit.MGDL
 import com.dongtronic.diabot.converters.GlucoseUnit.MMOL

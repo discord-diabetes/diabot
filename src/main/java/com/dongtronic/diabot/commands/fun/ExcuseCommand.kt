@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.`fun`
 
 import com.dongtronic.diabot.util.ServerRoles
 import com.jagrosh.jdautilities.command.Command

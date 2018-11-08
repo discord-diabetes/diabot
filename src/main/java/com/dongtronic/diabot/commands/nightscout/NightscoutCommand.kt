@@ -1,5 +1,6 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.nightscout
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
@@ -31,24 +32,24 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         this.guildOnly = true
         this.aliases = arrayOf("ns", "bg")
         this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com")
+        this.children = arrayOf(
+                NightscoutSetCommand(category, this),
+                NightscoutDeleteCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
         try {
             if (args.isEmpty()) {
                 getStoredData(event)
                 return
+            } else {
+                getUnstoredData(event)
             }
 
-            val command = args[0].toUpperCase()
-
-            when (command) {
-                "SET", "S" -> setNightscoutUrl(event)
-                "DELETE", "REMOVE", "DELET", "D", "R" -> deleteNightscoutUrl(event)
-                else -> getUnstoredData(event)
-            }
         } catch (ex: UnconfiguredNightscoutException) {
             event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
         } catch (ex: IllegalArgumentException) {
@@ -89,20 +90,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
 
         buildNightscoutResponse(endpoint, event)
-    }
-
-    private fun setNightscoutUrl(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        setNightscoutUrl(event.author, args[1])
-
-        event.message.delete().reason("privacy").queue()
-        event.reply("Set Nightscout URL for ${event.author.name}")
-    }
-
-    private fun deleteNightscoutUrl(event: CommandEvent) {
-        removeNightscoutUrl(event.author)
-        event.reply("Removed Nightscout URL for ${event.author.name}")
     }
 
     private fun getUnstoredData(event: CommandEvent) {
@@ -229,23 +216,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun validateNightscoutUrl(url: String): String {
-        var finalUrl = url
-        if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            throw IllegalArgumentException("Url must contain scheme")
-        }
-
-        if (finalUrl.endsWith("/")) {
-            finalUrl = finalUrl.trimEnd('/')
-        }
-
-        return finalUrl
-    }
-
-    private fun setNightscoutUrl(user: User, url: String) {
-        val finalUrl = validateNightscoutUrl(url)
-        NightscoutDAO.getInstance().setNightscoutUrl(user, finalUrl)
-    }
 
     private fun getNightscoutHost(user: User): String {
         val url = NightscoutDAO.getInstance().getNightscoutUrl(user)
@@ -255,10 +225,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
-    }
-
-    private fun removeNightscoutUrl(user: User) {
-        NightscoutDAO.getInstance().removeNIghtscoutUrl(user)
     }
 
     @Throws(IOException::class)

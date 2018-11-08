@@ -1,5 +1,6 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.admin
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.util.CommandUtils
 import com.dongtronic.diabot.util.RoleUtils
