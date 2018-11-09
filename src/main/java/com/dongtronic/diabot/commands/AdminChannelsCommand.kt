@@ -17,7 +17,6 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Diabo
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("c")
-        this.category = category
         this.examples = arrayOf("diabot admin channels add <channelId>", "diabot admin channels delete <channelId>", "diabot admin channels list")
     }
 

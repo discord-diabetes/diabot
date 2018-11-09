@@ -39,6 +39,36 @@ class AdminDAO private constructor() {
         return jedis!!.lrange(key, 0, channelListLength - 1)
     }
 
+    fun setUsernamePattern(guildId: String, pattern: String) {
+        val redisKey = RedisKeyFormats.usernamePattern.replace("{{guildid}}", guildId)
+
+        val compiled = pattern.toRegex()
+
+        jedis!!.set(redisKey, compiled.pattern)
+    }
+
+    fun getUsernamePattern(guildId: String, pattern: String): String? {
+        val redisKey = RedisKeyFormats.usernamePattern.replace("{{guildid}}", guildId)
+
+        return jedis!!.get(redisKey)
+    }
+
+    fun setUsernameEnforcementEnabled(guildId:String, enabled: Boolean) {
+        val redisKey = RedisKeyFormats.enforceUsernames.replace("{{guildid}}", guildId)
+
+        val value = if (enabled) "true" else "false"
+
+        jedis!!.set(redisKey, value)
+    }
+
+    fun getUsernameEnforcementEnabled(guildId: String): Boolean {
+        val redisKey = RedisKeyFormats.enforceUsernames.replace("{{guildid}}", guildId)
+
+        val value = jedis!!.get(redisKey)
+
+        return value == "true"
+    }
+
     companion object {
         private var instance: AdminDAO? = null
 
