@@ -1,13 +1,11 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.`fun`
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.util.ServerRoles
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.doc.standard.CommandInfo
 import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.entities.MessageEmbed
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.PostMethod
 

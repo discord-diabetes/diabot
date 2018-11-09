@@ -1,9 +1,9 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.admin
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.AdminDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.Permission
 import org.slf4j.LoggerFactory
 
 class AdminUsernameCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -46,7 +46,7 @@ class AdminUsernameCommand(category: Command.Category, parent: Command?) : Diabo
     private fun setPattern(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if(args.size < 2) {
+        if (args.size < 2) {
             throw IllegalArgumentException("Command must contain pattern")
         }
 

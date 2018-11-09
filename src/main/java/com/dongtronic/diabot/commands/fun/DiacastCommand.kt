@@ -1,19 +1,15 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.`fun`
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.exceptions.NoSuchEpisodeException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.doc.standard.CommandInfo
-import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
-import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.FeedException
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
 import net.dv8tion.jda.core.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
-import org.jdom2.Attribute
-import org.jdom2.Element
 
 import java.io.IOException
 import java.net.URL

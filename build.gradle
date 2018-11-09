@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.dongtronic'
-version '1.7.3-RELEASE'
+version '1.8.0'
 
 sourceCompatibility = 1.8
 

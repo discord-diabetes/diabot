@@ -1,12 +1,12 @@
-package com.dongtronic.diabot.commands
+package com.dongtronic.diabot.commands.diabetes
 
+import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
 import com.dongtronic.diabot.converters.GlucoseUnit
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
 class ConvertCommand(category: Command.Category) : DiabotCommand(category, null) {
