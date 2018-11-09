@@ -15,7 +15,7 @@ abstract class DiabotCommand(category: Command.Category, parent: Command?) : Com
 
     override fun toString(): String {
         return if(this.parent != null) {
-            "${this.parent.name}  $name"
+            "${this.parent}  $name"
         } else {
             this.name
         }

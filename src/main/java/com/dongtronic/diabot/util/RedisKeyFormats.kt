@@ -8,4 +8,5 @@ object RedisKeyFormats {
     const val rewardOptout = "{{guildid}}:rewardoptouts"
     const val usernamePattern = "{{guildid}}:usernamepattern"
     const val enforceUsernames = "{{guildid}}:enforceusernames"
+    const val usernameHint = "{{guildid}}:usernamehint"
 }

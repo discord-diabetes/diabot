@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.commands.admin
+package com.dongtronic.diabot.commands.`fun`
 
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.RewardDAO

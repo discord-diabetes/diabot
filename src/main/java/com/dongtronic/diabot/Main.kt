@@ -1,22 +1,18 @@
 package com.dongtronic.diabot
 
-import com.dongtronic.diabot.commands.*
 import com.dongtronic.diabot.commands.`fun`.AwyissCommand
 import com.dongtronic.diabot.commands.`fun`.DiacastCommand
 import com.dongtronic.diabot.commands.`fun`.ExcuseCommand
 import com.dongtronic.diabot.commands.`fun`.PingCommand
 import com.dongtronic.diabot.commands.admin.AdminCommand
-import com.dongtronic.diabot.commands.admin.RewardsCommand
+import com.dongtronic.diabot.commands.`fun`.RewardsCommand
 import com.dongtronic.diabot.commands.admin.RolesCommand
 import com.dongtronic.diabot.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.listener.ConversionListener
-import com.dongtronic.diabot.listener.FeelListener
-import com.dongtronic.diabot.listener.HelpListener
-import com.dongtronic.diabot.listener.RoleListener
+import com.dongtronic.diabot.listener.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
@@ -119,6 +115,7 @@ object Main {
                 .addEventListener(client.build())
                 .addEventListener(ConversionListener())
                 .addEventListener(RoleListener())
+                .addEventListener(UsernameChangedListener())
 
                 // fun listeners
                 .addEventListener(FeelListener())

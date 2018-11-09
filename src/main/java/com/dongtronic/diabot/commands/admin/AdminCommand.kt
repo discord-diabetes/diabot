@@ -20,7 +20,8 @@ class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
         this.children = arrayOf(
                 AdminUsernameCommand(category, this),
                 AdminRewardsCommand(category, this),
-                AdminChannelsCommand(category, this))
+                AdminChannelsCommand(category, this),
+                AdminUsernameCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {

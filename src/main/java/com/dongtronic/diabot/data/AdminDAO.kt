@@ -1,7 +1,6 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
-import net.dv8tion.jda.core.entities.User
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 
@@ -47,13 +46,25 @@ class AdminDAO private constructor() {
         jedis!!.set(redisKey, compiled.pattern)
     }
 
-    fun getUsernamePattern(guildId: String, pattern: String): String? {
+    fun getUsernamePattern(guildId: String): String? {
         val redisKey = RedisKeyFormats.usernamePattern.replace("{{guildid}}", guildId)
 
         return jedis!!.get(redisKey)
     }
 
-    fun setUsernameEnforcementEnabled(guildId:String, enabled: Boolean) {
+    fun setUsernameHint(guildId: String, hint: String) {
+        val redisKey = RedisKeyFormats.usernameHint.replace("{{guildid}}", guildId)
+
+        jedis!!.set(redisKey, hint)
+    }
+
+    fun getUsernameHint(guildId: String): String? {
+        val redisKey = RedisKeyFormats.usernameHint.replace("{{guildid}}", guildId)
+
+        return jedis!!.get(redisKey)
+    }
+
+    fun setUsernameEnforcementEnabled(guildId: String, enabled: Boolean) {
         val redisKey = RedisKeyFormats.enforceUsernames.replace("{{guildid}}", guildId)
 
         val value = if (enabled) "true" else "false"
