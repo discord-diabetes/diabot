@@ -37,11 +37,27 @@ class NightscoutDAO private constructor() {
         jedis!!.del(redisKey)
     }
 
+    fun isNightscoutPublic(user: User): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id)
+
+        return !jedis!!.get(redisKey).isNullOrEmpty()
+    }
+
+    fun setNightscoutPublic(user: User, public: Boolean) {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id)
+
+        if (public) {
+            jedis!!.set(redisKey, "true")
+        } else {
+            jedis!!.del(redisKey)
+        }
+    }
+
     fun listUsers(): TreeMap<String, String> {
         val keys = jedis!!.keys(RedisKeyFormats.allNightscoutUrlsFormat)
         val result = TreeMap<String, String>()
 
-        for(key in keys) {
+        for (key in keys) {
             val value = jedis!!.get(key)
             result[key] = value
         }

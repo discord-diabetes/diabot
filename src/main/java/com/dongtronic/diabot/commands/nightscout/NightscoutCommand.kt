@@ -6,6 +6,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.util.NicknameUtils
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
@@ -31,10 +32,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
         this.guildOnly = true
         this.aliases = arrayOf("ns", "bg")
-        this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com")
+        this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns public false")
         this.children = arrayOf(
                 NightscoutSetCommand(category, this),
-                NightscoutDeleteCommand(category, this)
+                NightscoutDeleteCommand(category, this),
+                NightscoutPublicCommand(category, this)
         )
     }
 
@@ -61,7 +63,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         getData(endpoint, dto, event)
@@ -70,7 +72,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val builder = EmbedBuilder()
 
-        buildResponse(dto, builder)
+        buildResponse(dto, avatarUrl, builder)
 
         val embed = builder.build()
 
@@ -89,15 +91,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
 
-        buildNightscoutResponse(endpoint, event)
+        buildNightscoutResponse(endpoint, event.author.avatarUrl, event)
     }
 
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        var avatarUrl: String? = null
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
                 try {
+                    if (!getNightscoutPublic(user)) {
+                        event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
+                        return
+                    }
                     getNightscoutHost(user) + "/api/v1/"
                 } catch (ex: UnconfiguredNightscoutException) {
                     throw IllegalArgumentException("User does not have a configured Nightscout URL.")
@@ -110,7 +117,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 "https://$hostname.herokuapp.com/api/v1/"
             }
         }
-        buildNightscoutResponse(endpoint, event)
+
+        if(event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
+            avatarUrl = event.message.mentionedUsers[0].avatarUrl
+        }
+
+        buildNightscoutResponse(endpoint, avatarUrl, event)
     }
 
     private fun processPebble(url: String, dto: NightscoutDTO, event: CommandEvent) {
@@ -146,7 +158,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildResponse(dto: NightscoutDTO, builder: EmbedBuilder) {
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, builder: EmbedBuilder) {
         builder.setTitle("Nightscout")
 
         val mmolString: String
@@ -171,6 +183,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         setResponseColor(dto, builder)
+
+        if(avatarUrl != null) {
+            builder.setThumbnail(avatarUrl)
+        }
 
         builder.setTimestamp(dto.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
@@ -225,6 +241,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
+    }
+
+    private fun getNightscoutPublic(user: User): Boolean {
+        return NightscoutDAO.getInstance().isNightscoutPublic(user)
     }
 
     @Throws(IOException::class)

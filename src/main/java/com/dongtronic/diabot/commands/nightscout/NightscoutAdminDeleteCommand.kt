@@ -3,6 +3,7 @@ package com.dongtronic.diabot.commands.nightscout
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.util.CommandUtils
+import com.dongtronic.diabot.util.NicknameUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.EmbedBuilder
@@ -44,13 +45,13 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
             val existingUrl = NightscoutDAO.getInstance().getNightscoutUrl(user)
 
             if(existingUrl.isNullOrBlank()) {
-                event.reply("User **${user.name}** (`$userId`) does not have a Nightscout URL configured")
+                event.reply("User **${NicknameUtils.determineDisplayName(event, user)}** (`$userId`) does not have a Nightscout URL configured")
                 return
             }
 
             NightscoutDAO.getInstance().removeNIghtscoutUrl(user)
 
-            event.replySuccess("Deleted Nightscout URL for user **${user.name}** (`$userId`)")
+            event.replySuccess("Deleted Nightscout URL for user **${NicknameUtils.determineDisplayName(event, user)}** (`$userId`)")
 
         } catch (ex: NullPointerException) {
             event.replyError("Invalid user ID provided")

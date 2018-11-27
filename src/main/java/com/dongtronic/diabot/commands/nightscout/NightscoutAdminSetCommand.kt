@@ -43,7 +43,7 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
 
             NightscoutDAO.getInstance().setNightscoutUrl(user, url)
 
-            event.reply("Admin set Nightscout URL for ${user.name} [requested by ${event.author.name}]")
+            event.reply("Admin set Nightscout URL for ${user.discriminator} [requested by ${event.author.name}]")
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)
         }

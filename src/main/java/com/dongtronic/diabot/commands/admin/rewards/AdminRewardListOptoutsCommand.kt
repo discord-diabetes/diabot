@@ -27,7 +27,7 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
             return
         }
 
-        logger.info("Listing all reward opt-outs for ${event.author.name}")
+        logger.info("Listing all reward opt-outs for ${event.author.discriminator}")
         val optouts = RewardDAO.getInstance().getOptOuts(event.guild.id)
 
         val builder = EmbedBuilder()

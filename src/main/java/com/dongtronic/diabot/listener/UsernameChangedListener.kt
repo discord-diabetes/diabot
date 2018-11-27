@@ -16,8 +16,6 @@ class UsernameChangedListener : ListenerAdapter() {
         val prevNick = if (event.prevNick.isNullOrEmpty()) event.user.name else event.prevNick
         val newNick = if (event.newNick.isNullOrEmpty()) event.user.name else event.newNick
 
-        logger.info("User ${event.user.id} changed nickname from `$prevNick` to `$newNick`")
-
         enforceRules(newNick, event)
 
     }

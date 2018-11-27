@@ -2,6 +2,7 @@ package com.dongtronic.diabot.commands.`fun`
 
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.util.NicknameUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
@@ -47,8 +48,8 @@ class RewardsCommand(category: Command.Category) : DiabotCommand(category, null)
 
         RewardDAO.getInstance().optIn(guildId, user.id)
 
-        logger.info("User ${user.name} opted in to rewards")
-        event.reply("User ${user.name} opted in to rewards")
+        logger.info("User ${user.discriminator} opted in to rewards")
+        event.reply("User ${NicknameUtils.determineDisplayName(event, user)} opted in to rewards")
     }
 
     private fun optOut(event: CommandEvent) {
@@ -58,7 +59,7 @@ class RewardsCommand(category: Command.Category) : DiabotCommand(category, null)
 
         RewardDAO.getInstance().optOut(guildId, user.id)
 
-        logger.info("User ${user.name} opted out of rewards")
-        event.reply("User ${user.name} opted out of rewards")
+        logger.info("User ${user.discriminator} opted out of rewards")
+        event.reply("User ${NicknameUtils.determineDisplayName(event, user)} opted out of rewards")
     }
 }
