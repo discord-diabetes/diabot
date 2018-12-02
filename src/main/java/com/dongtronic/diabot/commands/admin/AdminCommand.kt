@@ -21,7 +21,8 @@ class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
                 AdminUsernameCommand(category, this),
                 AdminRewardsCommand(category, this),
                 AdminChannelsCommand(category, this),
-                AdminUsernameCommand(category, this))
+                AdminUsernameCommand(category, this),
+                AdminAnnounceCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
