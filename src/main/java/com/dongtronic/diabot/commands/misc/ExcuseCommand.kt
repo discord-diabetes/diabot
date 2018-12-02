@@ -1,11 +1,9 @@
-package com.dongtronic.diabot.commands.`fun`
+package com.dongtronic.diabot.commands.misc
 
 import com.dongtronic.diabot.util.ServerRoles
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.doc.standard.CommandInfo
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 import java.io.IOException
 

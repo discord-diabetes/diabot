@@ -62,7 +62,6 @@ class RewardDAO private constructor() {
 
     fun getOptOut(guildId: String, userId: String): Boolean {
         val key = RedisKeyFormats.rewardOptout.replace("{{guildid}}", guildId)
-
         val optOutListLength = jedis!!.llen(key)
 
         val optOutList = jedis!!.lrange(key, 0, optOutListLength - 1)
