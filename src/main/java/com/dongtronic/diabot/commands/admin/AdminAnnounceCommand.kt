@@ -12,6 +12,7 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Diabo
     init {
         this.name = "announce"
         this.help = "Announce a message in a channel"
+        this.arguments = "<channel ID> <message>"
         this.guildOnly = true
         this.ownerCommand = false
     }
