@@ -41,18 +41,34 @@ class ConvertCommand(category: Command.Category) : DiabotCommand(category, null)
 
                 result = BloodGlucoseConverter.convert(args[0], if (args.size == 2) args[1] else null)
 
-                when {
-                    result!!.inputUnit === GlucoseUnit.MMOL -> event.reply(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl))
-                    result!!.inputUnit === GlucoseUnit.MGDL -> event.reply(String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol))
+                val reply = when {
+                    result!!.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl)
+                    result!!.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol)
                     else -> {
-                        val reply = arrayOf(
+                        String.format(arrayOf(
                                 "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
                                 "%s mg/dL is **%s mmol/L**",
                                 "%s mmol/L is **%s mg/dL**").joinToString(
-                                "%n")
+                                "%n"), args[0], result!!.mmol, args[0], result.mgdl)
+                    }
+                }
 
-                        event.reply(String.format(reply, args[0], result!!.mmol, args[0],
-                                result.mgdl))
+                event.reply(reply)
+
+                if (event.author.id == "354173991021314051") {
+                    // Give Remington the value in pounds per gallon.
+                    // Because jokes
+
+                    // Convert from mg/dL to lb/dL
+                    val lbdl = result.mgdl / 453592.4
+
+                    // Convert from lb/dL to lb/gal
+                    val lbgal = lbdl / 45.4609
+
+                    if(result.inputUnit === GlucoseUnit.MGDL) {
+                        event.reply(String.format("%s mg/dL is %s lb/gal", result.mgdl, lbgal))
+                    } else if (result.inputUnit === GlucoseUnit.MMOL) {
+                        event.reply(String.format("%s mmol/L is %s lb/gal", result.mmol, lbgal))
                     }
                 }
 
