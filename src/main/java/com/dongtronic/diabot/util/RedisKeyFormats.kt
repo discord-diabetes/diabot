@@ -10,4 +10,10 @@ object RedisKeyFormats {
     const val usernamePattern = "{{guildid}}:usernamepattern"
     const val enforceUsernames = "{{guildid}}:enforceusernames"
     const val usernameHint = "{{guildid}}:usernamehint"
+
+    const val ruleIds = "{{guildid}}:rules"
+    const val rulesChannel = "{{guildid}}:ruleschannel"
+    const val ruleText = "{{guildid}}:rules:{{ruleid}}:text"
+    const val ruleTitle = "{{guildid}}:rules:{{ruleid}}:title"
+    const val ruleMessage = "{{guildid}}:rules:{{ruleid}}:message"
 }
