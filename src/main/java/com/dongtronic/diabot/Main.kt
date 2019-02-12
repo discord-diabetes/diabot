@@ -60,7 +60,7 @@ object Main {
             client.setPrefix("diabot ")
         }
 
-        client.setOwnerId("125616270254014464")
+        client.setOwnerId("189436077793083392")
 
         // adds commands
         client.addCommands(
