@@ -116,6 +116,7 @@ object Main {
 
                 // misc listeners
                 .addEventListener(FeelListener())
+                .addEventListener(OhNoListener())
 
                 // start it up!
                 .build()
