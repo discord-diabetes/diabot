@@ -83,7 +83,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
             // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
             if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
-                it.addReaction("\u1F4AF").queue()
+                it.addReaction("\uD83D\uDCAF").queue()
             }
         }
     }
