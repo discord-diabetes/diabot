@@ -24,22 +24,23 @@ class HelpListener : Consumer<CommandEvent> {
 
         if (event.args.isEmpty()) {
             // Show generic help card
-            buildGeneralHelp(embedBuilder, allCommands, event)
+            buildGeneralHelp(allCommands, event)
         } else {
             // Show extended help card
             buildSpecificHelp(embedBuilder, allCommands, event)
+            event.reply(embedBuilder.build())
         }
-
-        event.reply(embedBuilder.build())
     }
 
-    private fun buildGeneralHelp(builder: EmbedBuilder, allCommands: List<Command>, event: CommandEvent) {
+    private fun buildGeneralHelp(allCommands: List<Command>, event: CommandEvent) {
         val allowedCommands = filterAllowedCommands(allCommands, event)
         val categorizedCommands = groupCommands(allowedCommands)
 
 
         for (category in categorizedCommands.entries) {
-            buildCategoryHelp(builder, category)
+            val categoryBuilder = EmbedBuilder()
+            buildCategoryHelp(categoryBuilder, category)
+            event.reply(categoryBuilder.build())
         }
     }
 
@@ -86,7 +87,7 @@ class HelpListener : Consumer<CommandEvent> {
         return null
     }
 
-    private fun buildCategoryHelp(builder: EmbedBuilder, category: kotlin.collections.Map.Entry<String, ArrayList<Command>>) {
+    private fun buildCategoryHelp(builder: EmbedBuilder, category: Map.Entry<String, ArrayList<Command>>) {
         val categoryName = category.key
         val commands = category.value
 
