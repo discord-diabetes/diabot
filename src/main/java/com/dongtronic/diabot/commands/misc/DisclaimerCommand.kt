@@ -17,7 +17,8 @@ class DisclaimerCommand(category: Command.Category) : DiabotCommand(category, nu
         this.guildOnly = true
         this.ownerCommand = false
         this.hidden = false
-        this.cooldown = 60
+        this.cooldown = 180
+        this.cooldownScope = CooldownScope.CHANNEL
     }
 
     override fun execute(event: CommandEvent) {
