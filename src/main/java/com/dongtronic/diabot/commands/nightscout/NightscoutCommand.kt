@@ -119,7 +119,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
         }
 
-        if(event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
+        if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
             avatarUrl = event.message.mentionedUsers[0].avatarUrl
         }
 
@@ -185,7 +185,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         setResponseColor(dto, builder)
 
-        if(avatarUrl != null) {
+        if (avatarUrl != null) {
             builder.setThumbnail(avatarUrl)
         }
 
@@ -279,21 +279,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getEntries(url: String, dto: NightscoutDTO, event: CommandEvent) {
-        val endpoint = "$url/entries.json"
+        val endpoint = "$url/entries/current.json"
         val client = HttpClient()
         val method = GetMethod(endpoint)
-
-        method.queryString = "count=1"
 
         val statusCode = client.executeMethod(method)
 
         if (statusCode == -1) {
             logger.warn("Got -1 Status code attempting to get $endpoint")
             event.reactError()
+            return
         }
 
         val json = method.responseBodyAsString
-
         val jsonObject = JsonParser().parse(json).asJsonArray.get(0).asJsonObject
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
