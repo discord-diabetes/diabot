@@ -81,6 +81,7 @@ object Main {
                 PingCommand(utilitiesCategory),
                 RewardsCommand(utilitiesCategory),
                 GithubCommand(utilitiesCategory),
+                DisclaimerCommand(utilitiesCategory),
 
                 // Fun
                 ExcuseCommand(funCategory),
