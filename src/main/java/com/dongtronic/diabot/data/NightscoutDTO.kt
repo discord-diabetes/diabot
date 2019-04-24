@@ -15,4 +15,11 @@ class NightscoutDTO {
     var iob: Float = 0.0F
     var cob: Int = 0
     var units: String = ""
+    var title: String = "Nightscout"
+    set (value) {
+        if (value != null) {
+            field = value
+        }
+    }
+
 }

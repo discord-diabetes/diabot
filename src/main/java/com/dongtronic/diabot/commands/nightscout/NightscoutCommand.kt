@@ -66,9 +66,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private fun buildNightscoutResponse(endpoint: String, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
-        getData(endpoint, dto, event)
+        getEntries(endpoint, dto, event)
         getRanges(endpoint, dto, event)
         processPebble(endpoint, dto, event)
+        getSettings(endpoint, dto, event)
 
         val builder = EmbedBuilder()
 
@@ -159,7 +160,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, builder: EmbedBuilder) {
-        builder.setTitle("Nightscout")
+        builder.setTitle(dto.title)
 
         val mmolString: String
         val mgdlString: String
@@ -277,7 +278,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
 
     @Throws(IOException::class, UnknownUnitException::class)
-    private fun getData(url: String, dto: NightscoutDTO, event: CommandEvent) {
+    private fun getEntries(url: String, dto: NightscoutDTO, event: CommandEvent) {
         val endpoint = "$url/entries.json"
         val client = HttpClient()
         val method = GetMethod(endpoint)
@@ -336,6 +337,28 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         dto.deltaIsNegative = delta.contains("-")
         dto.dateTime = dateTime
         dto.trend = trend
+    }
+
+    private fun getSettings(url: String, dto: NightscoutDTO, event: CommandEvent) {
+        val endpoint = "$url/status.json"
+        val client = HttpClient()
+        val method = GetMethod(endpoint)
+
+        val statusCode = client.executeMethod(method)
+
+        if (statusCode == -1) {
+            logger.warn("Got -1 Status code attempting to get $endpoint")
+            event.reactError()
+        }
+
+        val json = method.responseBodyAsString
+
+        val jsonObject = JsonParser().parse(json).asJsonObject
+        val settings = jsonObject.get("settings").asJsonObject
+
+        val title = settings.get("customTitle").asString
+
+        dto.title = title
     }
 
     private fun getTimestamp(epoch: Long?): ZonedDateTime {
