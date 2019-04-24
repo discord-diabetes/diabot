@@ -19,8 +19,7 @@ class DisclaimerCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     override fun execute(event: CommandEvent) {
-        val file = File("DISCLAIMER")
-        val text = file.readText()
+        val text = this::class.java.classLoader.getResource("DISCLAIMER").readText()
 
         event.reply(text)
     }
