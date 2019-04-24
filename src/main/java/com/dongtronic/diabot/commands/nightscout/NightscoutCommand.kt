@@ -279,9 +279,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getEntries(url: String, dto: NightscoutDTO, event: CommandEvent) {
-        val endpoint = "$url/entries/current.json"
+        val endpoint = "$url/entries/sgv.json"
         val client = HttpClient()
         val method = GetMethod(endpoint)
+
+        method.queryString = "count=1"
 
         val statusCode = client.executeMethod(method)
 
