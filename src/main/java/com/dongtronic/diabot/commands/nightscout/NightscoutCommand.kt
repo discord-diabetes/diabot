@@ -279,13 +279,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getEntries(url: String, dto: NightscoutDTO, event: CommandEvent) {
-        val endpoint = "$url/entries/sgv.json"
-        val client = HttpClient()
-        val method = GetMethod(endpoint)
+        var endpoint = "$url/entries/sgv.json"
+        var client = HttpClient()
+        var method = GetMethod(endpoint)
 
         method.queryString = "count=1"
 
-        val statusCode = client.executeMethod(method)
+        var statusCode = client.executeMethod(method)
 
         if (statusCode == -1) {
             logger.warn("Got -1 Status code attempting to get $endpoint")
@@ -293,7 +293,32 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             return
         }
 
-        val json = method.responseBodyAsString
+        var json = method.responseBodyAsString
+
+        val jsonArray = JsonParser().parse(json).asJsonArray
+        val arraySize = jsonArray.size()
+
+        // SGV endpoint may be empty in some cases, fall back to entries endpoint
+        if (arraySize == 0) {
+            logger.warn("Falling back to old entries json for $url")
+            endpoint = "$url/entries.json"
+            client = HttpClient()
+            method = GetMethod(endpoint)
+
+            method.queryString = "count=1"
+
+            statusCode = client.executeMethod(method)
+
+            if (statusCode == -1) {
+                logger.warn("Got -1 Status code attempting to get $endpoint")
+                event.reactError()
+                return
+            }
+
+            json = method.responseBodyAsString
+        }
+
+        // Parse JSON and construct response
         val jsonObject = JsonParser().parse(json).asJsonArray.get(0).asJsonObject
         val sgv = jsonObject.get("sgv").asString
         val timestamp = jsonObject.get("date").asLong
