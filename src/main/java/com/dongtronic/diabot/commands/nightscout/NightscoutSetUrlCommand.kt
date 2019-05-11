@@ -2,17 +2,14 @@ package com.dongtronic.diabot.commands.nightscout
 
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.NightscoutDAO
-import com.dongtronic.diabot.util.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.entities.User
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutSetCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(NightscoutSetCommand::class.java)
+    private val logger = LoggerFactory.getLogger(NightscoutSetUrlCommand::class.java)
 
     init {
         this.name = "set"

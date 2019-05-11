@@ -37,9 +37,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         this.aliases = arrayOf("ns", "bg")
         this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns public false")
         this.children = arrayOf(
-                NightscoutSetCommand(category, this),
+                NightscoutSetUrlCommand(category, this),
                 NightscoutDeleteCommand(category, this),
-                NightscoutPublicCommand(category, this)
+                NightscoutPublicCommand(category, this),
+                NightscoutSetTokenCommand(category, this)
         )
     }
 
@@ -66,14 +67,14 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, token: String?, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
-            getEntries(endpoint, dto)
-            getRanges(endpoint, dto)
-            processPebble(endpoint, dto)
-            getSettings(endpoint, dto)
+            getEntries(endpoint, token, dto)
+            getRanges(endpoint, token, dto)
+            processPebble(endpoint, token, dto)
+            getSettings(endpoint, token, dto)
         } catch (exception: NoNightscoutDataException) {
             event.reactError()
             logger.info("No nightscout data from $endpoint")
@@ -83,8 +84,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             logger.warn("Malformed JSON from $endpoint")
             return
         } catch (exception: NightscoutStatusException) {
-            event.reactError()
-            logger.warn("Connection status ${exception.status} from $endpoint")
+            if (exception.status == 401) {
+                event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
+            } else {
+                event.reactError()
+                logger.warn("Connection status ${exception.status} from $endpoint")
+            }
+
             return
         }
 
@@ -109,7 +115,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
 
-        buildNightscoutResponse(endpoint, event.author.avatarUrl, event)
+        val token = getToken(event.author)
+
+        buildNightscoutResponse(endpoint, token, event.author.avatarUrl, event)
     }
 
     private fun getUnstoredData(event: CommandEvent) {
@@ -140,12 +148,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             avatarUrl = event.message.mentionedUsers[0].avatarUrl
         }
 
-        buildNightscoutResponse(endpoint, avatarUrl, event)
+        buildNightscoutResponse(endpoint, null, avatarUrl, event)
     }
 
-    private fun processPebble(url: String, dto: NightscoutDTO) {
+    private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = url.replace("/api/v1/", "/pebble")
-        val json = getJson(endpoint, null)
+        val json = getJson(endpoint, token, null)
 
         val bgsJson: JsonObject
 
@@ -256,12 +264,18 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return NightscoutDAO.getInstance().isNightscoutPublic(user)
     }
 
-    private fun getJson(url: String, query: String?): String {
+    private fun getJson(url: String, token: String?, query: String?): String {
         val client = HttpClient()
         val method = GetMethod(url)
 
-        if(!query.isNullOrEmpty()) {
+        if (!query.isNullOrEmpty()) {
             method.queryString = query
+
+            if (token != null) {
+                method.queryString += "&token=$token"
+            }
+        } else if (token != null) {
+            method.queryString = "token=$token"
         }
 
         val statusCode = client.executeMethod(method)
@@ -280,9 +294,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     @Throws(IOException::class)
-    private fun getRanges(url: String, dto: NightscoutDTO) {
+    private fun getRanges(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = "$url/status.json"
-        val json = getJson(endpoint, null)
+        val json = getJson(endpoint, token, null)
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val units = jsonObject.get("settings").asJsonObject.get("units").asString
@@ -300,27 +314,27 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     @Throws(MalformedJsonException::class)
-    private fun getGlucoseJson(url: String): String {
+    private fun getGlucoseJson(url: String, token: String?): String {
         val endpoint = "$url/entries/sgv.json"
 
-        val json = getJson(endpoint, "count=1")
+        val json = getJson(endpoint, token, "count=1")
 
         val jsonArray = JsonParser().parse(json).asJsonArray
         val arraySize = jsonArray.size()
 
         // SGV endpoint may be empty in some cases, fall back to entries endpoint
         if (arraySize == 0) {
-            return getGlucoseJsonFallback(url)
+            return getGlucoseJsonFallback(url, token)
         }
 
         return json
     }
 
     @Throws(MalformedJsonException::class)
-    private fun getGlucoseJsonFallback(url: String): String {
+    private fun getGlucoseJsonFallback(url: String, token: String?): String {
         val endpoint = "$url/entries.json"
 
-        val json = getJson(endpoint, "count=1")
+        val json = getJson(endpoint, token, "count=1")
 
         val jsonArray = JsonParser().parse(json).asJsonArray
         val arraySize = jsonArray.size()
@@ -334,8 +348,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     @Throws(IOException::class, UnknownUnitException::class)
-    private fun getEntries(url: String, dto: NightscoutDTO) {
-        val json = getGlucoseJson(url)
+    private fun getEntries(url: String, token: String?, dto: NightscoutDTO) {
+        val json = getGlucoseJson(url, token)
 
         if (json.isEmpty()) {
             throw NoNightscoutDataException()
@@ -387,9 +401,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         dto.trend = trend
     }
 
-    private fun getSettings(url: String, dto: NightscoutDTO) {
+    private fun getSettings(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = "$url/status.json"
-        val json = getJson(endpoint, null)
+        val json = getJson(endpoint, token, null)
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val settings = jsonObject.get("settings").asJsonObject
@@ -403,6 +417,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val i = Instant.ofEpochSecond(epoch!! / 1000)
         return ZonedDateTime.ofInstant(i, ZoneOffset.UTC)
+    }
 
+    private fun getToken(user: User): String? {
+        if (NightscoutDAO.getInstance().isNightscoutToken(user)) {
+            return NightscoutDAO.getInstance().getNightscoutToken(user)
+        }
+
+        return null
     }
 }

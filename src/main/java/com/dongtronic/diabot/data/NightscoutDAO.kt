@@ -53,6 +53,28 @@ class NightscoutDAO private constructor() {
         }
     }
 
+    fun isNightscoutToken(user: User): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+
+        return !jedis!!.get(redisKey).isNullOrEmpty()
+    }
+
+    fun getNightscoutToken(user: User): String {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+
+        return jedis!!.get(redisKey).toString()
+    }
+
+    fun setNightscoutToken(user: User, token: String) {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+
+        if (token.isNotEmpty()) {
+            jedis!!.set(redisKey, token)
+        } else {
+            jedis!!.del(redisKey)
+        }
+    }
+
     fun listUsers(): TreeMap<String, String> {
         val keys = jedis!!.keys(RedisKeyFormats.allNightscoutUrlsFormat)
         val result = TreeMap<String, String>()
