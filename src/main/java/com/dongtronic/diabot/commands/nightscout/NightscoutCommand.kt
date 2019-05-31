@@ -123,6 +123,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         var avatarUrl: String? = null
+        var token: String? = null
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
@@ -145,10 +146,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
+            token = getToken(event.message.mentionedUsers[0])
             avatarUrl = event.message.mentionedUsers[0].avatarUrl
         }
 
-        buildNightscoutResponse(endpoint, null, avatarUrl, event)
+        buildNightscoutResponse(endpoint, token, avatarUrl, event)
     }
 
     private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
