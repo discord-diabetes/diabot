@@ -1,1 +1,1 @@
-web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/diabot-1.12.2jar
+bot: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/diabot-1.12.2jar
