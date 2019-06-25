@@ -66,15 +66,9 @@ task fatJar(type: Jar) {
     with jar
 }
 
-task stage(dependsOn: ['build', 'clean'])
+task stage(dependsOn: ['build', 'clean', 'fatJar'])
 build.mustRunAfter clean
-
-task copyToLib(type: Copy) {
-    into "$buildDir/libs"
-    from(configurations.compile)
-}
-
-stage.dependsOn(copyToLib)
+fatJar.mustRunAfter build
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
