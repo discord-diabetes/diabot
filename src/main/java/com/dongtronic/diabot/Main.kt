@@ -23,8 +23,6 @@ import javax.security.auth.login.LoginException
 
 object Main {
 
-    private val logger = LoggerFactory.getLogger(Main::class.java)
-
     @Throws(LoginException::class)
     @JvmStatic
     fun main(args: Array<String>) {
