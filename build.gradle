@@ -66,6 +66,9 @@ task fatJar(type: Jar) {
     with jar
 }
 
+task stage(dependsOn: ['build', 'clean'])
+build.mustRunAfter clean
+
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
