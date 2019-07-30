@@ -72,7 +72,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         try {
             getEntries(endpoint, token, dto)
-            getRanges(endpoint, token, dto)
             processPebble(endpoint, token, dto)
             getSettings(endpoint, token, dto)
         } catch (exception: NoNightscoutDataException) {
@@ -295,26 +294,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return body
     }
 
-    @Throws(IOException::class)
-    private fun getRanges(url: String, token: String?, dto: NightscoutDTO) {
-        val endpoint = "$url/status.json"
-        val json = getJson(endpoint, token, null)
-
-        val jsonObject = JsonParser().parse(json).asJsonObject
-        val units = jsonObject.get("settings").asJsonObject.get("units").asString
-        val ranges = jsonObject.get("settings").asJsonObject.get("thresholds").asJsonObject
-        val low = ranges.get("bgLow").asInt
-        val bottom = ranges.get("bgTargetBottom").asInt
-        val top = ranges.get("bgTargetTop").asInt
-        val high = ranges.get("bgHigh").asInt
-
-        dto.low = low
-        dto.bottom = bottom
-        dto.top = top
-        dto.high = high
-        dto.units = units
-    }
-
     @Throws(MalformedJsonException::class)
     private fun getGlucoseJson(url: String, token: String?): String {
         val endpoint = "$url/entries/sgv.json"
@@ -409,10 +388,21 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val settings = jsonObject.get("settings").asJsonObject
+        val ranges = settings.get("thresholds").asJsonObject
 
         val title = settings.get("customTitle").asString
+        val units = settings.get("units").asString
+        val low = ranges.get("bgLow").asInt
+        val bottom = ranges.get("bgTargetBottom").asInt
+        val top = ranges.get("bgTargetTop").asInt
+        val high = ranges.get("bgHigh").asInt
 
         dto.title = title
+        dto.low = low
+        dto.bottom = bottom
+        dto.top = top
+        dto.high = high
+        dto.units = units
     }
 
     private fun getTimestamp(epoch: Long?): ZonedDateTime {
