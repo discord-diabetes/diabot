@@ -71,9 +71,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val dto = NightscoutDTO()
 
         try {
+            getSettings(endpoint, token, dto)
             getEntries(endpoint, token, dto)
             processPebble(endpoint, token, dto)
-            getSettings(endpoint, token, dto)
         } catch (exception: NoNightscoutDataException) {
             event.reactError()
             logger.info("No nightscout data from $endpoint")
