@@ -183,7 +183,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOpts: String, builder: EmbedBuilder) {
-        if(displayOpts.contains("trend")) builder.setTitle(dto.title)
+        if(displayOpts.contains("title")) builder.setTitle(dto.title)
 
         val mmolString: String
         val mgdlString: String
