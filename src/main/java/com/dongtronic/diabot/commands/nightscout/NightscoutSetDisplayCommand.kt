@@ -35,8 +35,11 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
             }
 
             args.isNotEmpty() -> {
+                var options = args
                 // Prioritize `none` option over any others provided
-                val options = if(args.contains("none")) arrayOf("none") else args
+                if(options.contains("none")) {
+                    options = arrayOf("none")
+                }
 
                 // verify options and set
                 for(opt in options) {
