@@ -68,7 +68,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOptions: String, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOptions: Array<String>, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
@@ -125,7 +125,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         var avatarUrl: String? = null
         var token: String? = null
-        var displayOptions: String = getDefaultDisplayOptions()
+        var displayOptions: Array<String> = getDefaultDisplayOptions()
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
@@ -182,7 +182,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: String, builder: EmbedBuilder) {
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
         if(displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val mmolString: String
@@ -423,9 +423,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return null
     }
 
-    private fun getDisplayOptions(user: User): String {
+    private fun getDisplayOptions(user: User): Array<String> {
         if (NightscoutDAO.getInstance().isNightscoutDisplay(user)) {
-            return NightscoutDAO.getInstance().getNightscoutDisplay(user)
+            return NightscoutDAO.getInstance().getNightscoutDisplay(user).split(" ").toTypedArray()
         }
         // if there are no options set in redis, then have the default be all options
         return getDefaultDisplayOptions()
@@ -434,7 +434,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     /**
      * Provides display options with everything enabled
      */
-    private fun getDefaultDisplayOptions(): String {
-        return NightscoutSetDisplayCommand.validOptions.joinToString(" ")
+    private fun getDefaultDisplayOptions(): Array<String> {
+        return NightscoutSetDisplayCommand.validOptions
     }
 }
