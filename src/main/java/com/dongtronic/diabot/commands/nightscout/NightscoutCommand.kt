@@ -40,7 +40,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 NightscoutSetUrlCommand(category, this),
                 NightscoutDeleteCommand(category, this),
                 NightscoutPublicCommand(category, this),
-                NightscoutSetTokenCommand(category, this)
+                NightscoutSetTokenCommand(category, this),
+                NightscoutSetDisplayCommand(category, this)
         )
     }
 
@@ -67,7 +68,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, token: String?, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOptions: Array<String>, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
@@ -95,7 +96,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val builder = EmbedBuilder()
 
-        buildResponse(dto, avatarUrl, builder)
+        buildResponse(dto, avatarUrl, displayOptions, builder)
 
         val embed = builder.build()
 
@@ -115,14 +116,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
 
         val token = getToken(event.author)
+        val displayOptions = getDisplayOptions(event.author)
 
-        buildNightscoutResponse(endpoint, token, event.author.avatarUrl, event)
+        buildNightscoutResponse(endpoint, token, displayOptions, event.author.avatarUrl, event)
     }
 
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         var avatarUrl: String? = null
         var token: String? = null
+        var displayOptions: Array<String> = getDefaultDisplayOptions()
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
@@ -146,10 +149,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
             token = getToken(event.message.mentionedUsers[0])
+            displayOptions = getDisplayOptions(event.message.mentionedUsers[0])
             avatarUrl = event.message.mentionedUsers[0].avatarUrl
         }
 
-        buildNightscoutResponse(endpoint, token, avatarUrl, event)
+        buildNightscoutResponse(endpoint, token, displayOptions, avatarUrl, event)
     }
 
     private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
@@ -178,8 +182,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, builder: EmbedBuilder) {
-        builder.setTitle(dto.title)
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
+        if (displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val mmolString: String
         val mgdlString: String
@@ -194,17 +198,17 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        builder.addField("trend", trendString, true)
-        if (dto.iob != 0.0F) {
+        if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
+        if (dto.iob != 0.0F && displayOptions.contains("iob")) {
             builder.addField("iob", dto.iob.toString(), true)
         }
-        if (dto.cob != 0) {
+        if (dto.cob != 0 && displayOptions.contains("cob")) {
             builder.addField("cob", dto.cob.toString(), true)
         }
 
         setResponseColor(dto, builder)
 
-        if (avatarUrl != null) {
+        if (avatarUrl != null && displayOptions.contains("avatar")) {
             builder.setThumbnail(avatarUrl)
         }
 
@@ -417,5 +421,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         return null
+    }
+
+    private fun getDisplayOptions(user: User): Array<String> {
+        if (NightscoutDAO.getInstance().isNightscoutDisplay(user)) {
+            return NightscoutDAO.getInstance().getNightscoutDisplay(user).split(" ").toTypedArray()
+        }
+        // if there are no options set in redis, then have the default be all options
+        return getDefaultDisplayOptions()
+    }
+
+    /**
+     * Provides display options with everything enabled
+     */
+    private fun getDefaultDisplayOptions(): Array<String> {
+        return NightscoutSetDisplayCommand.validOptions
     }
 }
