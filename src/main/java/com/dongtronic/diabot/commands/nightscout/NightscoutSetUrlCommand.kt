@@ -32,12 +32,12 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
 
         try {
             setNightscoutUrl(event.author, args[0])
+            event.reply("Set Nightscout URL for ${event.author.name}")
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)
         }
 
         try {
-            event.reply("Set Nightscout URL for ${event.author.name}")
             event.message.delete().reason("privacy").queue()
         } catch (ex: InsufficientPermissionException) {
             event.replyError("Could not remove command message due to missing `manage messages` permission. Please remove the message yourself to protect your privacy.")
