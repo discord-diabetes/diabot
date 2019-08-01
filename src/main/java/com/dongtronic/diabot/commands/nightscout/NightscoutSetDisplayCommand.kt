@@ -12,6 +12,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     companion object {
         val validOptions = arrayOf("none", "title", "trend", "cob", "iob", "avatar")
     }
+
     private val logger = LoggerFactory.getLogger(NightscoutSetDisplayCommand::class.java)
 
     init {
@@ -37,13 +38,13 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
             args.isNotEmpty() -> {
                 var options = args
                 // Prioritize `none` option over any others provided
-                if(options.contains("none")) {
+                if (options.contains("none")) {
                     options = arrayOf("none")
                 }
 
                 // verify options and set
-                for(opt in options) {
-                    if(!validOptions.contains(opt.toLowerCase())) {
+                for (opt in options) {
+                    if (!validOptions.contains(opt.toLowerCase())) {
                         event.replyError("Unsupported display option provided, use `diabot nightscout display` to see possible options")
                         return
                     }

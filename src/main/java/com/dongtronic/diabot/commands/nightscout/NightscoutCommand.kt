@@ -183,7 +183,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
-        if(displayOptions.contains("title")) builder.setTitle(dto.title)
+        if (displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val mmolString: String
         val mgdlString: String
@@ -198,7 +198,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        if(displayOptions.contains("trend")) builder.addField("trend", trendString, true)
+        if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
         if (dto.iob != 0.0F && displayOptions.contains("iob")) {
             builder.addField("iob", dto.iob.toString(), true)
         }
