@@ -68,7 +68,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOpts: String, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOptions: String, avatarUrl: String?, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
@@ -96,7 +96,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val builder = EmbedBuilder()
 
-        buildResponse(dto, avatarUrl, displayOpts, builder)
+        buildResponse(dto, avatarUrl, displayOptions, builder)
 
         val embed = builder.build()
 
@@ -182,8 +182,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOpts: String, builder: EmbedBuilder) {
-        if(displayOpts.contains("title")) builder.setTitle(dto.title)
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: String, builder: EmbedBuilder) {
+        if(displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val mmolString: String
         val mgdlString: String
@@ -198,17 +198,17 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        if(displayOpts.contains("trend")) builder.addField("trend", trendString, true)
-        if (dto.iob != 0.0F && displayOpts.contains("iob")) {
+        if(displayOptions.contains("trend")) builder.addField("trend", trendString, true)
+        if (dto.iob != 0.0F && displayOptions.contains("iob")) {
             builder.addField("iob", dto.iob.toString(), true)
         }
-        if (dto.cob != 0 && displayOpts.contains("cob")) {
+        if (dto.cob != 0 && displayOptions.contains("cob")) {
             builder.addField("cob", dto.cob.toString(), true)
         }
 
         setResponseColor(dto, builder)
 
-        if (avatarUrl != null && displayOpts.contains("avatar")) {
+        if (avatarUrl != null && displayOptions.contains("avatar")) {
             builder.setThumbnail(avatarUrl)
         }
 
