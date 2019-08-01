@@ -57,12 +57,10 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     }
 
     private fun setNightscoutDisplay(user: User, options: String) {
-        logger.info("Setting NS display options for ${user.name} to: $options")
         NightscoutDAO.getInstance().setNightscoutDisplay(user, options)
     }
 
     private fun resetNightscoutDisplay(user: User) {
-        logger.info("Resetting NS display options for ${user.name}")
         NightscoutDAO.getInstance().setNightscoutDisplay(user, "")
     }
 }
