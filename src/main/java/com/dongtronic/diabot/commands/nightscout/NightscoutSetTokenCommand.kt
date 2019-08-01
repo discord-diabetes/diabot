@@ -54,6 +54,6 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
     }
 
     private fun deleteNightscoutToken(user: User) {
-        NightscoutDAO.getInstance().setNightscoutToken(user, "")
+        NightscoutDAO.getInstance().removeNightscoutToken(user)
     }
 }

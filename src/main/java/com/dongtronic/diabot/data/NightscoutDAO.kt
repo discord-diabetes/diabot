@@ -75,6 +75,12 @@ class NightscoutDAO private constructor() {
         }
     }
 
+    fun removeNightscoutToken(user: User) {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+
+        jedis!!.del(redisKey)
+    }
+
     fun listUsers(): TreeMap<String, String> {
         val keys = jedis!!.keys(RedisKeyFormats.allNightscoutUrlsFormat)
         val result = TreeMap<String, String>()
