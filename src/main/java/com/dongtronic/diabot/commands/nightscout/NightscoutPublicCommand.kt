@@ -30,7 +30,7 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
 
         val mode = args[0].toUpperCase()
 
-        if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y") {
+        if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
             NightscoutDAO.getInstance().setNightscoutPublic(event.author, true)
             event.reply("Nightscout data for ${NicknameUtils.determineAuthorDisplayName(event)} set to public")
         } else {
