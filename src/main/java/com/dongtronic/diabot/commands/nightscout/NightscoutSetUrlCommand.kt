@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.core.exceptions.InsufficientPermissionException
 import org.slf4j.LoggerFactory
 
 class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -35,8 +36,12 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
             event.replyError(ex.message)
         }
 
-        event.message.delete().reason("privacy").queue()
-        event.reply("Set Nightscout URL for ${event.author.name}")
+        try {
+            event.reply("Set Nightscout URL for ${event.author.name}")
+            event.message.delete().reason("privacy").queue()
+        } catch (ex: InsufficientPermissionException) {
+            event.replyError("Could not remove command message due to missing `manage messages` permission. Please remove the message yourself to protect your privacy.")
+        }
     }
 
     private fun validateNightscoutUrl(url: String): String {
