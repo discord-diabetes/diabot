@@ -68,11 +68,13 @@ class NightscoutDAO private constructor() {
     fun setNightscoutDisplay(user: User, display: String) {
         val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
 
-        if (display.isNotEmpty()) {
-            jedis!!.set(redisKey, display)
-        } else {
-            jedis!!.del(redisKey)
-        }
+        jedis!!.set(redisKey, display)
+    }
+
+    fun removeNightscoutDisplay(user: User) {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+
+        jedis!!.del(redisKey)
     }
 
     fun isNightscoutToken(user: User): Boolean {

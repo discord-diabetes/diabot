@@ -65,6 +65,6 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     }
 
     private fun resetNightscoutDisplay(user: User) {
-        NightscoutDAO.getInstance().setNightscoutDisplay(user, "")
+        NightscoutDAO.getInstance().removeNightscoutDisplay(user)
     }
 }
