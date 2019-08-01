@@ -65,15 +65,15 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Diabo
     private fun addChannel(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if (args.size != 3) {
+        if (args.size != 2) {
             throw IllegalArgumentException("Channel ID is required")
         }
 
-        if (!StringUtils.isNumeric(args[2])) {
+        if (!StringUtils.isNumeric(args[1])) {
             throw IllegalArgumentException("Channel ID must be numeric")
         }
 
-        val channelId = args[2]
+        val channelId = args[1]
 
         val channel = event.jda.getTextChannelById(channelId)
                 ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
@@ -86,15 +86,15 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Diabo
     private fun deleteChannel(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if (args.size != 3) {
+        if (args.size != 2) {
             throw IllegalArgumentException("Channel ID is required")
         }
 
-        if (!StringUtils.isNumeric(args[2])) {
+        if (!StringUtils.isNumeric(args[1])) {
             throw IllegalArgumentException("Channel ID must be numeric")
         }
 
-        val channelId = args[2]
+        val channelId = args[1]
 
         val channel = event.jda.getTextChannelById(channelId)
                 ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
