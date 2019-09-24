@@ -69,8 +69,10 @@ class ConversionListener : ListenerAdapter() {
                 event.message.addReaction("\uD83D\uDE0F").queue()
             }
 
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (result.mmol == 5.5 || result.mgdl == 100) {
+            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+            if (result.mmol == 5.5
+                    || result.mmol == 10.0
+                    || result.mgdl == 100) {
                 event.message.addReaction("\uD83D\uDCAF").queue()
             }
 
