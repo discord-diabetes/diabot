@@ -151,6 +151,40 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                         domain = domain.trimEnd('/')
                     }
 
+                    try {
+                        getJson("$domain/api/v1/status", null, null)
+                    } catch (exception: NightscoutStatusException) {
+                        if (exception.status == 401) {
+                            val users = NightscoutDAO.getInstance().listUsers()
+                            var userId: String? = null
+
+                            for ((user, value) in users) {
+                                if(value == domain) {
+                                    userId = user.substring(0, user.indexOf(":"))
+                                    break
+                                }
+                            }
+
+                            if(userId == null) {
+                                throw IllegalArgumentException("Token secured Nightscout does not belong to any user.")
+                            }
+
+                            val user: User = event.jda.getUserById(userId)!!
+
+                            if(!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+                                throw IllegalArgumentException("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                            }
+
+                            if(!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+                                throw IllegalArgumentException("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                            }
+
+                            token = NightscoutDAO.getInstance().getNightscoutToken(user)
+                            displayOptions = getDisplayOptions(user)
+                            avatarUrl = user.avatarUrl
+                        }
+                    }
+
                     "$domain/api/v1/"
                 } else {
                     "https://$hostname.herokuapp.com/api/v1/"
