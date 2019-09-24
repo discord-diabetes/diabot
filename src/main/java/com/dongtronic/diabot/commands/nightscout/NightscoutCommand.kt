@@ -143,7 +143,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
             else -> {
                 val hostname = args[0]
-                "https://$hostname.herokuapp.com/api/v1/"
+                if (hostname.contains("http://") || hostname.contains("https://")) {
+                    var domain = hostname;
+                    if (domain.endsWith("/")) {
+                        domain = domain.trimEnd('/')
+                    }
+
+                    "$domain/api/v1/"
+                } else {
+                    "https://$hostname.herokuapp.com/api/v1/"
+                }
             }
         }
 
