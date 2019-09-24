@@ -105,8 +105,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
                 it.addReaction("\uD83D\uDE0F").queue()
             }
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
+            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+            if (dto.glucose!!.mgdl == 100
+                    || dto.glucose!!.mmol == 5.5
+                    || dto.glucose!!.mmol == 10.0) {
                 it.addReaction("\uD83D\uDCAF").queue()
             }
         }
