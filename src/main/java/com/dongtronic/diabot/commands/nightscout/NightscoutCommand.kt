@@ -154,13 +154,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                     try {
                         getJson("$domain/api/v1/status", null, null)
                     } catch (exception: NightscoutStatusException) {
+                        // If an unauthorized error occurs when trying to retrieve the status page, try to find token
                         if (exception.status == 401) {
                             val users = NightscoutDAO.getInstance().listUsers()
                             var userId: String? = null
+                            var user: User? = null
 
-                            for ((user, value) in users) {
+                            // Loop through database and find a userId that matches with the domain provided
+                            for ((uid, value) in users) {
                                 if(value == domain) {
-                                    userId = user.substring(0, user.indexOf(":"))
+                                    userId = uid.substring(0, uid.indexOf(":"))
                                     break
                                 }
                             }
@@ -169,14 +172,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                                 throw IllegalArgumentException("Token secured Nightscout does not belong to any user.")
                             }
 
-                            val user: User = event.jda.getUserById(userId)!!
+                            user = event.jda.getUserById(userId)!!
 
                             if(!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
-                                throw IllegalArgumentException("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                                return
                             }
 
                             if(!NightscoutDAO.getInstance().isNightscoutToken(user)) {
-                                throw IllegalArgumentException("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                                return
                             }
 
                             token = NightscoutDAO.getInstance().getNightscoutToken(user)
