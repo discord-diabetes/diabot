@@ -157,8 +157,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                         // If an unauthorized error occurs when trying to retrieve the status page, try to find token
                         if (exception.status == 401) {
                             val users = NightscoutDAO.getInstance().listUsers()
+                            val user: User?
                             var userId: String? = null
-                            var user: User? = null
 
                             // Loop through database and find a userId that matches with the domain provided
                             for ((uid, value) in users) {
