@@ -151,43 +151,31 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                         domain = domain.trimEnd('/')
                     }
 
-                    try {
-                        getJson("$domain/api/v1/status", null, null)
-                    } catch (exception: NightscoutStatusException) {
-                        // If an unauthorized error occurs when trying to retrieve the status page, try to find token
-                        if (exception.status == 401) {
-                            val users = NightscoutDAO.getInstance().listUsers()
-                            val user: User?
-                            var userId: String? = null
+                    // Test if the Nightscout hosted at the given domain requires a token
+                    if (testNightscoutForToken(domain)) {
+                        // Get user ID from domain. If no user is found, throw an exception
+                        val userId = getUserIdForDomain(domain)
+                        val user: User
 
-                            // Loop through database and find a userId that matches with the domain provided
-                            for ((uid, value) in users) {
-                                if(value == domain) {
-                                    userId = uid.substring(0, uid.indexOf(":"))
-                                    break
-                                }
-                            }
-
-                            if(userId == null) {
-                                throw IllegalArgumentException("Token secured Nightscout does not belong to any user.")
-                            }
-
-                            user = event.jda.getUserById(userId)!!
-
-                            if(!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
-                                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
-                                return
-                            }
-
-                            if(!NightscoutDAO.getInstance().isNightscoutToken(user)) {
-                                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
-                                return
-                            }
-
-                            token = NightscoutDAO.getInstance().getNightscoutToken(user)
-                            displayOptions = getDisplayOptions(user)
-                            avatarUrl = user.avatarUrl
+                        if (userId == null) {
+                            throw IllegalArgumentException("Token secured Nightscout does not belong to any user.")
                         }
+
+                        user = event.jda.getUserById(userId)
+
+                        if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                            return
+                        }
+
+                        if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                            return
+                        }
+
+                        token = NightscoutDAO.getInstance().getNightscoutToken(user)
+                        displayOptions = getDisplayOptions(user)
+                        avatarUrl = user.avatarUrl
                     }
 
                     "$domain/api/v1/"
@@ -313,6 +301,41 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
+    }
+
+    /**
+     * Tests whether a Nightscout requires a token to be read
+     *
+     * @return true if a token is required, false if not
+     */
+    private fun testNightscoutForToken(domain: String): Boolean {
+        try {
+            getJson("$domain/api/v1/status", null, null)
+        } catch (exception: NightscoutStatusException) {
+            // If an unauthorized error occurs when trying to retrieve the status page, a token is needed
+            if (exception.status == 401) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Finds a user ID in the redis database matching with the Nightscout domain given
+     */
+    private fun getUserIdForDomain(domain: String): String? {
+        val users = NightscoutDAO.getInstance().listUsers()
+
+        // Loop through database and find a userId that matches with the domain provided
+        for ((uid, value) in users) {
+            if (value == domain) {
+                return uid.substring(0, uid.indexOf(":"))
+            }
+        }
+
+        // If no users are found with the given domain, return null
+        return null
     }
 
     private fun getNightscoutPublic(user: User): Boolean {
