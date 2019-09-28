@@ -362,6 +362,15 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return null
     }
 
+    /**
+     * Sets the data inside the given NightscoutUserDTO for the given user
+     */
+    private fun getUserDto(user: User, userDTO: NightscoutUserDTO) {
+        userDTO.token = getToken(user)
+        userDTO.displayOptions = getDisplayOptions(user)
+        userDTO.avatarUrl = user.avatarUrl
+    }
+
     private fun getNightscoutPublic(user: User): Boolean {
         return NightscoutDAO.getInstance().isNightscoutPublic(user)
     }
