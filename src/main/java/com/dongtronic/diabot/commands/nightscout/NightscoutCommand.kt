@@ -4,6 +4,7 @@ import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
+import com.dongtronic.diabot.data.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
@@ -146,37 +147,18 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             else -> {
                 val hostname = args[0]
                 if (hostname.contains("http://") || hostname.contains("https://")) {
-                    var domain = hostname;
+                    var domain = hostname
                     if (domain.endsWith("/")) {
                         domain = domain.trimEnd('/')
                     }
 
-                    // Test if the Nightscout hosted at the given domain requires a token
-                    if (testNightscoutForToken(domain)) {
-                        // Get user ID from domain. If no user is found, throw an exception
-                        val userId = getUserIdForDomain(domain)
-                        val user: User
+                    val userData = getUnstoredDataForDomain(domain, event)
+                    if (userData == null)
+                        return
 
-                        if (userId == null) {
-                            throw IllegalArgumentException("Token secured Nightscout does not belong to any user.")
-                        }
-
-                        user = event.jda.getUserById(userId)
-
-                        if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
-                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
-                            return
-                        }
-
-                        if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
-                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
-                            return
-                        }
-
-                        token = NightscoutDAO.getInstance().getNightscoutToken(user)
-                        displayOptions = getDisplayOptions(user)
-                        avatarUrl = user.avatarUrl
-                    }
+                    token = userData.token
+                    displayOptions = userData.displayOptions
+                    avatarUrl = userData.avatarUrl
 
                     "$domain/api/v1/"
                 } else {
@@ -301,6 +283,48 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
+    }
+
+    /**
+     * Gets token, display options, and an avatar URL for the domain given.
+     * Replies with an error and returns null if no user is found, nightscout data is private, or if no token is found.
+     *
+     * @return null if execution should stop
+     */
+    private fun getUnstoredDataForDomain(domain: String, event: CommandEvent): NightscoutUserDTO? {
+        val userDTO = NightscoutUserDTO()
+
+        // Test if the Nightscout hosted at the given domain requires a token
+        // If a token is not needed, return the default NightscoutUserDTO
+        if (testNightscoutForToken(domain)) {
+            // Get user ID from domain. If no user is found, respond with an error
+            val userId = getUserIdForDomain(domain)
+            val user: User
+
+            if (userId == null) {
+                event.replyError("Token secured Nightscout does not belong to any user.")
+                return null
+            }
+
+            user = event.jda.getUserById(userId)
+
+            if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+                // Nightscout data is private
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                return null
+            }
+
+            if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+                // No token found
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                return null
+            }
+
+            userDTO.token = NightscoutDAO.getInstance().getNightscoutToken(user)
+            userDTO.displayOptions = getDisplayOptions(user)
+            userDTO.avatarUrl = user.avatarUrl
+        }
+        return userDTO
     }
 
     /**
