@@ -15,7 +15,9 @@ import com.google.gson.stream.MalformedJsonException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.core.entities.impl.DataMessage
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
@@ -24,10 +26,12 @@ import java.io.IOException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
+    val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
 
     init {
         this.name = "nightscout"
@@ -94,23 +98,29 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             return
         }
 
-        val builder = EmbedBuilder()
+        val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id)
+        var response: Message = DataMessage(false, "", "", null) // dirty workaround
 
-        buildResponse(dto, avatarUrl, displayOptions, builder)
+        if (shortReply) {
+            val message = buildShortResponse(dto, displayOptions)
+            event.reply(message) { response = it }
+        } else {
+            val builder = EmbedBuilder()
+            buildResponse(dto, avatarUrl, displayOptions, builder)
+            val embed = builder.build()
+            event.reply(embed) { response = it }
+        }
 
-        val embed = builder.build()
-
-        event.reply(embed) {
-            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
-                it.addReaction("\uD83D\uDE0F").queue()
-            }
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
-                it.addReaction("\uD83D\uDCAF").queue()
-            }
+        // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+        if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
+            response.addReaction("\uD83D\uDE0F").queue()
+        }
+        // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
+        if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
+            response.addReaction("\uD83D\uDCAF").queue()
         }
     }
+
 
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
@@ -182,19 +192,46 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
+    private fun buildShortResponse(dto: NightscoutDTO, displayOptions: Array<String>): String {
+        // Name: mmol/L: 6.1(+0.3) | mg/dL: 109(+5) | trend: → | iob: 0.56 | cob: 3 | Today at 8:01 PM
+
+        // title: mmol/L: value(delta) | mg/dL: value(delta) | trend: <trend>
+
+        val response: StringBuilder = StringBuilder()
+
+        if (displayOptions.contains("title")) {
+            response.append(dto.title).append(": ")
+        }
+
+        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
+
+        response.append("mmol/L: ").append(mmolString).append(" | ").append("mg/dL: ").append(mgdlString).append(" | ")
+
+        if (displayOptions.contains("trend")) {
+            val trendString = trendArrows[dto.trend]
+            response.append("trend: ").append(trendString).append(" | ")
+        }
+
+        if (displayOptions.contains("iob") && dto.iob != 0.0F) {
+            response.append("iob: ").append(dto.iob).append(" | ")
+        }
+
+        if (displayOptions.contains("cob") && dto.cob != 0) {
+            response.append("cob: ").append(dto.cob).append(" | ")
+        }
+
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss (O)")
+        response.append(dto.dateTime!!.format(formatter))
+
+        return response.toString()
+    }
+
     private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
         if (displayOptions.contains("title")) builder.setTitle(dto.title)
 
-        val mmolString: String
-        val mgdlString: String
-        if (dto.delta != null) {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
-        } else {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
-        }
-        val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
+        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
+
         val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
@@ -218,6 +255,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         if (dto.dateTime!!.plusMinutes(15).toInstant().isBefore(ZonedDateTime.now().toInstant())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
+    }
+
+    private fun buildGlucoseStrings(dto: NightscoutDTO): Pair<String, String> {
+        val mmolString: String
+        val mgdlString: String
+        if (dto.delta != null) {
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
+        } else {
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
+        }
+        return Pair(mmolString, mgdlString)
     }
 
     private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {

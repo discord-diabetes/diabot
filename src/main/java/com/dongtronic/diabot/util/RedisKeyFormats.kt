@@ -6,9 +6,12 @@ object RedisKeyFormats {
     const val nightscoutTokenFormat = "{{userid}}:nightscouttoken"
     const val nightscoutDisplayFormat = "{{userid}}:nightscoutdisplay"
     const val allNightscoutUrlsFormat = "*:nightscouturl"
+    const val nightscoutShortChannelsFormat = "{{guildid}}:nightscoutshortchannels"
+
     const val adminChannelIds = "{{guildid}}:adminchannels"
     const val simpleRewards = "{{guildid}}:simplerewards"
     const val rewardOptout = "{{guildid}}:rewardoptouts"
+
     const val usernamePattern = "{{guildid}}:usernamepattern"
     const val enforceUsernames = "{{guildid}}:enforceusernames"
     const val usernameHint = "{{guildid}}:usernamehint"
