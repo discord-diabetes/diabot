@@ -4,6 +4,7 @@ import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
+import com.dongtronic.diabot.data.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
@@ -68,13 +69,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, token: String?, displayOptions: Array<String>, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, userDTO: NightscoutUserDTO, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
-            getSettings(endpoint, token, dto)
-            getEntries(endpoint, token, dto)
-            processPebble(endpoint, token, dto)
+            getSettings(endpoint, userDTO.token, dto)
+            getEntries(endpoint, userDTO.token, dto)
+            processPebble(endpoint, userDTO.token, dto)
         } catch (exception: NoNightscoutDataException) {
             event.reactError()
             logger.info("No nightscout data from $endpoint")
@@ -96,7 +97,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val builder = EmbedBuilder()
 
-        buildResponse(dto, avatarUrl, displayOptions, builder)
+        buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, builder)
 
         val embed = builder.build()
 
@@ -105,8 +106,10 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
                 it.addReaction("\uD83D\uDE0F").queue()
             }
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
+            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+            if (dto.glucose!!.mgdl == 100
+                    || dto.glucose!!.mmol == 5.5
+                    || dto.glucose!!.mmol == 10.0) {
                 it.addReaction("\uD83D\uDCAF").queue()
             }
         }
@@ -114,18 +117,15 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
+        val userDTO = NightscoutUserDTO()
 
-        val token = getToken(event.author)
-        val displayOptions = getDisplayOptions(event.author)
-
-        buildNightscoutResponse(endpoint, token, displayOptions, event.author.avatarUrl, event)
+        getUserDto(event.author, userDTO)
+        buildNightscoutResponse(endpoint, userDTO, event)
     }
 
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        var avatarUrl: String? = null
-        var token: String? = null
-        var displayOptions: Array<String> = getDefaultDisplayOptions()
+        val userDTO = NightscoutUserDTO()
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
@@ -143,17 +143,28 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
             else -> {
                 val hostname = args[0]
-                "https://$hostname.herokuapp.com/api/v1/"
+                if (hostname.contains("http://") || hostname.contains("https://")) {
+                    var domain = hostname
+                    if (domain.endsWith("/")) {
+                        domain = domain.trimEnd('/')
+                    }
+
+                    // If Nightscout data cannot be retrieved from this domain then stop
+                    if (!getUnstoredDataForDomain(domain, event, userDTO))
+                        return
+
+                    "$domain/api/v1/"
+                } else {
+                    "https://$hostname.herokuapp.com/api/v1/"
+                }
             }
         }
 
         if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
-            token = getToken(event.message.mentionedUsers[0])
-            displayOptions = getDisplayOptions(event.message.mentionedUsers[0])
-            avatarUrl = event.message.mentionedUsers[0].avatarUrl
+            getUserDto(event.message.mentionedUsers[0], userDTO)
         }
 
-        buildNightscoutResponse(endpoint, token, displayOptions, avatarUrl, event)
+        buildNightscoutResponse(endpoint, userDTO, event)
     }
 
     private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
@@ -263,6 +274,88 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
+    }
+
+    /**
+     * Gets token, display options, and an avatar URL for the domain given.
+     * Replies with an error and returns false if no user is found, nightscout data is private, or if no token is found.
+     *
+     * @return if data can be retrieved from the given domain
+     */
+    private fun getUnstoredDataForDomain(domain: String, event: CommandEvent, userDTO: NightscoutUserDTO): Boolean {
+        // Test if the Nightscout hosted at the given domain requires a token
+        // If a token is not needed, skip grabbing data
+        if (testNightscoutForToken(domain)) {
+            // Get user ID from domain. If no user is found, respond with an error
+            val userId = getUserIdForDomain(domain)
+            val user: User
+
+            if (userId == null) {
+                event.replyError("Token secured Nightscout does not belong to any user.")
+                return false
+            }
+
+            user = event.jda.getUserById(userId)
+
+            if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+                // Nightscout data is private
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                return false
+            }
+
+            if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+                // No token found
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                return false
+            }
+
+            getUserDto(user, userDTO)
+        }
+        return true
+    }
+
+    /**
+     * Tests whether a Nightscout requires a token to be read
+     *
+     * @return true if a token is required, false if not
+     */
+    private fun testNightscoutForToken(domain: String): Boolean {
+        try {
+            getJson("$domain/api/v1/status", null, null)
+        } catch (exception: NightscoutStatusException) {
+            // If an unauthorized error occurs when trying to retrieve the status page, a token is needed
+            if (exception.status == 401) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Finds a user ID in the redis database matching with the Nightscout domain given
+     */
+    private fun getUserIdForDomain(domain: String): String? {
+        val users = NightscoutDAO.getInstance().listUsers()
+
+        // Loop through database and find a userId that matches with the domain provided
+        for ((uid, value) in users) {
+            if (value == domain) {
+                return uid.substring(0, uid.indexOf(":"))
+            }
+        }
+
+        // If no users are found with the given domain, return null
+        return null
+    }
+
+    /**
+     * Sets the data inside the given NightscoutUserDTO for the given user
+     */
+    private fun getUserDto(user: User, userDTO: NightscoutUserDTO) {
+        userDTO.token = getToken(user)
+        userDTO.displayOptions = getDisplayOptions(user)
+        userDTO.avatarUrl = user.avatarUrl
     }
 
     private fun getNightscoutPublic(user: User): Boolean {
