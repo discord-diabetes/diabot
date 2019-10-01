@@ -102,12 +102,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)
-            event.reply(message) { addReactions(dto, it) }
+            event.reply(message) { replyMessage -> addReactions(dto, replyMessage) }
         } else {
             val builder = EmbedBuilder()
             buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, builder)
             val embed = builder.build()
-            event.reply(embed) { addReactions(dto, it) }
+            event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
         }
     }
 
