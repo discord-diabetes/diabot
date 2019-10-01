@@ -19,6 +19,7 @@ import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.entities.impl.DataMessage
+import net.dv8tion.jda.core.entities.impl.ReceivedMessage
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
@@ -100,27 +101,27 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id)
-        var response: Message = DataMessage(false, "", "", null) // dirty workaround
+        var response: ReceivedMessage? = null // dirty workaround
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)
-            event.reply(message) { response = it }
+            event.reply(message) { response = it as ReceivedMessage }
         } else {
             val builder = EmbedBuilder()
             buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, builder)
             val embed = builder.build()
-            event.reply(embed) { response = it }
+            event.reply(embed) { response = it as ReceivedMessage }
         }
 
         // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
         if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
-            response.addReaction("\uD83D\uDE0F").queue()
+            response!!.addReaction("\uD83D\uDE0F").queue()
         }
         // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
         if (dto.glucose!!.mgdl == 100
                 || dto.glucose!!.mmol == 5.5
                 || dto.glucose!!.mmol == 10.0) {
-            response.addReaction("\uD83D\uDCAF").queue()
+            response!!.addReaction("\uD83D\uDCAF").queue()
         }
     }
 
