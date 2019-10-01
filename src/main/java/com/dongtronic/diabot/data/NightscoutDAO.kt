@@ -115,7 +115,27 @@ class NightscoutDAO private constructor() {
         }
 
         return result
+    }
 
+    fun listShortChannels(guildId: String): MutableCollection<String> {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        val channelListLength = jedis!!.llen(redisKey)
+
+        return jedis!!.lrange(redisKey, 0, channelListLength - 1)
+    }
+
+    fun addShortChannel(guildId: String, channelId: String) {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        val shortChannels = listShortChannels(guildId)
+
+        if (!shortChannels.contains(channelId)) {
+            jedis!!.lpush(redisKey, channelId)
+        }
+    }
+
+    fun removeShortChannel(guildId: String, channelId: String) {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        jedis!!.lrem(redisKey, 0, channelId)
     }
 
     companion object {
