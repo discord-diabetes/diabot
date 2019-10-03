@@ -5,6 +5,7 @@ import com.dongtronic.diabot.commands.admin.RolesCommand
 import com.dongtronic.diabot.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.commands.info.InfoCommand
 import com.dongtronic.diabot.commands.misc.*
 import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
@@ -18,7 +19,6 @@ import net.dv8tion.jda.core.JDABuilder
 import net.dv8tion.jda.core.OnlineStatus
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Game
-import org.slf4j.LoggerFactory
 import javax.security.auth.login.LoginException
 
 object Main {
@@ -37,6 +37,7 @@ object Main {
         val a1cCategory = Category("A1c estimations")
         val funCategory = Category("Fun")
         val utilitiesCategory = Category("Utilities")
+        val infoCategory = Category("Informative")
 
         // define an eventwaiter, dont forget to add this to the JDABuilder!
         val waiter = EventWaiter()
@@ -80,6 +81,9 @@ object Main {
                 RewardsCommand(utilitiesCategory),
                 GithubCommand(utilitiesCategory),
                 DisclaimerCommand(utilitiesCategory),
+
+                // Info
+                InfoCommand(infoCategory),
 
                 // Fun
                 ExcuseCommand(funCategory),
