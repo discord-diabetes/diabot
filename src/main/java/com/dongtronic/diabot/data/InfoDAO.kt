@@ -64,7 +64,7 @@ class InfoDAO private constructor() {
         jedis!!.del(textKey)
     }
 
-    fun getProjectText(project: String): String? {
+    fun getProjectText(project: String): String {
         val properName = formatProject(project)
 
         if (properName == null) {
@@ -73,7 +73,7 @@ class InfoDAO private constructor() {
 
         val key = RedisKeyFormats.infoText.replace("{{project}}", properName)
 
-        return jedis!!.get(key);
+        return jedis!!.get(key)
     }
 
     fun setProjectText(project: String, description: String) {

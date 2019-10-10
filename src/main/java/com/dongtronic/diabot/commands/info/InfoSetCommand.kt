@@ -32,7 +32,6 @@ class InfoSetCommand(category: Command.Category, parent: Command) : DiabotComman
             val args = event.args.split("[^\\S\r\n]".toRegex()).dropLastWhile { it.isEmpty() }.toList()
 
             if (args.isEmpty() || args.size < 2) {
-                // List all available projects
                 event.replyError("Valid syntax: `diabot info set [project] [description]`")
                 return
             }

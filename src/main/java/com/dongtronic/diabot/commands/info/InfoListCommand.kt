@@ -26,7 +26,6 @@ class InfoListCommand(category: Category, parent: Command) : DiabotCommand(categ
             val args = event.args.split("[^\\S\r\n]".toRegex()).dropLastWhile { it.isEmpty() }.toList()
 
             if (args.isNotEmpty()) {
-                // List all available projects
                 event.replyError("Valid syntax: `diabot info list`")
                 return
             }

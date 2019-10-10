@@ -14,7 +14,7 @@ class InfoDeleteCommand(category: Command.Category, parent: Command) : DiabotCom
 
     init {
         this.name = "delete"
-        this.help = "Delete project informaiton"
+        this.help = "Delete project information"
         this.guildOnly = true
         this.aliases = arrayOf("d", "del", "rem", "remove")
         this.userPermissions = arrayOf(Permission.MANAGE_CHANNEL)
@@ -32,7 +32,6 @@ class InfoDeleteCommand(category: Command.Category, parent: Command) : DiabotCom
             val args = event.args.split("[^\\S\r\n]".toRegex()).dropLastWhile { it.isEmpty() }.toList()
 
             if (args.size != 1) {
-                // List all available projects
                 event.replyError("Valid syntax: `diabot info delete [project]`")
                 return
             }

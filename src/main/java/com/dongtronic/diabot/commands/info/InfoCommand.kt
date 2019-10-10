@@ -36,10 +36,6 @@ class InfoCommand(category: Category) : DiabotCommand(category, null) {
 
             val text = InfoDAO.getInstance().getProjectText(project)
 
-            if (text == null) {
-                throw IllegalArgumentException("Project $project does not exist")
-            }
-
             val builder = EmbedBuilder()
 
             builder.setTitle(InfoDAO.getInstance().formatProject(project))
