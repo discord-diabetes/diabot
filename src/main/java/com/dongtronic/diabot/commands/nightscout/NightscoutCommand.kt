@@ -98,7 +98,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             return
         }
 
-        val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id)
+        val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
+                         userDTO.displayOptions.contains("simplified")
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)
@@ -578,6 +579,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
      * Provides display options with everything enabled
      */
     private fun getDefaultDisplayOptions(): Array<String> {
-        return NightscoutSetDisplayCommand.validOptions
+        return NightscoutSetDisplayCommand.enabledOptions
     }
 }
