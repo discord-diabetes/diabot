@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
     companion object {
         val enabledOptions = arrayOf("title", "trend", "cob", "iob", "avatar")
-        val validOptions = enabledOptions.plus(arrayOf("simplified", "none"))
+        val validOptions = enabledOptions.plus(arrayOf("simple", "none"))
     }
 
     private val logger = LoggerFactory.getLogger(NightscoutSetDisplayCommand::class.java)

@@ -99,7 +99,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
-                         userDTO.displayOptions.contains("simplified")
+                         userDTO.displayOptions.contains("simple")
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)
