@@ -36,8 +36,4 @@ class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
         event.replyError("Unknown command: ${args[0]}")
 
     }
-
-
-
-
 }

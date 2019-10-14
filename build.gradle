@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.dongtronic'
-version '1.12.1'
+version '1.13.0'
 
 sourceCompatibility = 1.8
 
@@ -65,6 +65,10 @@ task fatJar(type: Jar) {
     exclude('logback-test.xml')
     with jar
 }
+
+task stage(dependsOn: ['build', 'clean', 'fatJar'])
+build.mustRunAfter clean
+fatJar.mustRunAfter build
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"

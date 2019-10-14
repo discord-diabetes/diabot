@@ -10,22 +10,21 @@ import net.dv8tion.jda.core.Permission
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminCommand(category: Command.Category) : DiabotCommand(category, null) {
+class NightscoutAdminShortCommand(category: Command.Category, parent: DiabotCommand) : DiabotCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(NightscoutAdminCommand::class.java)
+    private val logger = LoggerFactory.getLogger(NightscoutAdminShortCommand::class.java)
 
     init {
-        this.name = "nightscoutadmin"
-        this.help = "Administrator commands for Nightscout"
+        this.name = "short"
+        this.help = "Short channel management"
         this.guildOnly = true
-        this.aliases = arrayOf("nsadmin", "na")
-        this.examples = arrayOf("diabot nsadmin list", "diabot nsadmin set <userId> <url>", "diabot nsadmin delete <userId>")
+        this.aliases = arrayOf("sc", "shortchannels")
+        this.examples = arrayOf("diabot nsadmin sc add <channel>", "diabot nsadmin sc list", "diabot nsadmin sc delete <channel>")
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.children = arrayOf(
-                NightscoutAdminListCommand(category, this),
-                NightscoutAdminSetCommand(category, this),
-                NightscoutAdminDeleteCommand(category, this),
-                NightscoutAdminShortCommand(category, this))
+                NightscoutAdminShortListCommand(category, this),
+                NightscoutAdminShortAddCommand(category, this),
+                NightscoutAdminShortDeleteCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {

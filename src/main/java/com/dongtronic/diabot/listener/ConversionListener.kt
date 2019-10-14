@@ -65,12 +65,14 @@ class ConversionListener : ListenerAdapter() {
             }
 
             // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if (numberString == "6.9" || numberString == "69") {
+            if (result.mmol == 6.9 || result.mgdl == 69) {
                 event.message.addReaction("\uD83D\uDE0F").queue()
             }
 
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (numberString == "5.5" || numberString == "100") {
+            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+            if (result.mmol == 5.5
+                    || result.mmol == 10.0
+                    || result.mgdl == 100) {
                 event.message.addReaction("\uD83D\uDCAF").queue()
             }
 

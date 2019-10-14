@@ -4,6 +4,7 @@ import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.converters.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
+import com.dongtronic.diabot.data.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
@@ -15,6 +16,7 @@ import com.google.gson.stream.MalformedJsonException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.User
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
@@ -24,10 +26,12 @@ import java.io.IOException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
+    private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
 
     init {
         this.name = "nightscout"
@@ -40,7 +44,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 NightscoutSetUrlCommand(category, this),
                 NightscoutDeleteCommand(category, this),
                 NightscoutPublicCommand(category, this),
-                NightscoutSetTokenCommand(category, this)
+                NightscoutSetTokenCommand(category, this),
+                NightscoutSetDisplayCommand(category, this)
         )
     }
 
@@ -67,14 +72,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     }
 
-    private fun buildNightscoutResponse(endpoint: String, token: String?, avatarUrl: String?, event: CommandEvent) {
+    private fun buildNightscoutResponse(endpoint: String, userDTO: NightscoutUserDTO, event: CommandEvent) {
         val dto = NightscoutDTO()
 
         try {
-            getEntries(endpoint, token, dto)
-            getRanges(endpoint, token, dto)
-            processPebble(endpoint, token, dto)
-            getSettings(endpoint, token, dto)
+            getSettings(endpoint, userDTO.token, dto)
+            getEntries(endpoint, userDTO.token, dto)
+            processPebble(endpoint, userDTO.token, dto)
         } catch (exception: NoNightscoutDataException) {
             event.reactError()
             logger.info("No nightscout data from $endpoint")
@@ -94,36 +98,31 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             return
         }
 
-        val builder = EmbedBuilder()
+        val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id)
 
-        buildResponse(dto, avatarUrl, builder)
-
-        val embed = builder.build()
-
-        event.reply(embed) {
-            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
-                it.addReaction("\uD83D\uDE0F").queue()
-            }
-            // #36: Reply with :100: when value is 100 mg/dL or 5.5 mmol/L
-            if (dto.glucose!!.mgdl == 100 || dto.glucose!!.mmol == 5.5) {
-                it.addReaction("\uD83D\uDCAF").queue()
-            }
+        if (shortReply) {
+            val message = buildShortResponse(dto, userDTO.displayOptions)
+            event.reply(message) { replyMessage -> addReactions(dto, replyMessage) }
+        } else {
+            val builder = EmbedBuilder()
+            buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, builder)
+            val embed = builder.build()
+            event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
         }
     }
 
+
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
+        val userDTO = NightscoutUserDTO()
 
-        val token = getToken(event.author)
-
-        buildNightscoutResponse(endpoint, token, event.author.avatarUrl, event)
+        getUserDto(event.author, userDTO)
+        buildNightscoutResponse(endpoint, userDTO, event)
     }
 
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        var avatarUrl: String? = null
-        var token: String? = null
+        val userDTO = NightscoutUserDTO()
         val endpoint = when {
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
@@ -141,16 +140,28 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
             else -> {
                 val hostname = args[0]
-                "https://$hostname.herokuapp.com/api/v1/"
+                if (hostname.contains("http://") || hostname.contains("https://")) {
+                    var domain = hostname
+                    if (domain.endsWith("/")) {
+                        domain = domain.trimEnd('/')
+                    }
+
+                    // If Nightscout data cannot be retrieved from this domain then stop
+                    if (!getUnstoredDataForDomain(domain, event, userDTO))
+                        return
+
+                    "$domain/api/v1/"
+                } else {
+                    "https://$hostname.herokuapp.com/api/v1/"
+                }
             }
         }
 
         if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
-            token = getToken(event.message.mentionedUsers[0])
-            avatarUrl = event.message.mentionedUsers[0].avatarUrl
+            getUserDto(event.message.mentionedUsers[0], userDTO)
         }
 
-        buildNightscoutResponse(endpoint, token, avatarUrl, event)
+        buildNightscoutResponse(endpoint, userDTO, event)
     }
 
     private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
@@ -179,33 +190,60 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, builder: EmbedBuilder) {
-        builder.setTitle(dto.title)
+    private fun buildShortResponse(dto: NightscoutDTO, displayOptions: Array<String>): String {
+        // Name: mmol/L: 6.1(+0.3) | mg/dL: 109(+5) | trend: → | iob: 0.56 | cob: 3 | Today at 8:01 PM
 
-        val mmolString: String
-        val mgdlString: String
-        if (dto.delta != null) {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
-        } else {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
+        // title: mmol/L: value(delta) | mg/dL: value(delta) | trend: <trend>
+
+        val response: StringBuilder = StringBuilder()
+
+        if (displayOptions.contains("title")) {
+            response.append(dto.title).append(": ")
         }
-        val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
+
+        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
+
+        response.append("mmol/L: ").append(mmolString).append(" | ").append("mg/dL: ").append(mgdlString).append(" | ")
+
+        if (displayOptions.contains("trend")) {
+            val trendString = trendArrows[dto.trend]
+            response.append("trend: ").append(trendString).append(" | ")
+        }
+
+        if (displayOptions.contains("iob") && dto.iob != 0.0F) {
+            response.append("iob: ").append(dto.iob).append(" | ")
+        }
+
+        if (displayOptions.contains("cob") && dto.cob != 0) {
+            response.append("cob: ").append(dto.cob).append(" | ")
+        }
+
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss (O)")
+        response.append(dto.dateTime!!.format(formatter))
+
+        return response.toString()
+    }
+
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
+        if (displayOptions.contains("title")) builder.setTitle(dto.title)
+
+        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
+
         val trendString = trendArrows[dto.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        builder.addField("trend", trendString, true)
-        if (dto.iob != 0.0F) {
+        if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
+        if (dto.iob != 0.0F && displayOptions.contains("iob")) {
             builder.addField("iob", dto.iob.toString(), true)
         }
-        if (dto.cob != 0) {
+        if (dto.cob != 0 && displayOptions.contains("cob")) {
             builder.addField("cob", dto.cob.toString(), true)
         }
 
         setResponseColor(dto, builder)
 
-        if (avatarUrl != null) {
+        if (avatarUrl != null && displayOptions.contains("avatar")) {
             builder.setThumbnail(avatarUrl)
         }
 
@@ -215,6 +253,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         if (dto.dateTime!!.plusMinutes(15).toInstant().isBefore(ZonedDateTime.now().toInstant())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
+    }
+
+    private fun buildGlucoseStrings(dto: NightscoutDTO): Pair<String, String> {
+        val mmolString: String
+        val mgdlString: String
+        if (dto.delta != null) {
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
+        } else {
+            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
+            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
+        }
+        return Pair(mmolString, mgdlString)
     }
 
     private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
@@ -239,6 +290,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return builder.toString()
     }
 
+    private fun addReactions(dto: NightscoutDTO, response: Message) {
+        // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
+        if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
+            response.addReaction("\uD83D\uDE0F").queue()
+        }
+        // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+        if (dto.glucose!!.mgdl == 100
+                || dto.glucose!!.mmol == 5.5
+                || dto.glucose!!.mmol == 10.0) {
+            response.addReaction("\uD83D\uDCAF").queue()
+        }
+    }
+
     private fun setResponseColor(dto: NightscoutDTO, builder: EmbedBuilder) {
         val glucose = dto.glucose!!.mgdl.toDouble()
 
@@ -260,6 +324,88 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } else {
             return url
         }
+    }
+
+    /**
+     * Gets token, display options, and an avatar URL for the domain given.
+     * Replies with an error and returns false if no user is found, nightscout data is private, or if no token is found.
+     *
+     * @return if data can be retrieved from the given domain
+     */
+    private fun getUnstoredDataForDomain(domain: String, event: CommandEvent, userDTO: NightscoutUserDTO): Boolean {
+        // Test if the Nightscout hosted at the given domain requires a token
+        // If a token is not needed, skip grabbing data
+        if (testNightscoutForToken(domain)) {
+            // Get user ID from domain. If no user is found, respond with an error
+            val userId = getUserIdForDomain(domain)
+            val user: User
+
+            if (userId == null) {
+                event.replyError("Token secured Nightscout does not belong to any user.")
+                return false
+            }
+
+            user = event.jda.getUserById(userId)
+
+            if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+                // Nightscout data is private
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
+                return false
+            }
+
+            if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+                // No token found
+                event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
+                return false
+            }
+
+            getUserDto(user, userDTO)
+        }
+        return true
+    }
+
+    /**
+     * Tests whether a Nightscout requires a token to be read
+     *
+     * @return true if a token is required, false if not
+     */
+    private fun testNightscoutForToken(domain: String): Boolean {
+        try {
+            getJson("$domain/api/v1/status", null, null)
+        } catch (exception: NightscoutStatusException) {
+            // If an unauthorized error occurs when trying to retrieve the status page, a token is needed
+            if (exception.status == 401) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Finds a user ID in the redis database matching with the Nightscout domain given
+     */
+    private fun getUserIdForDomain(domain: String): String? {
+        val users = NightscoutDAO.getInstance().listUsers()
+
+        // Loop through database and find a userId that matches with the domain provided
+        for ((uid, value) in users) {
+            if (value == domain) {
+                return uid.substring(0, uid.indexOf(":"))
+            }
+        }
+
+        // If no users are found with the given domain, return null
+        return null
+    }
+
+    /**
+     * Sets the data inside the given NightscoutUserDTO for the given user
+     */
+    private fun getUserDto(user: User, userDTO: NightscoutUserDTO) {
+        userDTO.token = getToken(user)
+        userDTO.displayOptions = getDisplayOptions(user)
+        userDTO.avatarUrl = user.avatarUrl
     }
 
     private fun getNightscoutPublic(user: User): Boolean {
@@ -293,26 +439,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         return body
-    }
-
-    @Throws(IOException::class)
-    private fun getRanges(url: String, token: String?, dto: NightscoutDTO) {
-        val endpoint = "$url/status.json"
-        val json = getJson(endpoint, token, null)
-
-        val jsonObject = JsonParser().parse(json).asJsonObject
-        val units = jsonObject.get("settings").asJsonObject.get("units").asString
-        val ranges = jsonObject.get("settings").asJsonObject.get("thresholds").asJsonObject
-        val low = ranges.get("bgLow").asInt
-        val bottom = ranges.get("bgTargetBottom").asInt
-        val top = ranges.get("bgTargetTop").asInt
-        val high = ranges.get("bgHigh").asInt
-
-        dto.low = low
-        dto.bottom = bottom
-        dto.top = top
-        dto.high = high
-        dto.units = units
     }
 
     @Throws(MalformedJsonException::class)
@@ -409,10 +535,21 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val settings = jsonObject.get("settings").asJsonObject
+        val ranges = settings.get("thresholds").asJsonObject
 
         val title = settings.get("customTitle").asString
+        val units = settings.get("units").asString
+        val low = ranges.get("bgLow").asInt
+        val bottom = ranges.get("bgTargetBottom").asInt
+        val top = ranges.get("bgTargetTop").asInt
+        val high = ranges.get("bgHigh").asInt
 
         dto.title = title
+        dto.low = low
+        dto.bottom = bottom
+        dto.top = top
+        dto.high = high
+        dto.units = units
     }
 
     private fun getTimestamp(epoch: Long?): ZonedDateTime {
@@ -427,5 +564,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         return null
+    }
+
+    private fun getDisplayOptions(user: User): Array<String> {
+        if (NightscoutDAO.getInstance().isNightscoutDisplay(user)) {
+            return NightscoutDAO.getInstance().getNightscoutDisplay(user).split(" ").toTypedArray()
+        }
+        // if there are no options set in redis, then have the default be all options
+        return getDefaultDisplayOptions()
+    }
+
+    /**
+     * Provides display options with everything enabled
+     */
+    private fun getDefaultDisplayOptions(): Array<String> {
+        return NightscoutSetDisplayCommand.validOptions
     }
 }

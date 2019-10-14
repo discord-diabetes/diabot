@@ -1,0 +1,4 @@
+# for help: https://help.github.com/en/articles/about-code-owners
+
+*       @cascer1
+/src/main/java/com/dongtronic/diabot/util/RedisKeyFormats.kt @cascer1

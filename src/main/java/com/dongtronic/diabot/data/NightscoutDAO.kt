@@ -53,6 +53,30 @@ class NightscoutDAO private constructor() {
         }
     }
 
+    fun isNightscoutDisplay(user: User): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+
+        return !jedis!!.get(redisKey).isNullOrEmpty()
+    }
+
+    fun getNightscoutDisplay(user: User): String {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+
+        return jedis!!.get(redisKey).toString()
+    }
+
+    fun setNightscoutDisplay(user: User, display: String) {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+
+        jedis!!.set(redisKey, display)
+    }
+
+    fun removeNightscoutDisplay(user: User) {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+
+        jedis!!.del(redisKey)
+    }
+
     fun isNightscoutToken(user: User): Boolean {
         val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
 
@@ -75,6 +99,12 @@ class NightscoutDAO private constructor() {
         }
     }
 
+    fun removeNightscoutToken(user: User) {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+
+        jedis!!.del(redisKey)
+    }
+
     fun listUsers(): TreeMap<String, String> {
         val keys = jedis!!.keys(RedisKeyFormats.allNightscoutUrlsFormat)
         val result = TreeMap<String, String>()
@@ -85,7 +115,27 @@ class NightscoutDAO private constructor() {
         }
 
         return result
+    }
 
+    fun listShortChannels(guildId: String): MutableCollection<String> {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        val channelListLength = jedis!!.llen(redisKey)
+
+        return jedis!!.lrange(redisKey, 0, channelListLength - 1)
+    }
+
+    fun addShortChannel(guildId: String, channelId: String) {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        val shortChannels = listShortChannels(guildId)
+
+        if (!shortChannels.contains(channelId)) {
+            jedis!!.lpush(redisKey, channelId)
+        }
+    }
+
+    fun removeShortChannel(guildId: String, channelId: String) {
+        val redisKey = RedisKeyFormats.nightscoutShortChannelsFormat.replace("{{guildid}}", guildId)
+        jedis!!.lrem(redisKey, 0, channelId)
     }
 
     companion object {
