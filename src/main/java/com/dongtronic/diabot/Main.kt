@@ -59,7 +59,8 @@ object Main {
             client.setPrefix("diabot ")
         }
 
-        client.setOwnerId("189436077793083392")
+        client.setOwnerId("189436077793083392") // Cas
+        client.setCoOwnerIds("125616270254014464", "319371513159614464") // Adi, Garlic
 
         // adds commands
         client.addCommands(
