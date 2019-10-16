@@ -3,7 +3,7 @@ package com.dongtronic.diabot.commands.info
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.InfoDAO
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.LoggerFactory
 
 class InfoCommand(category: Category) : DiabotCommand(category, null) {

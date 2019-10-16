@@ -17,8 +17,8 @@ class PingCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     override fun execute(event: CommandEvent) {
         event.reply("Ping: ...") { m ->
-            val ping = event.message.creationTime.until(m.creationTime, ChronoUnit.MILLIS)
-            m.editMessage("Ping: " + ping + "ms | Websocket: " + event.jda.ping + "ms").queue()
+            val ping = event.message.timeCreated.until(m.timeCreated, ChronoUnit.MILLIS)
+            m.editMessage("Ping: " + ping + "ms | Websocket: " + event.jda.gatewayPing + "ms").queue()
         }
     }
 }

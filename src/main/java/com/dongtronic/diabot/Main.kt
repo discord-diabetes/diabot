@@ -14,11 +14,11 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
-import net.dv8tion.jda.core.AccountType
-import net.dv8tion.jda.core.JDABuilder
-import net.dv8tion.jda.core.OnlineStatus
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Game
+import net.dv8tion.jda.api.AccountType
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Activity
 import javax.security.auth.login.LoginException
 
 object Main {
@@ -26,10 +26,7 @@ object Main {
     @Throws(LoginException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        var token = System.getenv("discord-rolebot-token")
-        if (System.getenv("DIABOTTOKEN") != null) {
-            token = System.getenv("DIABOTTOKEN") // token on dokku
-        }
+        val token = System.getenv("DIABOTTOKEN") // token on dokku
 
         // create command categories
         val adminCategory = Category("Admin")
@@ -47,6 +44,7 @@ object Main {
 
         // The default is "Type !!help" (or whatver prefix you set)
         client.useDefaultGame()
+        client.useHelpBuilder(true)
 
         // sets emojis used throughout the bot on successes, warnings, and failures
         client.setEmojis("\uD83D\uDC4C", "\uD83D\uDE2E", "\uD83D\uDE22")
@@ -101,7 +99,6 @@ object Main {
         // Custom help handler
         client.setHelpConsumer(HelpListener())
 
-
         // start getting a bot account set up
         JDABuilder(AccountType.BOT)
                 // set the token
@@ -109,19 +106,18 @@ object Main {
 
                 // set the game for when the bot is loading
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setGame(Game.playing("loading..."))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT,"Loading..."))
 
                 // add the listeners
-                .addEventListener(waiter)
-                .addEventListener(client.build())
-                .addEventListener(ConversionListener())
-                .addEventListener(RoleListener())
-                .addEventListener(UsernameChangedListener())
-
-                // misc listeners
-                .addEventListener(FeelListener())
-                .addEventListener(OhNoListener())
-
+                .addEventListeners(
+                        waiter,
+                        client.build(),
+                        ConversionListener(),
+                        RoleListener(),
+                        UsernameChangedListener(),
+                        FeelListener(),
+                        OhNoListener()
+                )
                 // start it up!
                 .build()
 

@@ -5,7 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.util.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.LoggerFactory
 
 class NightscoutAdminShortListCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -27,7 +27,6 @@ class NightscoutAdminShortListCommand(category: Command.Category, parent: Comman
             return
         }
 
-        logger.info("Listing all short nightscout reply channels")
         val channels = NightscoutDAO.getInstance().listShortChannels(event.guild.id)
 
         val builder = EmbedBuilder()
@@ -39,7 +38,7 @@ class NightscoutAdminShortListCommand(category: Command.Category, parent: Comman
         } else {
             channels.forEach {
                 val channel = event.guild.getTextChannelById(it)
-                builder.appendDescription("**${channel.name}**  (`${channel.id}`)\n")
+                builder.appendDescription("**${channel!!.name}**  (`${channel.id}`)\n")
             }
         }
 

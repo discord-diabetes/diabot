@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.entities.User
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import java.util.*

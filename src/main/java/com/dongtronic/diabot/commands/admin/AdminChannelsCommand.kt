@@ -4,7 +4,7 @@ import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.AdminDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.api.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
@@ -56,7 +56,7 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Diabo
         for (channelId in channels!!) {
             val channel = event.jda.getTextChannelById(channelId)
 
-            builder.appendDescription("**${channel.name}** (`${channel.id}`)\n")
+            builder.appendDescription("**${channel!!.name}** (`${channel.id}`)\n")
         }
 
         event.reply(builder.build())

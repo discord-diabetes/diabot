@@ -15,9 +15,9 @@ import com.google.gson.JsonParser
 import com.google.gson.stream.MalformedJsonException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.entities.Message
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
@@ -339,7 +339,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         if (testNightscoutForToken(domain)) {
             // Get user ID from domain. If no user is found, respond with an error
             val userId = getUserIdForDomain(domain)
-            val user: User
+            val user: User?
 
             if (userId == null) {
                 event.replyError("Token secured Nightscout does not belong to any user.")
@@ -347,6 +347,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
 
             user = event.jda.getUserById(userId)
+
+            if (user == null) {
+                event.replyError("Couldn't find user $userId")
+                return false
+            }
 
             if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
                 // Nightscout data is private

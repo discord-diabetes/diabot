@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.util
 
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Role
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Role
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -20,6 +20,10 @@ object RoleUtils {
             val data = rewardString.split(":")
             val required = guild.getRoleById(data[0])
             val reward = guild.getRoleById(data[1])
+
+            if (required == null || reward == null) {
+                continue
+            }
 
             if (rewards.containsKey(required)) {
                 var configuredRewards = rewards[required]

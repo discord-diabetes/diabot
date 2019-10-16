@@ -3,7 +3,7 @@ package com.dongtronic.diabot.commands.admin
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 /**
@@ -28,8 +28,8 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand(category, null
         val allowed = allowedUsers.contains(userId)
 
         if (allowed) {
-            logger.info("Shutting down bot (requested by " + event.author.name + " - " + userId + ")")
-            event.replyWarning("Shutting down (requested by " + event.author.name + ")")
+            logger.info("Shutting down bot (requested by ${event.author.name} ($userId))")
+            event.replyWarning("Shutting down (requested by ${event.author.name})")
             event.reactWarning()
             event.jda.shutdown()
         }

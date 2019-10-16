@@ -5,7 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.util.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.api.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 

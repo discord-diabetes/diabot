@@ -48,7 +48,7 @@ class RewardsCommand(category: Command.Category) : DiabotCommand(category, null)
 
         RewardDAO.getInstance().optIn(guildId, user.id)
 
-        logger.info("User ${user.discriminator} opted in to rewards")
+        logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted in to rewards")
         event.reply("User ${NicknameUtils.determineDisplayName(event, user)} opted in to rewards")
     }
 
@@ -59,7 +59,7 @@ class RewardsCommand(category: Command.Category) : DiabotCommand(category, null)
 
         RewardDAO.getInstance().optOut(guildId, user.id)
 
-        logger.info("User ${user.discriminator} opted out of rewards")
+        logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards")
         event.reply("User ${NicknameUtils.determineDisplayName(event, user)} opted out of rewards")
     }
 }

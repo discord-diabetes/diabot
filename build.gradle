@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     // JDA
-    compile 'com.jagrosh:jda-utilities:2.1.4'
-    compile('net.dv8tion:JDA:3.8.3_462') {
+    compile 'com.jagrosh:jda-utilities:3.0.2'
+    compile('net.dv8tion:JDA:4.0.0_39') {
         exclude module: 'opus-java'
     }
 
