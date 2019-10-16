@@ -52,7 +52,6 @@ jar {
     }
 }
 
-
 task fatJar(type: Jar) {
     clean
     manifest {
@@ -60,9 +59,9 @@ task fatJar(type: Jar) {
                 'Implementation-Version': version,
                 'Main-Class': 'com.dongtronic.diabot.Main'
     }
-    baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     exclude('logback-test.xml')
+    archiveName('diabot.jar')
     with jar
 }
 
