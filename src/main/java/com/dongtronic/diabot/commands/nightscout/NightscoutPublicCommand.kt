@@ -22,20 +22,30 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+")
+        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
         if(args.isEmpty()) {
-            event.replyError("Please specify public status (true/false)")
+            // toggle visibility if no arguments are provided
+            val newVisibility = !NightscoutDAO.getInstance().isNightscoutPublic(event.author)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, newVisibility)
+            reply(event, newVisibility)
+            return
         }
 
         val mode = args[0].toUpperCase()
 
         if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
             NightscoutDAO.getInstance().setNightscoutPublic(event.author, true)
-            event.reply("Nightscout data for ${NicknameUtils.determineAuthorDisplayName(event)} set to public")
+            reply(event, true)
         } else {
             NightscoutDAO.getInstance().setNightscoutPublic(event.author, false)
-            event.reply("Nightscout data for ${NicknameUtils.determineAuthorDisplayName(event)} set to private")
+            reply(event, false)
         }
+    }
+
+    fun reply(event: CommandEvent, public: Boolean) {
+        val authorNick = NicknameUtils.determineAuthorDisplayName(event)
+        val visibility = if (public) "public" else "private"
+        event.reply("Nightscout data for $authorNick set to $visibility")
     }
 }
