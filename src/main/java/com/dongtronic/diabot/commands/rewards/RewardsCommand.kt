@@ -22,7 +22,6 @@ class RewardsCommand(category: Command.Category) : DiabotCommand(category, null)
 
     override fun execute(event: CommandEvent) {
         val subcommands = children.joinToString(", ") { it.name }
-
         event.replyError("Valid sub-commands are: $subcommands")
     }
 }

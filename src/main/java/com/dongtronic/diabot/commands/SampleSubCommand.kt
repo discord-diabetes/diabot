@@ -24,14 +24,8 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCom
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        if (args.isEmpty()) {
-            event.replyError("must include operation")
-            return
-        }
-
-        event.replyError("Unknown command: `${args[0]}`")
+        val subcommands = children.joinToString(", ") { it.name }
+        event.replyError("Valid sub-commands are: $subcommands")
     }
 
     class SampleListSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
