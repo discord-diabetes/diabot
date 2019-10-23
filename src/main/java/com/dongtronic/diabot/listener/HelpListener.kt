@@ -155,6 +155,10 @@ class HelpListener : Consumer<CommandEvent> {
             builder.addField("Aliases", Arrays.toString(command.aliases), false)
         }
 
+        if (isExtendedCommand && extendedCommand!!.parent != null) {
+            builder.addField("Parent command", extendedCommand.parent!!.name, false)
+        }
+
         if (command.children.isNotEmpty()) {
             builder.addField("Sub commands", Arrays.toString(command.children), false)
         }
