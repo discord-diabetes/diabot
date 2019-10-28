@@ -9,6 +9,7 @@ import com.dongtronic.diabot.commands.info.InfoCommand
 import com.dongtronic.diabot.commands.misc.*
 import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.listener.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder

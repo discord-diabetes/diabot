@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.listener
 
 import com.dongtronic.diabot.commands.DiabotCommand
+import com.dongtronic.diabot.exceptions.NoCommandFoundException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
@@ -46,45 +47,46 @@ class HelpListener : Consumer<CommandEvent> {
 
     private fun buildSpecificHelp(builder: EmbedBuilder, allCommands: List<Command>, event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val commandName = args[0]
-        val subcommandName = when (args.size) {
-            2 -> args[1]
-            else -> ""
-        }
+        var currentCommand: Command? = null
+        val commandIterator = args.asList().iterator()
 
-        var found = false
+        try {
+            // Loop through arguments and search for commands matching them
+            // Stores the parent command in `currentCommand` while searching
+            while (commandIterator.hasNext()) {
+                val commandName = commandIterator.next()
 
-        for (command in allCommands) {
-            val foundCommand = getHelpCommand(command, commandName, subcommandName)
-            if (foundCommand != null) {
-                buildExtendedCommandHelp(builder, foundCommand)
-                found = true
-                break
+                currentCommand = getCommand(currentCommand, commandName, allCommands)
             }
+        } catch (exception: NoCommandFoundException) {
+            val givenCommand = exception.command
+
+            builder.setTitle("error")
+            builder.setColor(Color.red)
+
+            if (currentCommand != null) {
+                // Parent command exists, tell user the subcommand is nonexistent
+                builder.setDescription("Subcommand `$givenCommand` for command `${currentCommand.name}` does not exist")
+            } else {
+                builder.setDescription("Command `$givenCommand` does not exist")
+            }
+            return
         }
 
-        if (!found) {
-            builder.setTitle("error")
-            builder.setDescription("Command $commandName $subcommandName does not exist")
-            builder.setColor(Color.red)
-        }
+        buildExtendedCommandHelp(builder, currentCommand!!)
     }
 
-    private fun getHelpCommand(command: Command, commandName: String, subcommandName: String): Command? {
+    private fun getCommand(currentCommand: Command?, commandName: String, allCommands: List<Command>): Command {
+        // if parent command exists then search through the subcommands for it
+        val commands = currentCommand?.children?.asList() ?: allCommands
 
-        if(command.isCommandFor(commandName) && subcommandName.isEmpty()) {
-            return command
-        }
-
-
-        for (subCommand in command.children) {
-            val foundCommand = getHelpCommand(subCommand, subcommandName, "")
-            if (foundCommand != null) {
-                return foundCommand
+        for (command in commands) {
+            if (command.isCommandFor(commandName)) {
+                return command
             }
         }
 
-        return null
+        throw NoCommandFoundException(commandName)
     }
 
     private fun buildCategoryHelp(builder: EmbedBuilder, category: Map.Entry<String, ArrayList<Command>>) {
@@ -151,6 +153,10 @@ class HelpListener : Consumer<CommandEvent> {
 
         if (command.aliases.isNotEmpty()) {
             builder.addField("Aliases", Arrays.toString(command.aliases), false)
+        }
+
+        if (isExtendedCommand && extendedCommand!!.parent != null) {
+            builder.addField("Parent command", extendedCommand.parent!!.name, false)
         }
 
         if (command.children.isNotEmpty()) {

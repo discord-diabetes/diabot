@@ -25,14 +25,7 @@ class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        if (args.isEmpty()) {
-            event.replyError("Please specify a command")
-            return
-        }
-
-        event.replyError("Unknown command: ${args[0]}")
-
+        val subcommands = children.joinToString(", ") { it.name }
+        event.replyError("Valid sub-commands are: $subcommands")
     }
 }

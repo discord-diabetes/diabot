@@ -47,7 +47,7 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
     private fun validateNightscoutUrl(url: String): String {
         var finalUrl = url
         if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            throw IllegalArgumentException("Url must contain scheme")
+            throw IllegalArgumentException("Url must contain scheme (`https://` or `http://`)")
         }
 
         if (finalUrl.endsWith("/")) {

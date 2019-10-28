@@ -16,6 +16,7 @@ class SampleCommand(category: Command.Category, parent: Command?) : DiabotComman
         this.ownerCommand = false
         this.aliases = arrayOf("tast", "tost")
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
+        this.children = arrayOf(SampleSubCommand(category, this))
         this.hidden = true
     }
 

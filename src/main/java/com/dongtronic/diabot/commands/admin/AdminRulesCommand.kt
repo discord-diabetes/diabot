@@ -27,8 +27,7 @@ class AdminRulesCommand(category: Command.Category, parent: Command?) : DiabotCo
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        event.replyError("Unknown command: ${args[0]}")
+        val subcommands = children.joinToString(", ") { it.name }
+        event.replyError("Valid sub-commands are: $subcommands")
     }
 }
