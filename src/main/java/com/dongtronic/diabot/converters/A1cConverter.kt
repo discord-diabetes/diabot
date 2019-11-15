@@ -14,8 +14,6 @@ object A1cConverter {
 
     @Throws(UnknownUnitException::class)
     fun estimateA1c(originalValue: String, unit: String?): A1cDTO {
-        logger.info("Estimating A1c for BG $originalValue")
-
         val glucoseConversionResult = BloodGlucoseConverter.convert(originalValue, unit)
 
         return estimateA1c(glucoseConversionResult!!)

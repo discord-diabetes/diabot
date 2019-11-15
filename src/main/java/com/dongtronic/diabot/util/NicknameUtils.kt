@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.util
 
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.entities.User
 
 object NicknameUtils {
 
@@ -10,6 +10,6 @@ object NicknameUtils {
     }
 
     fun determineDisplayName(event: CommandEvent, user: User): String {
-        return event.guild.getMember(user).effectiveName
+        return event.guild.getMember(user)!!.effectiveName
     }
 }

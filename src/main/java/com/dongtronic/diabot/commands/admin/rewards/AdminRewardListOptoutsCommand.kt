@@ -5,8 +5,8 @@ import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.util.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.entities.Role
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Role
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -27,7 +27,7 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
             return
         }
 
-        logger.info("Listing all reward opt-outs for ${event.author.discriminator}")
+        logger.info("Listing all reward opt-outs for ${event.author.name}")
         val optouts = RewardDAO.getInstance().getOptOuts(event.guild.id)
 
         val builder = EmbedBuilder()
@@ -37,7 +37,7 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
         optouts?.forEach { optout ->
             val user = event.guild.getMemberById(optout)
 
-            builder.appendDescription("**${user.effectiveName}** (`${user.user.id}`)")
+            builder.appendDescription("**${user!!.effectiveName}** (`${user.user.id}`)")
         }
 
         event.reply(builder.build())

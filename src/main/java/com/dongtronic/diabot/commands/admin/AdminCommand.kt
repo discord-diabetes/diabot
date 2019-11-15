@@ -3,7 +3,7 @@ package com.dongtronic.diabot.commands.admin
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
@@ -21,19 +21,11 @@ class AdminCommand(category: Command.Category) : DiabotCommand(category, null) {
                 AdminUsernameCommand(category, this),
                 AdminRewardsCommand(category, this),
                 AdminChannelsCommand(category, this),
-                AdminUsernameCommand(category, this),
                 AdminAnnounceCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        if (args.isEmpty()) {
-            event.replyError("Please specify a command")
-            return
-        }
-
-        event.replyError("Unknown command: ${args[0]}")
-
+        val subcommands = children.joinToString(", ") { it.name }
+        event.replyError("Valid sub-commands are: $subcommands")
     }
 }

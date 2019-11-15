@@ -35,9 +35,6 @@ class ConvertCommand(category: Command.Category) : DiabotCommand(category, null)
             val result: ConversionDTO?
 
             try {
-
-                logger.info("converting BG value " + args[0])
-
                 result = BloodGlucoseConverter.convert(args[0], if (args.size == 2) args[1] else null)
 
                 val reply = when {

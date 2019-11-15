@@ -8,7 +8,7 @@ import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.io.FeedException
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
-import net.dv8tion.jda.core.EmbedBuilder
+import net.dv8tion.jda.api.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
 
 import java.io.IOException

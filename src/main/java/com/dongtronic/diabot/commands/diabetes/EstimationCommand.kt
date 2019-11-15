@@ -63,9 +63,6 @@ class EstimationCommand(category: Command.Category) : DiabotCommand(category, nu
         val result: A1cDTO
 
         try {
-
-            logger.info("Estimating A1c for average " + items[0])
-
             result = if (items.size == 3) {
                 A1cConverter.estimateA1c(items[1], items[2])
             } else {

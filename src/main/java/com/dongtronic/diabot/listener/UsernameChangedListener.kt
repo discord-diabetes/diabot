@@ -1,26 +1,21 @@
 package com.dongtronic.diabot.listener
 
 import com.dongtronic.diabot.data.AdminDAO
-import net.dv8tion.jda.core.events.guild.member.GuildMemberNickChangeEvent
-import net.dv8tion.jda.core.hooks.ListenerAdapter
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.slf4j.LoggerFactory
 
 class UsernameChangedListener : ListenerAdapter() {
     private val logger = LoggerFactory.getLogger(UsernameChangedListener::class.java)
 
-    override fun onGuildMemberNickChange(event: GuildMemberNickChangeEvent?) {
-        if (event == null) {
-            return
-        }
+    override fun onGuildMemberUpdateNickname(event: GuildMemberUpdateNicknameEvent) {
+        val prevNick = if (event.oldNickname.isNullOrEmpty()) event.user.name else event.oldNickname
+        val newNick = if (event.newNickname.isNullOrEmpty()) event.user.name else event.newNickname
 
-        val prevNick = if (event.prevNick.isNullOrEmpty()) event.user.name else event.prevNick
-        val newNick = if (event.newNick.isNullOrEmpty()) event.user.name else event.newNick
-
-        enforceRules(newNick, event)
-
+        enforceRules(newNick!!, event)
     }
 
-    private fun enforceRules(username: String, event: GuildMemberNickChangeEvent) {
+    private fun enforceRules(username: String, event: GuildMemberUpdateNicknameEvent) {
         val guildId = event.guild.id
         val enabled = AdminDAO.getInstance().getUsernameEnforcementEnabled(guildId)
 

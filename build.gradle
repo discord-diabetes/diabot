@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.dongtronic'
-version '1.13.0'
+version '1.14.0'
 
 sourceCompatibility = 1.8
 
@@ -14,8 +14,8 @@ repositories {
 
 dependencies {
     // JDA
-    compile 'com.jagrosh:jda-utilities:2.1.4'
-    compile('net.dv8tion:JDA:3.8.3_462') {
+    compile 'com.jagrosh:jda-utilities:3.0.2'
+    compile('net.dv8tion:JDA:4.0.0_39') {
         exclude module: 'opus-java'
     }
 
@@ -52,7 +52,6 @@ jar {
     }
 }
 
-
 task fatJar(type: Jar) {
     clean
     manifest {
@@ -60,9 +59,9 @@ task fatJar(type: Jar) {
                 'Implementation-Version': version,
                 'Main-Class': 'com.dongtronic.diabot.Main'
     }
-    baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     exclude('logback-test.xml')
+    archiveName('diabot.jar')
     with jar
 }
 

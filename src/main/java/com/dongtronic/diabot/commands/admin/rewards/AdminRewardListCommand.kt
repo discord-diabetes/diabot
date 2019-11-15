@@ -5,8 +5,8 @@ import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.util.RoleUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.entities.Role
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Role
 import org.slf4j.LoggerFactory
 import java.util.*
 

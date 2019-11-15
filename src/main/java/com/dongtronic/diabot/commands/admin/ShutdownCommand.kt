@@ -3,7 +3,7 @@ package com.dongtronic.diabot.commands.admin
 import com.dongtronic.diabot.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,25 +23,13 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand(category, null
 
     override fun execute(event: CommandEvent) {
         val userId = event.author.id
-        var allowed = false
 
-        //TODO: replace list of allowed admins with config file
-        val allowedUsers = arrayOf(
-                "125616270254014464", //Adi
-                "189436077793083392"  //Cas
-        )
-
-
-        for (user in allowedUsers) {
-            if (user == userId) {
-                allowed = true
-                break
-            }
-        }
+        val allowedUsers = System.getenv("superusers").split(",")
+        val allowed = allowedUsers.contains(userId)
 
         if (allowed) {
-            logger.info("Shutting down bot (requested by " + event.author.name + " - " + userId + ")")
-            event.replyWarning("Shutting down (requested by " + event.author.name + ")")
+            logger.info("Shutting down bot (requested by ${event.author.name} ($userId))")
+            event.replyWarning("Shutting down (requested by ${event.author.name})")
             event.reactWarning()
             event.jda.shutdown()
         }

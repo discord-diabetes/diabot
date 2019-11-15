@@ -5,12 +5,13 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.util.NicknameUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.entities.User
 import org.slf4j.LoggerFactory
 
 class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
     companion object {
-        val validOptions = arrayOf("none", "title", "trend", "cob", "iob", "avatar")
+        val enabledOptions = arrayOf("title", "trend", "cob", "iob", "avatar")
+        val validOptions = enabledOptions.plus(arrayOf("simple", "none"))
     }
 
     private val logger = LoggerFactory.getLogger(NightscoutSetDisplayCommand::class.java)

@@ -16,42 +16,60 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCom
         this.aliases = arrayOf("s")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " sub")
+        this.children = arrayOf(
+                SampleListSubCommand(category, this),
+                SampleAddSubCommand(category, this),
+                SampleDeleteSubCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val subcommands = children.joinToString(", ") { it.name }
+        event.replyError("Valid sub-commands are: $subcommands")
+    }
 
-        if (args.isEmpty()) {
-            event.replyError("must include operation")
-            return
+    class SampleListSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+        private val logger = LoggerFactory.getLogger(SampleListSubCommand::class.java)
+
+        init {
+            this.name = "list"
+            this.help = "an example list subcommand"
+            this.guildOnly = false
+            this.aliases = arrayOf("l")
         }
 
-        val command = args[0].toUpperCase()
-
-        try {
-            when (command) {
-                "LIST", "L" -> someAction(event)
-                "ADD", "A" -> anotherAction(event)
-                "DELETE", "REMOVE", "D", "R" -> thirdAction(event)
-                else -> {
-                    throw IllegalArgumentException("unknown command $command")
-                }
-            }
-
-        } catch (ex: IllegalArgumentException) {
-            event.replyError(ex.message)
+        override fun execute(event: CommandEvent?) {
+            // do a thing
         }
     }
 
-    private fun someAction(event: CommandEvent) {
-        // do a thing
+    class SampleAddSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+        private val logger = LoggerFactory.getLogger(SampleAddSubCommand::class.java)
+
+        init {
+            this.name = "add"
+            this.help = "an example add subcommand"
+            this.guildOnly = false
+            this.aliases = arrayOf("a")
+        }
+
+        override fun execute(event: CommandEvent?) {
+            // do another thing
+        }
     }
 
-    private fun anotherAction(event: CommandEvent) {
-        // do another thing
-    }
+    class SampleDeleteSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+        private val logger = LoggerFactory.getLogger(SampleDeleteSubCommand::class.java)
 
-    private fun thirdAction(event: CommandEvent) {
-        // do the third thing
+        init {
+            this.name = "delete"
+            this.help = "an example delete subcommand"
+            this.guildOnly = false
+            this.aliases = arrayOf("remove", "d", "r")
+        }
+
+        override fun execute(event: CommandEvent?) {
+            // do the third thing
+        }
     }
 }

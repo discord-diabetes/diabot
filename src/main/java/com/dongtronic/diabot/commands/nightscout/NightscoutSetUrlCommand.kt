@@ -4,8 +4,8 @@ import com.dongtronic.diabot.commands.DiabotCommand
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.core.entities.User
-import net.dv8tion.jda.core.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.slf4j.LoggerFactory
 
 class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -47,7 +47,7 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
     private fun validateNightscoutUrl(url: String): String {
         var finalUrl = url
         if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            throw IllegalArgumentException("Url must contain scheme")
+            throw IllegalArgumentException("Url must contain scheme (`https://` or `http://`)")
         }
 
         if (finalUrl.endsWith("/")) {
