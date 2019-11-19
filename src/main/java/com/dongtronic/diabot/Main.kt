@@ -65,8 +65,8 @@ object Main {
         client.addCommands(
                 // command to show information about the bot
                 AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
-                        arrayOf("BG conversions", "A1c estimations", "Secret admin features :blobcoy:"),
-                        Permission.ADMINISTRATOR),
+                        arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
+                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
 
 
                 // A1c
@@ -101,10 +101,7 @@ object Main {
         client.setHelpConsumer(HelpListener())
 
         // start getting a bot account set up
-        JDABuilder(AccountType.BOT)
-                // set the token
-                .setToken(token)
-
+        JDABuilder(token)
                 // set the game for when the bot is loading
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.of(Activity.ActivityType.DEFAULT,"Loading..."))

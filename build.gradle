@@ -27,7 +27,6 @@ dependencies {
     compile 'com.rometools:rome:1.11.1'
     compile 'org.jsoup:jsoup:1.11.3'
 
-
     // Apache Commons
     compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
     compile 'org.apache.commons:commons-lang3:3.8.1'
