@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
 import org.slf4j.LoggerFactory
 import java.awt.Color
@@ -32,6 +33,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
+    private val defaultQuery: Array<NameValuePair> = arrayOf(
+            NameValuePair("find[sgv][\$exists]", ""),
+            NameValuePair("count", "1"))
 
     init {
         this.name = "nightscout"
@@ -167,7 +171,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     private fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = url.replace("/api/v1/", "/pebble")
-        val json = getJson(endpoint, token, null)
+        val json = getJson(endpoint, token)
 
         val bgsJson: JsonObject
 
@@ -377,7 +381,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
      */
     private fun testNightscoutForToken(domain: String): Boolean {
         try {
-            getJson("$domain/api/v1/status", null, null)
+            getJson("$domain/api/v1/status", null)
         } catch (exception: NightscoutStatusException) {
             // If an unauthorized error occurs when trying to retrieve the status page, a token is needed
             if (exception.status == 401) {
@@ -418,19 +422,16 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         return NightscoutDAO.getInstance().isNightscoutPublic(user)
     }
 
-    private fun getJson(url: String, token: String?, query: String?): String {
+    private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
         val client = HttpClient()
         val method = GetMethod(url)
+        val queries = query.toMutableList()
 
-        if (!query.isNullOrEmpty()) {
-            method.queryString = query
-
-            if (token != null) {
-                method.queryString += "&token=$token"
-            }
-        } else if (token != null) {
-            method.queryString = "token=$token"
+        if (token != null) {
+            queries.add(NameValuePair("token", token))
         }
+
+        method.setQueryString(queries.toTypedArray())
 
         val statusCode = client.executeMethod(method)
 
@@ -449,31 +450,13 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     @Throws(MalformedJsonException::class)
     private fun getGlucoseJson(url: String, token: String?): String {
-        val endpoint = "$url/entries/sgv.json"
-
-        val json = getJson(endpoint, token, "count=1")
-
-        val jsonArray = JsonParser().parse(json).asJsonArray
-        val arraySize = jsonArray.size()
-
-        // SGV endpoint may be empty in some cases, fall back to entries endpoint
-        if (arraySize == 0) {
-            return getGlucoseJsonFallback(url, token)
-        }
-
-        return json
-    }
-
-    @Throws(MalformedJsonException::class)
-    private fun getGlucoseJsonFallback(url: String, token: String?): String {
         val endpoint = "$url/entries.json"
-
-        val json = getJson(endpoint, token, "count=1")
+        val json = getJson(endpoint, token, *defaultQuery)
 
         val jsonArray = JsonParser().parse(json).asJsonArray
         val arraySize = jsonArray.size()
 
-        // SGV endpoint may be empty in some cases, fall back to entries endpoint
+        // Throw an exception if the endpoint is empty of SGV entries
         if (arraySize == 0) {
             throw NoNightscoutDataException()
         }
@@ -537,7 +520,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
     private fun getSettings(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = "$url/status.json"
-        val json = getJson(endpoint, token, null)
+        val json = getJson(endpoint, token)
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         val settings = jsonObject.get("settings").asJsonObject
