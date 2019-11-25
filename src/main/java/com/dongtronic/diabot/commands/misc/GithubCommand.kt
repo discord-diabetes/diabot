@@ -18,11 +18,11 @@ class GithubCommand(category: Command.Category) : DiabotCommand(category, null) 
 
         builder.setTitle("Diabot GitHub")
 
-        builder.setDescription("https://github.com/reddit-diabetes/diabot-discord")
+        builder.setDescription("https://github.com/reddit-diabetes/diabot")
 
-        builder.addField("Issues", "https://github.com/reddit-diabetes/diabot-discord/issues", true)
-        builder.addField("Bug report", "https://github.com/reddit-diabetes/diabot-discord/issues/new?template=bug_report.md", true)
-        builder.addField("Feature request", "https://github.com/reddit-diabetes/diabot-discord/issues/new?template=feature_request.md", true)
+        builder.addField("Issues", "https://github.com/reddit-diabetes/diabot/issues", true)
+        builder.addField("Bug report", "https://github.com/reddit-diabetes/diabot/issues/new?template=bug_report.md", true)
+        builder.addField("Feature request", "https://github.com/reddit-diabetes/diabot/issues/new?template=feature_request.md", true)
 
         builder.setColor(java.awt.Color.blue)
 
