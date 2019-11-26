@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Donating to Diabot using crypto
-permalink: crypto
+permalink: /crypto
 ---
 
 ## Donating to Diabot using crypto
