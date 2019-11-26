@@ -1,37 +1,33 @@
-## Welcome to GitHub Pages
+# Diabot
 
-You can use the [editor on GitHub](https://github.com/reddit-diabetes/diabot/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+A diabetes bot for Discord
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Running Diabot
+To run Diabot, you need access to the following: 
+1. A Discord bot account
+2. A Redis database
+3. A test server on Discord
 
-### Markdown
+### Creating a Discord bot account
+1. Visit https://discordapp.com/developers/applications/
+2. Create a new application ![](/docs/create_application.png)
+3. In the menu to the side, click the "bot button"
+4. On the bot page, click the "create bot account" button ![](/docs/build_a_bot.png)
+5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/copy_token.png)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Setting up a Redis database
+TODO.
 
-```markdown
-Syntax highlighted code block
+In the end, you will need a connection URL like this: `redis://<username>:<password>@<host>:<port>`. Store this connection string in an environment variable named `REDIS_URL` or `DIABOT_REDIS_URL`
 
-# Header 1
-## Header 2
-### Header 3
+### Inviting Diabot to your server
+To invite Diabot to your test server, create an invitation URL by replacing `<client_id>` in the following URL with the client ID 
 
-- Bulleted
-- List
+`https://discordapp.com/oauth2/authorize?&client_id=<client_id>&scope=bot&permissions=0`
 
-1. Numbered
-2. List
+![](/docs/copy_id.png)
 
-**Bold** and _Italic_ and `Code` text
+## Logging
 
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/reddit-diabetes/diabot/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+To change your local logging configuration, duplicate `logback.xml` (in the main resources folder) to a file called `logback-text.xml` and modify that file. 
+Please do not include this modified file in any packaged jar for deployment.
