@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: Donating to Diabot using crypto
 permalink: crypto
 ---
