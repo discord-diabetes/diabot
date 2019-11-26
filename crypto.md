@@ -1,9 +1,3 @@
----
-layout: default
-title: Donating to Diabot using crypto
-permalink: /crypto
----
-
 ## Donating to Diabot using crypto
 
 Thanks for you interest in donating to Diabot. This helps us host and develop the bot!
