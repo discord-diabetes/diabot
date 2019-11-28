@@ -2,6 +2,8 @@ package com.dongtronic.diabot.converters
 
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
+import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import org.junit.Assert
 import org.junit.Test
 

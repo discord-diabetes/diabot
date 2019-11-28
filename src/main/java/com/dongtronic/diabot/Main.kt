@@ -1,16 +1,16 @@
 package com.dongtronic.diabot
 
-import com.dongtronic.diabot.commands.admin.AdminCommand
-import com.dongtronic.diabot.commands.admin.RolesCommand
-import com.dongtronic.diabot.commands.admin.ShutdownCommand
-import com.dongtronic.diabot.commands.diabetes.ConvertCommand
-import com.dongtronic.diabot.commands.diabetes.EstimationCommand
-import com.dongtronic.diabot.commands.info.InfoCommand
-import com.dongtronic.diabot.commands.misc.*
-import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
-import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.commands.rewards.RewardsCommand
-import com.dongtronic.diabot.listener.*
+import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
+import com.dongtronic.diabot.platforms.discord.commands.misc.*
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
+import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
@@ -111,9 +111,8 @@ object Main {
                         waiter,
                         client.build(),
                         ConversionListener(),
-                        RoleListener(),
+                        RewardListener(),
                         UsernameChangedListener(),
-                        FeelListener(),
                         OhNoListener()
                 )
                 // start it up!
