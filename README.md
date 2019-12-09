@@ -5,6 +5,11 @@ A diabetes bot for Discord
 ## Adding Diabot to your server
 Use [this invite link](https://discordapp.com/oauth2/authorize?client_id=260721031038238720&scope=bot&permissions=403008576&guild_id=0)
 
+## Sponsors
+Since making Diabot public, we have set higher quality goals for the bot. Ensuring we meet this quality requires us to run a separate testing version of the bot. Furthermore, since the bot was made public it costs more to host.
+If you want to support the development efforts and cover the hosting fees, you can choose to [sponsor me](https://github.com/sponsors/cascer1) (@cascer1) on github, or [send crypto.](https://reddit-diabetes.github.io/diabot/crypto).
+
+Any support received will be used to pay for the hosting and improvement of Diabot. This is not a for-profit project.
 
 ## Running Diabot
 To run Diabot, you need access to the following: 
