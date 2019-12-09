@@ -2,6 +2,10 @@
 
 A diabetes bot for Discord
 
+## Adding Diabot to your server
+Use [this invite link](https://discordapp.com/oauth2/authorize?client_id=260721031038238720&scope=bot&permissions=403008576&guild_id=0)
+
+
 ## Running Diabot
 To run Diabot, you need access to the following: 
 1. A Discord bot account
