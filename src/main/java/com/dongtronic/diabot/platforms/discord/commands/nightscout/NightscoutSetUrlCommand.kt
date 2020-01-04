@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.data.NightscoutDAO
+import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
@@ -52,6 +52,10 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
 
         if (finalUrl.endsWith("/")) {
             finalUrl = finalUrl.trimEnd('/')
+        }
+
+        if (finalUrl.endsWith("/api/v1")) {
+            finalUrl = finalUrl.removeSuffix("/api/v1")
         }
 
         return finalUrl
