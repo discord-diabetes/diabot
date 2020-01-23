@@ -104,7 +104,7 @@ object Main {
         JDABuilder(token)
                 // set the game for when the bot is loading
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT,"Loading..."))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Loading..."))
 
                 // add the listeners
                 .addEventListeners(

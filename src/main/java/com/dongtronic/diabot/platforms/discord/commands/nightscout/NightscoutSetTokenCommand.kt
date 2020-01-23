@@ -41,7 +41,8 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
                 else -> event.replyError("Invalid number of arguments")
             }
         } catch (ex: InsufficientPermissionException) {
-            event.replyError("Could not remove command message due to missing `manage messages` permission. Please remove the message yourself to protect your privacy.")
+            logger.info("Could not remove command message due to missing permission: ${ex.permission}")
+            event.replyError("Could not remove command message due to missing `${ex.permission}` permission. Please remove the message yourself to protect your privacy.")
         }
 
     }

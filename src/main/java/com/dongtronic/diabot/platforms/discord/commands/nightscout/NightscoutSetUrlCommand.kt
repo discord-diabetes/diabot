@@ -40,7 +40,8 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
         try {
             event.message.delete().reason("privacy").queue()
         } catch (ex: InsufficientPermissionException) {
-            event.replyError("Could not remove command message due to missing `manage messages` permission. Please remove the message yourself to protect your privacy.")
+            logger.info("Could not remove command message due to missing permission: ${ex.permission}")
+            event.replyError("Could not remove command message due to missing `${ex.permission}` permission. Please remove the message yourself to protect your privacy.")
         }
     }
 

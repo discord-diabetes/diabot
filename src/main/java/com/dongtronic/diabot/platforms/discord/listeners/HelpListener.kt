@@ -6,6 +6,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import java.awt.Color
 import java.util.*
 import java.util.function.Consumer
@@ -29,7 +30,11 @@ class HelpListener : Consumer<CommandEvent> {
         } else {
             // Show extended help card
             buildSpecificHelp(embedBuilder, allCommands, event)
-            event.reply(embedBuilder.build())
+            try {
+                event.reply(embedBuilder.build())
+            } catch (ex: InsufficientPermissionException) {
+                event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
+            }
         }
     }
 

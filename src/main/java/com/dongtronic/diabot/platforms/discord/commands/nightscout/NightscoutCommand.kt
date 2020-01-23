@@ -18,6 +18,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.GetMethod
@@ -69,6 +70,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
         } catch (ex: IllegalArgumentException) {
             event.reply("Error: " + ex.message)
+        } catch (ex: InsufficientPermissionException) {
+            logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
+            event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
         } catch (ex: Exception) {
             event.reactError()
             logger.warn("Unexpected error: " + ex.message)
