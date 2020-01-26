@@ -19,6 +19,7 @@ object Awyisser {
 
         //Add any parameter if u want to send it with Post req.
         request.addParameter("phrase", input)
+        request.setUri(url)
 
         val response = client.execute(request.build())
 
