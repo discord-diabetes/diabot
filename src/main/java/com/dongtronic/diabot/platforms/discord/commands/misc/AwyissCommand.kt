@@ -2,14 +2,10 @@ package com.dongtronic.diabot.platforms.discord.commands.misc
 
 import com.dongtronic.diabot.logic.`fun`.Awyisser
 import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
-import com.google.gson.JsonParser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.methods.PostMethod
-
-import java.awt.*
+import java.awt.Color
 
 class AwyissCommand(category: Command.Category) : DiabotCommand(category, null) {
 

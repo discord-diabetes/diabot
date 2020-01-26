@@ -1,7 +1,5 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
-import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.data.NightscoutUserDTO
@@ -9,6 +7,8 @@ import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
+import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -19,12 +19,15 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.http.NameValuePair
+import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.message.BasicNameValuePair
+import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
+import java.net.UnknownHostException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -35,8 +38,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
     private val defaultQuery: Array<NameValuePair> = arrayOf(
-            NameValuePair("find[sgv][\$exists]", ""),
-            NameValuePair("count", "1"))
+            BasicNameValuePair("find[sgv][\$exists]", ""),
+            BasicNameValuePair("count", "1"))
 
     init {
         this.name = "nightscout"
@@ -104,6 +107,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
 
             return
+        } catch (ex: UnknownHostException) {
+            event.reactError()
+            logger.info("No host found: ${ex.message}")
         }
 
         val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
@@ -427,23 +433,24 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
-        val client = HttpClient()
-        val method = GetMethod(url)
-        val queries = query.toMutableList()
+        val client = HttpClients.createDefault()
+        val request = RequestBuilder.get()
 
         if (token != null) {
-            queries.add(NameValuePair("token", token))
+            request.addParameter("token", token)
         }
 
-        method.setQueryString(queries.toTypedArray())
+        request.addParameters(*query)
+        request.setUri(url)
 
-        val statusCode = client.executeMethod(method)
+        val response = client.execute(request.build())
+        val statusCode = response.statusLine.statusCode
 
         if (statusCode != 200) {
             throw NightscoutStatusException(statusCode)
         }
 
-        val body = method.responseBodyAsStream.bufferedReader().use { it.readText() }
+        val body = EntityUtils.toString(response.entity)
 
         if (body.isEmpty()) {
             throw NoNightscoutDataException()
