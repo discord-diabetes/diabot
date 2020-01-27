@@ -18,6 +18,7 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
         this.ownerCommand = false
         this.aliases = arrayOf("s")
         this.category = category
+        this.guildOnly = false
         this.examples = arrayOf(this.parent!!.name + " set <url>")
     }
 

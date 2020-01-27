@@ -18,6 +18,7 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
         this.ownerCommand = false
         this.aliases = arrayOf("t")
         this.category = category
+        this.guildOnly = false
         this.examples = arrayOf(this.parent!!.name + " token <token>", this.parent.name + " token (to remove)")
     }
 
