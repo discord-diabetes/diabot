@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.data
 
-import com.dongtronic.diabot.converters.GlucoseUnit
+import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 
 class ConversionDTO {
     var original: Double = 0.toDouble()

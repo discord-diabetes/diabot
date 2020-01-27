@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.data
 
-import com.dongtronic.diabot.converters.GlucoseUnit
+import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 
 class A1cDTO(//region properties
         val original: ConversionDTO, dcct_mgdl: Double, ifcc_mgdl: Double, dcct_mmol: Double, ifcc_mmol: Double) {

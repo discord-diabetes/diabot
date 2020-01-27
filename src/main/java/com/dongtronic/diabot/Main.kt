@@ -1,21 +1,20 @@
 package com.dongtronic.diabot
 
-import com.dongtronic.diabot.commands.admin.AdminCommand
-import com.dongtronic.diabot.commands.admin.RolesCommand
-import com.dongtronic.diabot.commands.admin.ShutdownCommand
-import com.dongtronic.diabot.commands.diabetes.ConvertCommand
-import com.dongtronic.diabot.commands.diabetes.EstimationCommand
-import com.dongtronic.diabot.commands.info.InfoCommand
-import com.dongtronic.diabot.commands.misc.*
-import com.dongtronic.diabot.commands.nightscout.NightscoutAdminCommand
-import com.dongtronic.diabot.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.commands.rewards.RewardsCommand
-import com.dongtronic.diabot.listener.*
+import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
+import com.dongtronic.diabot.platforms.discord.commands.misc.*
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
+import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
-import net.dv8tion.jda.api.AccountType
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.Permission
@@ -65,8 +64,8 @@ object Main {
         client.addCommands(
                 // command to show information about the bot
                 AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
-                        arrayOf("BG conversions", "A1c estimations", "Secret admin features :blobcoy:"),
-                        Permission.ADMINISTRATOR),
+                        arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
+                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
 
 
                 // A1c
@@ -84,6 +83,7 @@ object Main {
 
                 // Info
                 InfoCommand(infoCategory),
+                SupportCommand(infoCategory),
 
                 // Fun
                 ExcuseCommand(funCategory),
@@ -101,22 +101,18 @@ object Main {
         client.setHelpConsumer(HelpListener())
 
         // start getting a bot account set up
-        JDABuilder(AccountType.BOT)
-                // set the token
-                .setToken(token)
-
+        JDABuilder(token)
                 // set the game for when the bot is loading
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT,"Loading..."))
+                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Loading..."))
 
                 // add the listeners
                 .addEventListeners(
                         waiter,
                         client.build(),
                         ConversionListener(),
-                        RoleListener(),
+                        RewardListener(),
                         UsernameChangedListener(),
-                        FeelListener(),
                         OhNoListener()
                 )
                 // start it up!
