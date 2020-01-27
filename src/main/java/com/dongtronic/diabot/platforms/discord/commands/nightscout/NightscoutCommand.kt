@@ -76,6 +76,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } catch (ex: InsufficientPermissionException) {
             logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
             event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
+        } catch (ex: UnknownHostException) {
+            event.reactError()
+            logger.info("No host found: ${ex.message}")
         } catch (ex: Exception) {
             event.reactError()
             logger.warn("Unexpected error: " + ex.message)
@@ -107,9 +110,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
 
             return
-        } catch (ex: UnknownHostException) {
-            event.reactError()
-            logger.info("No host found: ${ex.message}")
         }
 
         val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
