@@ -3,29 +3,18 @@ package com.dongtronic.diabot.util
 import org.apache.http.impl.conn.SystemDefaultDnsResolver
 import java.net.InetAddress
 
-class LimitedSystemDnsResolver: SystemDefaultDnsResolver() {
+class LimitedSystemDnsResolver(private val limit: Int = 2) : SystemDefaultDnsResolver() {
     /**
-     * Resolves IP addresses for a host, limiting to the amount in the `limit` parameter
+     * Resolves IP addresses for a host, limiting to the amount in the `max` parameter
      */
-    fun resolve(host: String?, limit: Int): Array<InetAddress> {
-        return super.resolve(host).take(limit).toTypedArray()
+    fun resolve(host: String?, max: Int): Array<InetAddress> {
+        return super.resolve(host).take(max).toTypedArray()
     }
 
     /**
-     * Resolves IP addresses for a host, limiting to the first 2 IP addresses
+     * Resolves a limited number of IP addresses for a host
      */
     override fun resolve(host: String?): Array<InetAddress> {
-        return resolve(host, 2)
-    }
-
-    companion object {
-        private var instance: LimitedSystemDnsResolver? = null
-
-        fun getInstance(): LimitedSystemDnsResolver {
-            if (instance == null) {
-                instance = LimitedSystemDnsResolver()
-            }
-            return instance as LimitedSystemDnsResolver
-        }
+        return resolve(host, this.limit)
     }
 }
