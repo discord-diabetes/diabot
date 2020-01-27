@@ -15,7 +15,6 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
     init {
         this.name = "set"
         this.help = "Set Nightscout URL"
-        this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("s")
         this.category = category
