@@ -10,6 +10,7 @@ import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
+import com.dongtronic.diabot.util.LimitedSystemDnsResolver
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.stream.MalformedJsonException
@@ -20,8 +21,10 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import org.apache.http.NameValuePair
+import org.apache.http.client.HttpClient
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.client.methods.RequestBuilder
-import org.apache.http.impl.client.HttpClients
+import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
@@ -36,6 +39,8 @@ import java.time.format.DateTimeFormatter
 class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
+    private val httpClient: HttpClient
+    private val requestConfig: RequestConfig
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
     private val defaultQuery: Array<NameValuePair> = arrayOf(
             BasicNameValuePair("find[sgv][\$exists]", ""),
@@ -55,6 +60,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 NightscoutSetTokenCommand(category, this),
                 NightscoutSetDisplayCommand(category, this)
         )
+
+        httpClient = HttpClientBuilder
+                .create()
+                // Limit to two IP addresses per hostname
+                .setDnsResolver(LimitedSystemDnsResolver(2))
+                .build()
+
+        requestConfig = RequestConfig
+                .custom()
+                // Set timeouts to 8 seconds
+                .setSocketTimeout(8000)
+                .setConnectionRequestTimeout(8000)
+                .setConnectTimeout(8000)
+                .build()
     }
 
     override fun execute(event: CommandEvent) {
@@ -433,7 +452,6 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
-        val client = HttpClients.createDefault()
         val request = RequestBuilder.get()
 
         if (token != null) {
@@ -442,8 +460,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         request.addParameters(*query)
         request.setUri(url)
+        request.config = requestConfig
 
-        val response = client.execute(request.build())
+        val response = httpClient.execute(request.build())
         val statusCode = response.statusLine.statusCode
 
         if (statusCode != 200) {
