@@ -15,7 +15,6 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
     init {
         this.name = "token"
         this.help = "Set Nightscout authentication token"
-        this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("t")
         this.category = category
