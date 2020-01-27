@@ -3,7 +3,6 @@ package com.dongtronic.diabot.platforms.discord.commands.admin
 import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 /**
@@ -17,7 +16,6 @@ class ShutdownCommand(category: Command.Category) : DiabotCommand(category, null
         this.guildOnly = false
         this.ownerCommand = false
         this.aliases = arrayOf("heckoff", "fuckoff", "removethyself", "remove")
-        this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.hidden = true
     }
 

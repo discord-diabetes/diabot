@@ -1,7 +1,5 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
-import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.data.NightscoutDTO
 import com.dongtronic.diabot.data.NightscoutUserDTO
@@ -9,7 +7,10 @@ import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
+import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
+import com.dongtronic.diabot.util.LimitedSystemDnsResolver
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.stream.MalformedJsonException
@@ -19,12 +20,17 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.NameValuePair
-import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.http.NameValuePair
+import org.apache.http.client.HttpClient
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.message.BasicNameValuePair
+import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
+import java.net.UnknownHostException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -33,10 +39,12 @@ import java.time.format.DateTimeFormatter
 class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
+    private val httpClient: HttpClient
+    private val requestConfig: RequestConfig
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
     private val defaultQuery: Array<NameValuePair> = arrayOf(
-            NameValuePair("find[sgv][\$exists]", ""),
-            NameValuePair("count", "1"))
+            BasicNameValuePair("find[sgv][\$exists]", ""),
+            BasicNameValuePair("count", "1"))
 
     init {
         this.name = "nightscout"
@@ -52,6 +60,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 NightscoutSetTokenCommand(category, this),
                 NightscoutSetDisplayCommand(category, this)
         )
+
+        httpClient = HttpClientBuilder
+                .create()
+                // Limit to two IP addresses per hostname
+                .setDnsResolver(LimitedSystemDnsResolver(2))
+                .build()
+
+        requestConfig = RequestConfig
+                .custom()
+                // Set timeouts to 8 seconds
+                .setSocketTimeout(8000)
+                .setConnectionRequestTimeout(8000)
+                .setConnectTimeout(8000)
+                .build()
     }
 
     override fun execute(event: CommandEvent) {
@@ -73,6 +95,9 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         } catch (ex: InsufficientPermissionException) {
             logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
             event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
+        } catch (ex: UnknownHostException) {
+            event.reactError()
+            logger.info("No host found: ${ex.message}")
         } catch (ex: Exception) {
             event.reactError()
             logger.warn("Unexpected error: " + ex.message)
@@ -427,23 +452,24 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     }
 
     private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
-        val client = HttpClient()
-        val method = GetMethod(url)
-        val queries = query.toMutableList()
+        val request = RequestBuilder.get()
 
         if (token != null) {
-            queries.add(NameValuePair("token", token))
+            request.addParameter("token", token)
         }
 
-        method.setQueryString(queries.toTypedArray())
+        request.addParameters(*query)
+        request.setUri(url)
+        request.config = requestConfig
 
-        val statusCode = client.executeMethod(method)
+        val response = httpClient.execute(request.build())
+        val statusCode = response.statusLine.statusCode
 
         if (statusCode != 200) {
             throw NightscoutStatusException(statusCode)
         }
 
-        val body = method.responseBodyAsStream.bufferedReader().use { it.readText() }
+        val body = EntityUtils.toString(response.entity)
 
         if (body.isEmpty()) {
             throw NoNightscoutDataException()

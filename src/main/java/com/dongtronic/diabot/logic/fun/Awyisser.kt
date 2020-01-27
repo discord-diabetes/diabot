@@ -2,8 +2,9 @@ package com.dongtronic.diabot.logic.`fun`
 
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.google.gson.JsonParser
-import org.apache.commons.httpclient.HttpClient
-import org.apache.commons.httpclient.methods.PostMethod
+import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 
 object Awyisser {
     const val url = "http://awyisser.com/api/generator"
@@ -13,19 +14,20 @@ object Awyisser {
      * @return URL to the generated image
      */
     fun generate(input: String): String {
-        val client = HttpClient()
-        val method = PostMethod(url)
+        val client = HttpClients.createDefault()
+        val request = RequestBuilder.post()
 
         //Add any parameter if u want to send it with Post req.
-        method.addParameter("phrase", input)
+        request.addParameter("phrase", input)
+        request.setUri(url)
 
-        val statusCode = client.executeMethod(method)
+        val response = client.execute(request.build())
 
-        if (statusCode == -1) {
+        if (response.statusLine.statusCode == -1) {
             throw RequestStatusException(-1)
         }
 
-        val json = method.responseBodyAsString
+        val json = EntityUtils.toString(response.entity)
 
         val jsonObject = JsonParser().parse(json).asJsonObject
         return jsonObject.get("link").asString
