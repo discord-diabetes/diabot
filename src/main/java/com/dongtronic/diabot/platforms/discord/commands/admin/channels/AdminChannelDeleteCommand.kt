@@ -15,6 +15,7 @@ class AdminChannelDeleteCommand(category: Category, parent: Command?) : DiabotCo
         this.help = "Removes a channel as an admin channel"
         this.guildOnly = false
         this.aliases = arrayOf("remove", "d", "r")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

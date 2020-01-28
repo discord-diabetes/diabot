@@ -15,7 +15,7 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
         this.name = "set"
         this.help = "Set Nightscout URL for a user"
         this.guildOnly = true
-        this.ownerCommand = false
+        this.ownerCommand = true
         this.aliases = arrayOf("s")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " set <userId> <url>")

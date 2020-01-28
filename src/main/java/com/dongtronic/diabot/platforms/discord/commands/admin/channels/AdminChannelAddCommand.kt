@@ -15,6 +15,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiabotComma
         this.help = "Adds a channel as an admin"
         this.guildOnly = false
         this.aliases = arrayOf("a")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

@@ -13,6 +13,7 @@ class ExcuseCommand(category: Command.Category) : Command() {
         this.name = "excuse"
         this.help = "gibs excus"
         this.category = category
+        this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent) {

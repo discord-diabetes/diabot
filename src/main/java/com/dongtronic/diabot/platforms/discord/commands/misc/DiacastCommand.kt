@@ -22,7 +22,7 @@ class DiacastCommand(category: Command.Category) : DiabotCommand(category, null)
     init {
         this.name = "diacast"
         this.help = "Get information about a diacast episode"
-        this.guildOnly = true
+        this.guildOnly = false
         this.examples = arrayOf("diabot diacast", "diabot diacast 6")
     }
 

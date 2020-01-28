@@ -15,6 +15,7 @@ class AdminChannelListCommand(category: Category, parent: Command?) : DiabotComm
         this.help = "Lists admin channels"
         this.guildOnly = false
         this.aliases = arrayOf("l")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

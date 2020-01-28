@@ -16,6 +16,7 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
         this.help = "Opt user out of rewards"
         this.guildOnly = true
         this.aliases = arrayOf("o", "oo")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

@@ -16,7 +16,7 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
         this.name = "delete"
         this.help = "Delete a configured nightscout URL"
         this.guildOnly = true
-        this.ownerCommand = false
+        this.ownerCommand = true
         this.aliases = arrayOf("d", "del", "r", "rm", "remove")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " delete <userId>")

@@ -50,7 +50,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         this.name = "nightscout"
         this.help = "Get the most recent info from any Nightscout site"
         this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
-        this.guildOnly = true
+        this.guildOnly = false
         this.aliases = arrayOf("ns", "bg")
         this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns public false")
         this.children = arrayOf(
@@ -132,7 +132,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
-                         userDTO.displayOptions.contains("simple")
+                userDTO.displayOptions.contains("simple")
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)

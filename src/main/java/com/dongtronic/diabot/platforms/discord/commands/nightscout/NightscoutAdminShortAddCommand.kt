@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
@@ -20,6 +21,7 @@ class NightscoutAdminShortAddCommand(category: Category, parent: Command?) : Dia
         this.aliases = arrayOf("a")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " add")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

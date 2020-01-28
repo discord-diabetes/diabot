@@ -10,6 +10,7 @@ class GithubCommand(category: Category) : DiabotCommand(category, null) {
         this.name = "github"
         this.help = "Get the GitHub link for Diabot"
         this.hidden = false
+        this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent) {

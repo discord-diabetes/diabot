@@ -12,7 +12,7 @@ class DisclaimerCommand(category: Command.Category) : DiabotCommand(category, nu
     init {
         this.name = "disclaimer"
         this.help = "Show the disclaimer for diabot"
-        this.guildOnly = true
+        this.guildOnly = false
         this.ownerCommand = false
         this.hidden = false
         this.cooldown = 180

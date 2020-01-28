@@ -19,7 +19,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     init {
         this.name = "display"
         this.help = "Set display options for NS cards"
-        this.guildOnly = true
+        this.guildOnly = false
         this.ownerCommand = false
         this.aliases = arrayOf("setdisplay")
         this.category = category

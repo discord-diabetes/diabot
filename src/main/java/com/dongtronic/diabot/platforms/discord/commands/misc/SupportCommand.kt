@@ -10,6 +10,7 @@ class SupportCommand(category: Category) : DiabotCommand(category, null) {
         this.name = "support"
         this.help = "Get information about supporting Diabot development"
         this.hidden = false
+        this.guildOnly = false
     }
 
     override fun execute(event: CommandEvent) {

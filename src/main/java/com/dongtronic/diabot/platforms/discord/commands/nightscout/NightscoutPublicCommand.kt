@@ -14,7 +14,7 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
     init {
         this.name = "public"
         this.help = "Make your Nightscout data public or private"
-        this.guildOnly = true
+        this.guildOnly = false
         this.ownerCommand = false
         this.aliases = arrayOf("pub", "p")
         this.category = category

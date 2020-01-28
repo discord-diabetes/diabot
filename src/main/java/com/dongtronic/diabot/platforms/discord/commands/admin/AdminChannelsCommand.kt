@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.channels.AdminChan
 import com.dongtronic.diabot.platforms.discord.commands.admin.channels.AdminChannelListCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 class AdminChannelsCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -17,6 +18,7 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Diabo
         this.help = "Admin channel settings"
         this.guildOnly = true
         this.ownerCommand = false
+        this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.aliases = arrayOf("c")
         this.examples = arrayOf("diabot admin channels add <channelId>", "diabot admin channels delete <channelId>", "diabot admin channels list")
         this.children = arrayOf(

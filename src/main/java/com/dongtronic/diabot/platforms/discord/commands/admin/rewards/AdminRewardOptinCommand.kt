@@ -16,6 +16,7 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
         this.help = "Opt user in to rewards"
         this.guildOnly = true
         this.aliases = arrayOf("i", "oi")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

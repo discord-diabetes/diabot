@@ -16,7 +16,7 @@ class NightscoutAdminShortCommand(category: Command.Category, parent: DiabotComm
         this.guildOnly = true
         this.aliases = arrayOf("sc", "shortchannels")
         this.examples = arrayOf("diabot nsadmin sc add <channel>", "diabot nsadmin sc list", "diabot nsadmin sc delete <channel>")
-        this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
+        this.userPermissions = arrayOf(Permission.MANAGE_CHANNEL)
         this.children = arrayOf(
                 NightscoutAdminShortListCommand(category, this),
                 NightscoutAdminShortAddCommand(category, this),

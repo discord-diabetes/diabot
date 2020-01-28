@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 class NightscoutAdminShortListCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
@@ -20,6 +21,7 @@ class NightscoutAdminShortListCommand(category: Command.Category, parent: Comman
         this.aliases = arrayOf("l")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " list")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

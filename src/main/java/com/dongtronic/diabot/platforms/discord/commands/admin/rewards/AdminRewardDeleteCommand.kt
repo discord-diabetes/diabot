@@ -16,6 +16,7 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
         this.help = "Delete role reward"
         this.guildOnly = true
         this.aliases = arrayOf("d", "del", "r", "rm", "remove")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

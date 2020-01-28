@@ -13,7 +13,7 @@ class AwyissCommand(category: Command.Category) : DiabotCommand(category, null) 
         this.name = "awyiss"
         this.help = "muther f'in breadcrumbs"
         this.arguments = "<phrase> ..."
-        this.guildOnly = true
+        this.guildOnly = false
         this.aliases = arrayOf("duck", "breadcrumbs")
     }
 

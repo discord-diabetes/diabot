@@ -16,6 +16,7 @@ class AdminRewardAddCommand(category: Command.Category, parent: Command?) : Diab
         this.help = "Add role reward"
         this.guildOnly = true
         this.aliases = arrayOf("a")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {
