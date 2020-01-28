@@ -17,6 +17,7 @@ import com.google.gson.stream.MalformedJsonException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
@@ -131,8 +132,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             return
         }
 
-        val shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
-                userDTO.displayOptions.contains("simple")
+        val channelType = event.channelType;
+        var shortReply = false
+        if (channelType == ChannelType.TEXT) {
+            shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
+                    userDTO.displayOptions.contains("simple")
+        }
 
         if (shortReply) {
             val message = buildShortResponse(dto, userDTO.displayOptions)
