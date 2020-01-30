@@ -162,9 +162,11 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val userDTO = NightscoutUserDTO()
+        val namedMembers = event.event.guild.getMembersByName(args[0], true) + event.event.guild.getMembersByNickname(args[0], true)
+        val mentionedMembers = namedMembers + event.event.message.mentionedMembers
         val endpoint = when {
-            event.event.message.mentionedUsers.size == 1 -> {
-                val user = event.event.message.mentionedMembers[0].user
+            mentionedMembers.isNotEmpty() -> {
+                val user = mentionedMembers[0].user
                 try {
                     if (!getNightscoutPublic(user)) {
                         event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
@@ -196,8 +198,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             }
         }
 
-        if (event.message.mentionedUsers.size == 1 && !event.message.mentionsEveryone()) {
-            getUserDto(event.message.mentionedUsers[0], userDTO)
+        if (mentionedMembers.size == 1 && !event.message.mentionsEveryone()) {
+            getUserDto(mentionedMembers[0].user, userDTO)
         }
 
         buildNightscoutResponse(endpoint, userDTO, event)
