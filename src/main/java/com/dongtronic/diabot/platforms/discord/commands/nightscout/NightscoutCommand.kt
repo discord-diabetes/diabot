@@ -163,23 +163,27 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val userDTO = NightscoutUserDTO()
         val namedMembers = event.event.guild.getMembersByName(args[0], true) + event.event.guild.getMembersByNickname(args[0], true)
-        val mentionedMembers = namedMembers + event.event.message.mentionedMembers
+        val mentionedMembers =  event.event.message.mentionedMembers
+
         val endpoint = when {
-            mentionedMembers.isNotEmpty() -> {
+            mentionedMembers.size == 1 -> {
                 val user = mentionedMembers[0].user
                 try {
                     if (!getNightscoutPublic(user)) {
                         event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
                         return
                     }
+                    getUserDto(user, userDTO)
                     getNightscoutHost(user) + "/api/v1/"
                 } catch (ex: UnconfiguredNightscoutException) {
                     throw IllegalArgumentException("User does not have a configured Nightscout URL.")
                 }
             }
-            event.event.message.mentionedUsers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
+            mentionedMembers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
             event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
-            else -> {
+
+           else -> {
+
                 val hostname = args[0]
                 if (hostname.contains("http://") || hostname.contains("https://")) {
                     var domain = hostname
@@ -192,14 +196,23 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                         return
 
                     "$domain/api/v1/"
+                }
+                // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
+                else if (namedMembers.size == 1) {
+                    val user = namedMembers[0].user
+                    if (getNightscoutPublic(user)) {
+                        getUserDto(user, userDTO)
+                        getNightscoutHost(user) + "/api/v1/"
+
+                    } else {
+
+                        "https://$hostname.herokuapp.com/api/v1/"
+                    }
+
                 } else {
                     "https://$hostname.herokuapp.com/api/v1/"
                 }
             }
-        }
-
-        if (mentionedMembers.size == 1 && !event.message.mentionsEveryone()) {
-            getUserDto(mentionedMembers[0].user, userDTO)
         }
 
         buildNightscoutResponse(endpoint, userDTO, event)
