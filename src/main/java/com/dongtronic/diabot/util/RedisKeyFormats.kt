@@ -3,7 +3,7 @@ package com.dongtronic.diabot.util
 object RedisKeyFormats {
     // Nightscout
     const val nightscoutUrlFormat = "{{userid}}:nightscouturl"
-    const val nightscoutPublicFormat = "{{userid}}:{{guildid}}:nightscoutprivate"
+    const val nightscoutPublicFormat = "{{userid}}:{{guildid}}:nightscoutpublic"
     const val nightscoutTokenFormat = "{{userid}}:nightscouttoken"
     const val nightscoutDisplayFormat = "{{userid}}:nightscoutdisplay"
     const val allNightscoutUrlsFormat = "*:nightscouturl"
