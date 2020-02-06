@@ -37,14 +37,14 @@ class NightscoutDAO private constructor() {
         jedis!!.del(redisKey)
     }
 
-    fun isNightscoutPublic(user: User): Boolean {
-        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id)
+    fun isNightscoutPublic(user: User, guildId: String): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guildId)
 
         return !jedis!!.get(redisKey).isNullOrEmpty()
     }
 
-    fun setNightscoutPublic(user: User, public: Boolean) {
-        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id)
+    fun setNightscoutPublic(user: User, guildId: String, public: Boolean) {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guildId)
 
         if (public) {
             jedis!!.set(redisKey, "true")

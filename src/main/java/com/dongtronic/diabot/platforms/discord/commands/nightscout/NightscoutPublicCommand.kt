@@ -26,8 +26,8 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
 
         if(args.isEmpty()) {
             // toggle visibility if no arguments are provided
-            val newVisibility = !NightscoutDAO.getInstance().isNightscoutPublic(event.author)
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, newVisibility)
+            val newVisibility = !NightscoutDAO.getInstance().isNightscoutPublic(event.author, event.guild.id)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, newVisibility)
             reply(event, newVisibility)
             return
         }
@@ -35,10 +35,10 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
         val mode = args[0].toUpperCase()
 
         if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, true)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, true)
             reply(event, true)
         } else {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, false)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, false)
             reply(event, false)
         }
     }
@@ -46,6 +46,6 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
     fun reply(event: CommandEvent, public: Boolean) {
         val authorNick = NicknameUtils.determineAuthorDisplayName(event)
         val visibility = if (public) "public" else "private"
-        event.reply("Nightscout data for $authorNick set to $visibility")
+        event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
     }
 }

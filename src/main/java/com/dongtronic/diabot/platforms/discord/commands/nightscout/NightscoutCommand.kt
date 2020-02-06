@@ -166,7 +166,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             event.event.message.mentionedUsers.size == 1 -> {
                 val user = event.event.message.mentionedMembers[0].user
                 try {
-                    if (!getNightscoutPublic(user)) {
+                    if (!getNightscoutPublic(user, event.guild.id)) {
                         event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
                         return
                     }
@@ -391,7 +391,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                 return false
             }
 
-            if (!NightscoutDAO.getInstance().isNightscoutPublic(user)) {
+            if (!NightscoutDAO.getInstance().isNightscoutPublic(user, event.guild.id)) {
                 // Nightscout data is private
                 event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
                 return false
@@ -452,8 +452,8 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         userDTO.avatarUrl = user.avatarUrl
     }
 
-    private fun getNightscoutPublic(user: User): Boolean {
-        return NightscoutDAO.getInstance().isNightscoutPublic(user)
+    private fun getNightscoutPublic(user: User, guildId: String): Boolean {
+        return NightscoutDAO.getInstance().isNightscoutPublic(user, guildId)
     }
 
     private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
