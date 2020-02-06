@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
@@ -43,11 +44,11 @@ class NightscoutDAO private constructor() {
         return !jedis!!.get(redisKey).isNullOrEmpty()
     }
 
-    fun setNightscoutPublic(user: User, guildId: String, public: Boolean) {
-        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guildId)
+    fun setNightscoutPublic(user: User, guild: Guild, public: Boolean) {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guild.id)
 
         if (public) {
-            jedis!!.set(redisKey, "true")
+            jedis!!.set(redisKey, guild.name)
         } else {
             jedis!!.del(redisKey)
         }

@@ -27,7 +27,7 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
         if(args.isEmpty()) {
             // toggle visibility if no arguments are provided
             val newVisibility = !NightscoutDAO.getInstance().isNightscoutPublic(event.author, event.guild.id)
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, newVisibility)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, newVisibility)
             reply(event, newVisibility)
             return
         }
@@ -35,10 +35,10 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
         val mode = args[0].toUpperCase()
 
         if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, true)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, true)
             reply(event, true)
         } else {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild.id, false)
+            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, false)
             reply(event, false)
         }
     }
