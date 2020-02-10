@@ -36,10 +36,21 @@ class NutritionCommand(category: Category) : DiabotCommand(category, null) {
             builder.appendDescription("**Input**: $input \n")
             builder.appendDescription("**Parsed**: \n$result")
 
-            builder.addField("Carbs", result.totalCarbs.toInt().toString(), true)
-            builder.addField("Total Fats", result.totalFats.toInt().toString(), true)
-            builder.addField("Saturated fats", result.totalSaturatedFats.toInt().toString(), true)
-            builder.addField("Dietary fibers", result.totalFibers.toInt().toString(), true)
+            if (result.totalCarbs != 0.0) {
+                builder.addField("Carbs", result.totalCarbs.toInt().toString(), true)
+            }
+
+            if (result.totalFats != 0.0) {
+                builder.addField("Total Fats", result.totalFats.toInt().toString(), true)
+            }
+
+            if (result.totalSaturatedFats != 0.0) {
+                builder.addField("Saturated fats", result.totalSaturatedFats.toInt().toString(), true)
+            }
+
+            if (result.totalFibers != 0.0) {
+                builder.addField("Dietary fibers", result.totalFibers.toInt().toString(), true)
+            }
 
             builder.setColor(java.awt.Color.blue)
             builder.setAuthor("Powered by Nutritionix")
