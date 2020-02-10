@@ -58,10 +58,16 @@ class NutritionCommand(category: Category) : DiabotCommand(category, null) {
 
             event.reply(builder.build())
         } catch (ex: RequestStatusException) {
-            if (ex.status == 404) {
-                event.replyError("Couldn't find any food matching your request in the food database")
-            } else {
-                event.replyError("Couldn't communicate with nutrition database. Please try again later.")
+            when (ex.status) {
+                404 -> {
+                    event.replyError("Couldn't find any food matching your request in the food database")
+                }
+                401 -> {
+                    event.replyError("Rate limit reached, please try again tomorrow")
+                }
+                else -> {
+                    event.replyError("Couldn't communicate with nutrition database. Please try again later.")
+                }
             }
         }
     }
