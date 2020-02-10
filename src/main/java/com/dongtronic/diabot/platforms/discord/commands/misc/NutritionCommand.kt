@@ -36,19 +36,19 @@ class NutritionCommand(category: Category) : DiabotCommand(category, null) {
             builder.appendDescription("**Input**: $input \n")
             builder.appendDescription("**Parsed**: \n$result")
 
-            if (result.totalCarbs != 0.0) {
+            if (result.totalCarbs.toInt() != 0) {
                 builder.addField("Carbs", result.totalCarbs.toInt().toString(), true)
             }
 
-            if (result.totalFats != 0.0) {
+            if (result.totalFats.toInt() != 0) {
                 builder.addField("Total Fats", result.totalFats.toInt().toString(), true)
             }
 
-            if (result.totalSaturatedFats != 0.0) {
+            if (result.totalSaturatedFats.toInt() != 0) {
                 builder.addField("Saturated fats", result.totalSaturatedFats.toInt().toString(), true)
             }
 
-            if (result.totalFibers != 0.0) {
+            if (result.totalFibers.toInt() != 0) {
                 builder.addField("Dietary fibers", result.totalFibers.toInt().toString(), true)
             }
 
