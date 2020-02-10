@@ -80,6 +80,7 @@ object Main {
                 RewardsCommand(utilitiesCategory),
                 GithubCommand(utilitiesCategory),
                 DisclaimerCommand(utilitiesCategory),
+                NutritionCommand(utilitiesCategory),
 
                 // Info
                 InfoCommand(infoCategory),
