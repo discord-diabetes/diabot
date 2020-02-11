@@ -10,19 +10,22 @@ import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.ErrorResponse
+import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.util.*
 import java.util.function.Consumer
 
 class HelpListener : Consumer<CommandEvent> {
+    private val logger = LoggerFactory.getLogger(HelpListener::class.java)
+
     /**
      * Executed when the attempt to send a DM to a user fails
      */
     private fun sendingError(exc: Throwable, event: CommandEvent) {
         if (exc is ErrorResponseException
                 && exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER) {
-            // Print stack trace if the error code was not related to DMs being blocked
-            exc.printStackTrace()
+            // Print a warning in console if the error code was not related to DMs being blocked
+            logger.warn("Unexpected error response when sending DM: ${exc.errorCode} - ${exc.meaning}")
         }
 
         event.replyError("Could not send you a DM, please adjust your privacy settings to allow DMs from server members.")
