@@ -1,19 +1,33 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.exceptions.NoCommandFoundException
+import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
 import java.awt.Color
-import java.security.Permissions
 import java.util.*
 import java.util.function.Consumer
 
 class HelpListener : Consumer<CommandEvent> {
+    /**
+     * Executed when the attempt to send a DM to a user fails
+     */
+    private fun sendingError(exc: Throwable, event: CommandEvent) {
+        if (exc is ErrorResponseException
+                && exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER) {
+            // Print stack trace if the error code was not related to DMs being blocked
+            exc.printStackTrace()
+        }
+
+        event.replyError("Could not send you a DM, please adjust your privacy settings to allow DMs from server members.")
+    }
+
     override fun accept(event: CommandEvent) {
         if (!event.isFromType(ChannelType.TEXT)) {
             event.replyWarning("Couldn't check your server permissions, help output might display commands you don't have access to.")
@@ -31,7 +45,9 @@ class HelpListener : Consumer<CommandEvent> {
             // Show extended help card
             buildSpecificHelp(embedBuilder, allCommands, event)
             try {
-                event.author.openPrivateChannel().queue{channel -> channel.sendMessage(embedBuilder.build()).queue()}
+                event.author.openPrivateChannel().queue {
+                    channel -> channel.sendMessage(embedBuilder.build()).queue(null, { sendingError(it, event) })
+                }
             } catch (ex: InsufficientPermissionException) {
                 event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
             }
@@ -41,12 +57,19 @@ class HelpListener : Consumer<CommandEvent> {
     private fun buildGeneralHelp(allCommands: List<Command>, event: CommandEvent) {
         val allowedCommands = filterAllowedCommands(allCommands, event)
         val categorizedCommands = groupCommands(allowedCommands)
-
+        var sentError = false
 
         for (category in categorizedCommands.entries) {
             val categoryBuilder = EmbedBuilder()
             buildCategoryHelp(categoryBuilder, category)
-            event.author.openPrivateChannel().queue{channel -> channel.sendMessage(categoryBuilder.build()).queue()}
+            event.author.openPrivateChannel().queue {
+                channel -> channel.sendMessage(categoryBuilder.build()).queue(null, { exc ->
+                // To avoid spamming the user about sending errors for each category message
+                if (!sentError) {
+                    sendingError(exc, event)
+                    sentError = true
+                } })
+            }
         }
     }
 
