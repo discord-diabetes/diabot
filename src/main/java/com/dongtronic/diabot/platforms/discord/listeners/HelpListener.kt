@@ -5,18 +5,18 @@ import com.dongtronic.diabot.exceptions.NoCommandFoundException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import java.awt.Color
+import java.security.Permissions
 import java.util.*
 import java.util.function.Consumer
 
 class HelpListener : Consumer<CommandEvent> {
     override fun accept(event: CommandEvent) {
         if (!event.isFromType(ChannelType.TEXT)) {
-            // Don't accept DM help requests, since we can't check permissions there
-            event.replyError("Help command can only be used inside a server")
-            return
+            event.replyWarning("Couldn't check your server permissions, help output might display commands you don't have access to.")
         }
 
         val embedBuilder = EmbedBuilder()
@@ -31,7 +31,7 @@ class HelpListener : Consumer<CommandEvent> {
             // Show extended help card
             buildSpecificHelp(embedBuilder, allCommands, event)
             try {
-                event.reply(embedBuilder.build())
+                event.author.openPrivateChannel().queue{channel -> channel.sendMessage(embedBuilder.build()).queue()}
             } catch (ex: InsufficientPermissionException) {
                 event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
             }
@@ -46,7 +46,7 @@ class HelpListener : Consumer<CommandEvent> {
         for (category in categorizedCommands.entries) {
             val categoryBuilder = EmbedBuilder()
             buildCategoryHelp(categoryBuilder, category)
-            event.reply(categoryBuilder.build())
+            event.author.openPrivateChannel().queue{channel -> channel.sendMessage(categoryBuilder.build()).queue()}
         }
     }
 
@@ -200,7 +200,10 @@ class HelpListener : Consumer<CommandEvent> {
                 continue
             }
 
-            val userPermissions = event.member.permissions
+            var userPermissions: EnumSet<Permission> = Permission.getPermissions(Permission.ALL_PERMISSIONS)
+            if (event.member != null) {
+                userPermissions = event.member.permissions
+            }
 
             var userIsAllowedToUseCommand = true
 
