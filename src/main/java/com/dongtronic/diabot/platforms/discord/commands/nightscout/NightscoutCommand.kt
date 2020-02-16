@@ -198,15 +198,20 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                     "$domain/api/v1/"
                 }
                 // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
+
                 else if (namedMembers.size == 1) {
                     val user = namedMembers[0].user
+                    val domain = "https://$hostname.herokuapp.com"
+
                     if (getNightscoutPublic(user)) {
                         getUserDto(user, userDTO)
                         getNightscoutHost(user) + "/api/v1/"
 
+                    } else if (testNightscoutInstance(domain)) {
+                        "$domain/api/v1/"
                     } else {
-
-                        "https://$hostname.herokuapp.com/api/v1/"
+                        event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
+                        return
                     }
 
                 } else {
@@ -439,6 +444,26 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
 
         return false
+    }
+
+    /**
+     * Tests if the domain provided is a valid Nightscout instance
+     *
+     * @return true if the instance exists, false if not
+     */
+    private fun testNightscoutInstance(domain: String) : Boolean {
+        
+        val request = RequestBuilder.get()
+        val url = "$domain/api/v1/status"
+        request.setUri(url)
+        request.config = requestConfig
+
+        val response = httpClient.execute(request.build())
+        val statusCode = response.statusLine.statusCode
+        if (statusCode == 404) {
+            return false
+        }
+        return true
     }
 
     /**
