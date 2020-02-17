@@ -203,15 +203,19 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                     val user = namedMembers[0].user
                     val domain = "https://$hostname.herokuapp.com"
 
-                    if (getNightscoutPublic(user)) {
-                        getUserDto(user, userDTO)
-                        getNightscoutHost(user) + "/api/v1/"
+                    when {
+                        getNightscoutPublic(user, event.guild.id) -> {
+                            getUserDto(user, userDTO)
+                            getNightscoutHost(user) + "/api/v1/"
 
-                    } else if (testNightscoutInstance(domain)) {
-                        "$domain/api/v1/"
-                    } else {
-                        event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
-                        return
+                        }
+                        testNightscoutInstance(domain) -> {
+                            "$domain/api/v1/"
+                        }
+                        else -> {
+                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
+                            return
+                        }
                     }
 
                 } else {
@@ -452,7 +456,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
      * @return true if the instance exists, false if not
      */
     private fun testNightscoutInstance(domain: String) : Boolean {
-        
+
         val request = RequestBuilder.get()
         val url = "$domain/api/v1/status"
         request.setUri(url)
