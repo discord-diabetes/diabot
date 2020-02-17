@@ -1,19 +1,39 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.dongtronic.diabot.exceptions.NoCommandFoundException
+import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.requests.ErrorResponse
+import org.slf4j.LoggerFactory
 import java.awt.Color
-import java.security.Permissions
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
+import kotlin.collections.ArrayList
 
 class HelpListener : Consumer<CommandEvent> {
+    private val logger = LoggerFactory.getLogger(HelpListener::class.java)
+
+    /**
+     * Executed when the attempt to send a DM to a user fails
+     */
+    private fun sendingError(exc: Throwable, event: CommandEvent) {
+        if (exc is ErrorResponseException
+                && exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER) {
+            // Print a warning in console if the error code was not related to DMs being blocked
+            logger.warn("Unexpected error response when sending DM: ${exc.errorCode} - ${exc.meaning}")
+        }
+
+        event.replyError("Could not send you a DM, please adjust your privacy settings to allow DMs from server members.")
+    }
+
     override fun accept(event: CommandEvent) {
         if (!event.isFromType(ChannelType.TEXT)) {
             event.replyWarning("Couldn't check your server permissions, help output might display commands you don't have access to.")
@@ -31,7 +51,15 @@ class HelpListener : Consumer<CommandEvent> {
             // Show extended help card
             buildSpecificHelp(embedBuilder, allCommands, event)
             try {
-                event.author.openPrivateChannel().queue{channel -> channel.sendMessage(embedBuilder.build()).queue()}
+                // Open the DM channel and send the message
+                event.author.openPrivateChannel().submit()
+                        .thenCompose { it.sendMessage(embedBuilder.build()).submit() }
+                        .whenComplete { message: Message?, exc: Throwable? ->
+                            if (exc != null) {
+                                // If there's a throwable then assume it failed
+                                sendingError(exc, event)
+                            }
+                        }
             } catch (ex: InsufficientPermissionException) {
                 event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
             }
@@ -41,12 +69,25 @@ class HelpListener : Consumer<CommandEvent> {
     private fun buildGeneralHelp(allCommands: List<Command>, event: CommandEvent) {
         val allowedCommands = filterAllowedCommands(allCommands, event)
         val categorizedCommands = groupCommands(allowedCommands)
-
+        val channel = event.author.openPrivateChannel().submit()
+        val messageQueue: Queue<CompletableFuture<Message>> = LinkedList()
 
         for (category in categorizedCommands.entries) {
             val categoryBuilder = EmbedBuilder()
             buildCategoryHelp(categoryBuilder, category)
-            event.author.openPrivateChannel().queue{channel -> channel.sendMessage(categoryBuilder.build()).queue()}
+
+            // Store the CompletableFuture in the queue so we can cancel it later
+            val message = channel.thenCompose { it.sendMessage(categoryBuilder.build()).submit() }
+                    .whenComplete { message: Message?, exc: Throwable? ->
+                        if (exc != null) {
+                            sendingError(exc, event)
+                            // Cancel the other messages in the queue
+                            messageQueue.forEach { it.cancel(true) }
+                        }
+
+                        messageQueue.clear()
+                    }
+            messageQueue.add(message)
         }
     }
 
