@@ -113,7 +113,7 @@ object Main {
                         client.build(),
                         ConversionListener(),
                         RewardListener(),
-                        UsernameChangedListener(),
+                        UsernameEnforcementListener(),
                         OhNoListener()
                 )
                 // start it up!

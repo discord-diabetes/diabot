@@ -13,6 +13,7 @@ class NutritionCommand(category: Category) : DiabotCommand(category, null) {
 
     init {
         this.name = "nutrition"
+        this.aliases = arrayOf("nutriets")
         this.help = "Get nutrition information"
         this.examples = arrayOf("diabot nutrition one slice of bread", "diabot nutrition 1 slices brown bread with jam, 1 cup milk, 2 cups green salad")
         this.hidden = false
