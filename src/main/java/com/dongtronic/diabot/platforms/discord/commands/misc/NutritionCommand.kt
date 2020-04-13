@@ -18,7 +18,7 @@ class NutritionCommand(category: Category) : DiabotCommand(category, null) {
         this.examples = arrayOf("diabot nutrition one slice of bread", "diabot nutrition 1 slices brown bread with jam, 1 cup milk, 2 cups green salad")
         this.hidden = false
         this.guildOnly = false
-        this.cooldown = 120
+        this.cooldown = 30
         this.cooldownScope = CooldownScope.USER
     }
 
