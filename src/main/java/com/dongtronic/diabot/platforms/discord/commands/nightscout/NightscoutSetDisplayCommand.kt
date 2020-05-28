@@ -27,7 +27,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     }
 
     override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val args = event.args.split("[\\s,]+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val nickname = NicknameUtils.determineAuthorDisplayName(event)
 
         when {
