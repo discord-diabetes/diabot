@@ -35,7 +35,6 @@ import java.net.UnknownHostException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
 
@@ -139,15 +138,12 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
                     userDTO.displayOptions.contains("simple")
         }
 
-        if (shortReply) {
-            val message = buildShortResponse(dto, userDTO.displayOptions)
-            event.reply(message) { replyMessage -> addReactions(dto, replyMessage) }
-        } else {
-            val builder = EmbedBuilder()
-            buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, builder)
-            val embed = builder.build()
-            event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
-        }
+        val builder = EmbedBuilder()
+
+        buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, shortReply, builder)
+
+        val embed = builder.build()
+        event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
     }
 
 
@@ -163,7 +159,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val userDTO = NightscoutUserDTO()
         val namedMembers = event.event.guild.getMembersByName(args[0], true) + event.event.guild.getMembersByNickname(args[0], true)
-        val mentionedMembers =  event.event.message.mentionedMembers
+        val mentionedMembers = event.event.message.mentionedMembers
 
         val endpoint = when {
             mentionedMembers.size == 1 -> {
@@ -182,7 +178,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
             mentionedMembers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
             event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
 
-           else -> {
+            else -> {
 
                 val hostname = args[0]
                 if (hostname.contains("http://") || hostname.contains("https://")) {
@@ -253,42 +249,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
         }
     }
 
-    private fun buildShortResponse(dto: NightscoutDTO, displayOptions: Array<String>): String {
-        // Name: mmol/L: 6.1(+0.3) | mg/dL: 109(+5) | trend: → | iob: 0.56 | cob: 3 | Today at 8:01 PM
-
-        // title: mmol/L: value(delta) | mg/dL: value(delta) | trend: <trend>
-
-        val response: StringBuilder = StringBuilder()
-
-        if (displayOptions.contains("title")) {
-            response.append(dto.title).append(": ")
-        }
-
-        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
-
-        response.append("mmol/L: ").append(mmolString).append(" | ").append("mg/dL: ").append(mgdlString).append(" | ")
-
-        if (displayOptions.contains("trend")) {
-            val trendString = trendArrows[dto.trend]
-            response.append("trend: ").append(trendString).append(" | ")
-        }
-
-        if (displayOptions.contains("iob") && dto.iob != 0.0F) {
-            response.append("iob: ").append(dto.iob).append(" | ")
-        }
-
-        if (displayOptions.contains("cob") && dto.cob != 0) {
-            response.append("cob: ").append(dto.cob).append(" | ")
-        }
-
-
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss (O)")
-        response.append(dto.dateTime!!.format(formatter))
-
-        return response.toString()
-    }
-
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, builder: EmbedBuilder) {
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, short: Boolean, builder: EmbedBuilder) {
         if (displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
@@ -306,7 +267,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
 
         setResponseColor(dto, builder)
 
-        if (avatarUrl != null && displayOptions.contains("avatar")) {
+        if (avatarUrl != null && displayOptions.contains("avatar") && !short) {
             builder.setThumbnail(avatarUrl)
         }
 
@@ -455,7 +416,7 @@ class NightscoutCommand(category: Command.Category) : DiabotCommand(category, nu
      *
      * @return true if the instance exists, false if not
      */
-    private fun testNightscoutInstance(domain: String) : Boolean {
+    private fun testNightscoutInstance(domain: String): Boolean {
 
         val request = RequestBuilder.get()
         val url = "$domain/api/v1/status"
