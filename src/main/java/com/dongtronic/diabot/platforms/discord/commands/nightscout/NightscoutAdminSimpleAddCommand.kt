@@ -5,22 +5,21 @@ import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.Permission
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminShortDeleteCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(NightscoutAdminShortDeleteCommand::class.java)
+    private val logger = LoggerFactory.getLogger(NightscoutAdminSimpleAddCommand::class.java)
 
     init {
-        this.name = "delete"
-        this.help = "Delete a simple response channel"
+        this.name = "add"
+        this.help = "Add a simple response channel"
         this.guildOnly = true
         this.ownerCommand = false
-        this.aliases = arrayOf("d", "r", "remove", "del", "rem")
+        this.aliases = arrayOf("a")
         this.category = category
-        this.examples = arrayOf(this.parent!!.name + " delete")
+        this.examples = arrayOf(this.parent!!.name + " add")
         this.userPermissions = this.parent!!.userPermissions
     }
 
@@ -49,11 +48,11 @@ class NightscoutAdminShortDeleteCommand(category: Category, parent: Command?) : 
                 event.message.mentionedChannels[0]
             }
 
-            logger.info("Removing channel ${channel.id} as short channel for ${event.guild.id}")
+            logger.info("Adding channel ${channel.id} as short channel for ${event.guild.id}")
 
-            NightscoutDAO.getInstance().removeShortChannel(event.guild.id, channel.id)
+            NightscoutDAO.getInstance().addShortChannel(event.guild.id, channel.id)
 
-            event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
+            event.replySuccess("Added channel **${channel.name}** (`${channel.id}`) as short reply channel")
         } catch (ex: Exception) {
             event.replyError(ex.message)
             return

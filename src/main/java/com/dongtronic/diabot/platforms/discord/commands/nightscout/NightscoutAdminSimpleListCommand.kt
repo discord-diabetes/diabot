@@ -6,12 +6,11 @@ import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminShortListCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutAdminSimpleListCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(NightscoutAdminShortListCommand::class.java)
+    private val logger = LoggerFactory.getLogger(NightscoutAdminSimpleListCommand::class.java)
 
     init {
         this.name = "list"

@@ -20,7 +20,7 @@ class NightscoutAdminCommand(category: Command.Category) : DiabotCommand(categor
         this.children = arrayOf(
                  NightscoutAdminSetCommand(category, this),
                 NightscoutAdminDeleteCommand(category, this),
-                NightscoutAdminShortCommand(category, this))
+                NightscoutAdminSimpleCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
