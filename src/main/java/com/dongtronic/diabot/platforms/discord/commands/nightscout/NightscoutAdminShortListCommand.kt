@@ -15,7 +15,7 @@ class NightscoutAdminShortListCommand(category: Command.Category, parent: Comman
 
     init {
         this.name = "list"
-        this.help = "List all channels where diabot will use short nightscout replies"
+        this.help = "List all channels where diabot will use simple nightscout replies"
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("l")

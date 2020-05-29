@@ -11,10 +11,10 @@ class NightscoutAdminShortCommand(category: Command.Category, parent: DiabotComm
     private val logger = LoggerFactory.getLogger(NightscoutAdminShortCommand::class.java)
 
     init {
-        this.name = "short"
-        this.help = "Short channel management"
+        this.name = "simple"
+        this.help = "Simple-mode channel management"
         this.guildOnly = true
-        this.aliases = arrayOf("sc", "shortchannels")
+        this.aliases = arrayOf("sc", "shortchannels", "simplechannels")
         this.examples = arrayOf("diabot nsadmin sc add <channel>", "diabot nsadmin sc list", "diabot nsadmin sc delete <channel>")
         this.userPermissions = arrayOf(Permission.MANAGE_CHANNEL)
         this.children = arrayOf(

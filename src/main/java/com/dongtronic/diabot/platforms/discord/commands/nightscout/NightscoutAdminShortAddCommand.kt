@@ -15,7 +15,7 @@ class NightscoutAdminShortAddCommand(category: Category, parent: Command?) : Dia
 
     init {
         this.name = "add"
-        this.help = "Add a short response channel"
+        this.help = "Add a simple response channel"
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("a")

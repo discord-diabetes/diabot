@@ -15,7 +15,7 @@ class NightscoutAdminShortDeleteCommand(category: Category, parent: Command?) : 
 
     init {
         this.name = "delete"
-        this.help = "Delete a short response channel"
+        this.help = "Delete a simple response channel"
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("d", "r", "remove", "del", "rem")
