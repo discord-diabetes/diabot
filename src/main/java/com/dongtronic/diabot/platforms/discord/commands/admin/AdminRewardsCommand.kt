@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.rewards.*
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
-class AdminRewardsCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class AdminRewardsCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(AdminRewardsCommand::class.java)
 

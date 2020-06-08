@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.channels
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.AdminDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.LoggerFactory
 
-class AdminChannelListCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+class AdminChannelListCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
     private val logger = LoggerFactory.getLogger(AdminChannelListCommand::class.java)
 
     init {

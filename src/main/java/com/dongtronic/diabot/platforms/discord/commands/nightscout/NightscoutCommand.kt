@@ -8,7 +8,7 @@ import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.LimitedSystemDnsResolver
 import com.google.gson.JsonObject
@@ -36,7 +36,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class NightscoutCommand(category: Command.Category) : DiabotCommand(category, null) {
+class NightscoutCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
     private val httpClient: HttpClient

@@ -1,11 +1,11 @@
 package com.dongtronic.diabot.platforms.discord.commands.rewards
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class RewardsCommand(category: Command.Category) : DiabotCommand(category, null) {
+class RewardsCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(RewardsCommand::class.java)
 

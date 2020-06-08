@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.InfoDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 
-class InfoListCommand(category: Category, parent: Command) : DiabotCommand(category, parent) {
+class InfoListCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(InfoListCommand::class.java)
 

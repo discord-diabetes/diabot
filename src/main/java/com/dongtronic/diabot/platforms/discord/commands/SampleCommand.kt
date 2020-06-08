@@ -5,7 +5,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
-class SampleCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class SampleCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(SampleCommand::class.java)
 

@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.misc
 
 import com.dongtronic.diabot.logic.`fun`.Awyisser
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import java.awt.Color
 
-class AwyissCommand(category: Command.Category) : DiabotCommand(category, null) {
+class AwyissCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     init {
         this.name = "awyiss"

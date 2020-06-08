@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author John Grosh (jagrosh)
  */
-class ShutdownCommand(category: Command.Category) : DiabotCommand(category, null) {
+class ShutdownCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     init {
         this.name = "shutdown"

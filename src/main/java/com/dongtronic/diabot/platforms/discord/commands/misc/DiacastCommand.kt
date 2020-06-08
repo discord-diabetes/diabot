@@ -1,21 +1,15 @@
 package com.dongtronic.diabot.platforms.discord.commands.misc
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.exceptions.NoSuchEpisodeException
 import com.dongtronic.diabot.logic.`fun`.Diacast
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import com.rometools.rome.feed.synd.SyndEntry
-import com.rometools.rome.io.FeedException
-import com.rometools.rome.io.SyndFeedInput
-import com.rometools.rome.io.XmlReader
 import net.dv8tion.jda.api.EmbedBuilder
 import org.apache.commons.lang3.StringUtils
 
-import java.io.IOException
-import java.net.URL
-
-class DiacastCommand(category: Command.Category) : DiabotCommand(category, null) {
+class DiacastCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     private val episodes = Diacast.episodes
 

@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.data.ConversionDTO
@@ -9,7 +9,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class ConvertCommand(category: Command.Category) : DiabotCommand(category, null) {
+class ConvertCommand(category: Command.Category) : DiscordCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(ConvertCommand::class.java)
 

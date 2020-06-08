@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.InfoDAO
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import org.slf4j.LoggerFactory
 
-class InfoCommand(category: Category) : DiabotCommand(category, null) {
+class InfoCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = LoggerFactory.getLogger(InfoCommand::class.java)
 

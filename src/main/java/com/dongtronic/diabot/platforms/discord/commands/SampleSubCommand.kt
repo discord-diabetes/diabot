@@ -4,7 +4,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class SampleSubCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(SampleSubCommand::class.java)
 
@@ -28,7 +28,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCom
         event.replyError("Valid sub-commands are: $subcommands")
     }
 
-    class SampleListSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+    class SampleListSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
         private val logger = LoggerFactory.getLogger(SampleListSubCommand::class.java)
 
         init {
@@ -43,7 +43,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCom
         }
     }
 
-    class SampleAddSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+    class SampleAddSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
         private val logger = LoggerFactory.getLogger(SampleAddSubCommand::class.java)
 
         init {
@@ -58,7 +58,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiabotCom
         }
     }
 
-    class SampleDeleteSubCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+    class SampleDeleteSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
         private val logger = LoggerFactory.getLogger(SampleDeleteSubCommand::class.java)
 
         init {

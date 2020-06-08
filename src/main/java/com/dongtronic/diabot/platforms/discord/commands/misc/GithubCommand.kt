@@ -1,10 +1,10 @@
 package com.dongtronic.diabot.platforms.discord.commands.misc
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 
-class GithubCommand(category: Category) : DiabotCommand(category, null) {
+class GithubCommand(category: Category) : DiscordCommand(category, null) {
 
     init {
         this.name = "github"

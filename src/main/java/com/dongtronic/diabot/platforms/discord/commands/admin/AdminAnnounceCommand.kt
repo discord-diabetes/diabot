@@ -1,11 +1,11 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.slf4j.LoggerFactory
 
-class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(AdminAnnounceCommand::class.java)
 

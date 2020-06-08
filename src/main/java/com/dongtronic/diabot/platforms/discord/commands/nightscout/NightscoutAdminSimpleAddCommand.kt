@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.jagrosh.jdautilities.command.Command
@@ -8,7 +8,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(NightscoutAdminSimpleAddCommand::class.java)
 

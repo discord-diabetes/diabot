@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
 import org.slf4j.LoggerFactory
 
-class NightscoutDeleteCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(NightscoutDeleteCommand::class.java)
 

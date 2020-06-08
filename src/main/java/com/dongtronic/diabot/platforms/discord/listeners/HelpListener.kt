@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.exceptions.NoCommandFoundException
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
@@ -178,10 +178,10 @@ class HelpListener : Consumer<CommandEvent> {
      * Build extended command help card. This includes arguments, permissions, aliases, and examples
      */
     private fun buildExtendedCommandHelp(builder: EmbedBuilder, command: Command) {
-        val isExtendedCommand = command is DiabotCommand
-        var extendedCommand: DiabotCommand? = null
+        val isExtendedCommand = command is DiscordCommand
+        var extendedCommand: DiscordCommand? = null
         if (isExtendedCommand) {
-            extendedCommand = command as DiabotCommand
+            extendedCommand = command as DiscordCommand
         }
 
         builder.setTitle("Help")

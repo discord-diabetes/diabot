@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.DiabotCommand
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 
-class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : DiabotCommand(category, parent) {
+class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = LoggerFactory.getLogger(NightscoutAdminSetCommand::class.java)
 
