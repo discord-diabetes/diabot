@@ -10,12 +10,7 @@ class AdminDAO private constructor() {
 
 
     init {
-        if (System.getenv("REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("REDIS_URL"))
-            Jedis()
-        } else if (System.getenv("REDISCLOUD_URL") != null) {
-            jedis = Jedis(System.getenv("REDISCLOUD_URL"))
-        }
+        jedis = Jedis(System.getenv("REDIS_URL"))
     }
 
     fun addAdminChannel(guildId: String, channelId: String) {

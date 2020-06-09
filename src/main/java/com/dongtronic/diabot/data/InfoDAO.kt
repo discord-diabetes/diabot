@@ -3,7 +3,6 @@ package com.dongtronic.diabot.data
 import com.dongtronic.diabot.util.RedisKeyFormats
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
-import kotlin.IllegalArgumentException
 
 class InfoDAO private constructor() {
     private var jedis: Jedis? = null
@@ -11,11 +10,7 @@ class InfoDAO private constructor() {
 
 
     init {
-        if (System.getenv("REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("REDIS_URL"))
-        } else if (System.getenv("DIABOT_REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("DIABOT_REDIS_URL"))
-        }
+        jedis = Jedis(System.getenv("REDIS_URL"))
     }
 
     fun listProjects(): MutableList<String> {
@@ -29,7 +24,7 @@ class InfoDAO private constructor() {
     fun formatProject(project: String): String? {
         val projects = listProjects()
 
-        projects.forEach{foundProject ->
+        projects.forEach { foundProject ->
             if (foundProject.toUpperCase() == project.toUpperCase()) {
                 return foundProject
             }
@@ -41,7 +36,7 @@ class InfoDAO private constructor() {
     fun findProject(project: String): Int {
         val projects = listProjects()
 
-        projects.forEach{foundProject ->
+        projects.forEach { foundProject ->
             if (foundProject.toUpperCase() == project.toUpperCase()) {
                 return projects.indexOf(foundProject)
             }

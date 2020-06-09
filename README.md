@@ -27,7 +27,7 @@ To run Diabot, you need access to the following:
 ### Setting up a Redis database
 TODO.
 
-In the end, you will need a connection URL like this: `redis://<username>:<password>@<host>:<port>`. Store this connection string in an environment variable named `REDIS_URL` or `DIABOT_REDIS_URL`
+In the end, you will need a connection URL like this: `redis://<username>:<password>@<host>:<port>`. Store this connection string in an environment variable named `REDIS_URL`
 
 ### Inviting Diabot to your server
 To invite Diabot to your test server, create an invitation URL by replacing `<client_id>` in the following URL with the client ID 

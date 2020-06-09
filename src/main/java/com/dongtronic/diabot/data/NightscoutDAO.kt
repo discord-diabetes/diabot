@@ -13,11 +13,7 @@ class NightscoutDAO private constructor() {
 
 
     init {
-        if (System.getenv("REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("REDIS_URL"))
-        } else if (System.getenv("DIABOT_REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("DIABOT_REDIS_URL"))
-        }
+        jedis = Jedis(System.getenv("REDIS_URL"))
     }
 
     fun getNightscoutUrl(user: User): String? {

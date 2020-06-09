@@ -10,11 +10,7 @@ class RewardDAO private constructor() {
 
 
     init {
-        if (System.getenv("REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("REDIS_URL"))
-        } else if (System.getenv("DIABOT_REDIS_URL") != null) {
-            jedis = Jedis(System.getenv("DIABOT_REDIS_URL"))
-        }
+        jedis = Jedis(System.getenv("REDIS_URL"))
     }
 
     fun getSimpleRewards(guildId: String): MutableList<String>? {
