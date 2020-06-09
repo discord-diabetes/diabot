@@ -33,7 +33,7 @@ dependencies {
     compile 'commons-configuration:commons-configuration:1.6'
 
     // Database
-    compile 'redis.clients:jedis:2.9.0'
+    compile 'redis.clients:jedis:3.3.0'
 
     // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'

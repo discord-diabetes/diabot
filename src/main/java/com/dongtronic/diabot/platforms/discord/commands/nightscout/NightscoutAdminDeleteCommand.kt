@@ -23,6 +23,13 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
     }
 
     override fun execute(event: CommandEvent) {
+
+        // This command may exclusively be run on the official Diabetes server.
+        if (event.guild.id != System.getenv("HOME_GUILD_ID")) {
+            event.replyError(System.getenv("HOME_GUILD_MESSAGE"))
+            return
+        }
+
         try {
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (args.size != 1) {

@@ -24,8 +24,8 @@ class InfoDeleteCommand(category: Command.Category, parent: Command) : DiscordCo
     override fun execute(event: CommandEvent) {
         try {
             // This command may exclusively be run on the official Diabetes server.
-            if (event.guild.id != "257554742371155998") {
-                event.replyError("This command can only be executed on the official r/Diabetes Discord server. https://discord.gg/diabetes")
+            if (event.guild.id != System.getenv("HOME_GUILD_ID")) {
+                event.replyError(System.getenv("HOME_GUILD_MESSAGE"))
                 return
             }
 

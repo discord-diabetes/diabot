@@ -1,6 +1,7 @@
 package com.dongtronic.diabot
 
 import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
@@ -90,6 +91,7 @@ object Main {
                 ExcuseCommand(funCategory),
                 AwyissCommand(funCategory),
                 DiacastCommand(funCategory),
+                OwnerCommand(funCategory),
 
                 // Admin
                 AdminCommand(adminCategory),

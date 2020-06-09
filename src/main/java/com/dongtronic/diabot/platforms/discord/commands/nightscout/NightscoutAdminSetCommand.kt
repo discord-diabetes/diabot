@@ -23,6 +23,13 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
 
     override fun execute(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+
+        // This command may exclusively be run on the official Diabetes server.
+        if (event.guild.id != System.getenv("HOME_GUILD_ID")) {
+            event.replyError(System.getenv("HOME_GUILD_MESSAGE"))
+            return
+        }
+
         try {
             if (args.size != 2) {
                 throw IllegalArgumentException("Please provide the <userId> and <url> parameters")
