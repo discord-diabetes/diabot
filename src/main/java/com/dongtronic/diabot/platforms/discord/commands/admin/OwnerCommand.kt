@@ -8,18 +8,22 @@ import org.slf4j.LoggerFactory
 class OwnerCommand(category: Category) : DiscordCommand(category, null) {
 
     init {
-        this.name = "owner"
-        this.help = "Say hi to the bot owner"
+        this.name = "hi"
+        this.help = "Say hi"
         this.guildOnly = false
-        this.ownerCommand = true
-        this.aliases = arrayOf("hi", "hello", "sup")
+        this.ownerCommand = false
+        this.aliases = arrayOf("owner", "hello", "sup")
         this.hidden = true
     }
 
     override fun execute(event: CommandEvent) {
         val nickname = event.guild.getMember(event.author)!!.effectiveName
 
-        event.reply(":wave: Hello $nickname :)\nThanks for making me :D")
+        if (event.isOwner) {
+            event.reply(":wave: Hello $nickname :)\nThanks for making me :heart:")
+        } else {
+            event.reply(":wave: Hello $nickname")
+        }
     }
 
 }
