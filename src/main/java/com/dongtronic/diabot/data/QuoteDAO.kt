@@ -21,25 +21,25 @@ class QuoteDAO private constructor() {
      */
     fun getQuote(guildId: String, quoteId: String): QuoteDTO? {
         val author = getQuoteAuthor(guildId, quoteId) ?: return null
+        val authorId = getQuoteAuthorId(guildId, quoteId) ?: return null
         val message = getQuoteMessage(guildId, quoteId) ?: return null
+        val messageId = getQuoteMessageId(guildId, quoteId) ?: return null
         val timestamp = getQuoteTime(guildId, quoteId) ?: return null
 
-        return QuoteDTO(id = quoteId, author = author, message = message, time = timestamp)
+        return QuoteDTO(id = quoteId, author = author, authorId = authorId, message = message, messageId = messageId, time = timestamp)
     }
 
     /**
-     * Creates a [QuoteDTO] instance from the included parameters and inserts it into the database.
+     * Creates a copy of the included [QuoteDTO] instance with a valid quote ID and inserts it into the database.
      *
      * @param guildId guild ID
-     * @param author the quote's author
-     * @param message the quote message
-     * @param timestamp quote creation in unix time
+     * @param quote the quote to insert
      * @return the created [QuoteDTO] instance if successful, null otherwise
      */
-    fun addQuote(guildId: String, author: String, message: String, timestamp: Long): QuoteDTO? {
+    fun addQuote(guildId: String, quote: QuoteDTO): QuoteDTO? {
         // cancel if the new quote id cannot be found
         val id = incrementId(guildId) ?: return null
-        val quoteDTO = QuoteDTO(id = id.toString(), author = author, message = message, time = timestamp)
+        val quoteDTO = quote.copy(id = id.toString())
 
         setQuote(guildId, quoteDTO)
         return getQuote(guildId, id.toString())
@@ -56,7 +56,9 @@ class QuoteDAO private constructor() {
         val id = quoteDTO.id
 
         setQuoteAuthor(guildId, id, quoteDTO.author)
+        setQuoteAuthorId(guildId, id, quoteDTO.authorId)
         setQuoteMessage(guildId, id, quoteDTO.message)
+        setQuoteMessageId(guildId, id, quoteDTO.messageId)
         setQuoteTime(guildId, id, quoteDTO.time)
         if (store) {
             storeQuote(guildId, id, delete = false)
@@ -71,7 +73,9 @@ class QuoteDAO private constructor() {
      */
     fun deleteQuote(guildId: String, quoteId: String) {
         setQuoteAuthor(guildId, quoteId, "")
+        setQuoteAuthorId(guildId, quoteId, -1)
         setQuoteMessage(guildId, quoteId, "")
+        setQuoteMessageId(guildId, quoteId, -1)
         setQuoteTime(guildId, quoteId, -1)
         storeQuote(guildId, quoteId, delete = true)
     }
@@ -111,6 +115,40 @@ class QuoteDAO private constructor() {
     }
 
     /**
+     * Gets the quote's author ID
+     *
+     * @param guildId guild ID
+     * @param quoteId quote ID
+     * @return the author ID, null if not found
+     */
+    fun getQuoteAuthorId(guildId: String, quoteId: String): Long? {
+        val redisKey = RedisKeyFormats.quoteAuthorId
+                .replace("{{guildid}}", guildId)
+                .replace("{{quoteid}}", quoteId)
+
+        return jedis!!.get(redisKey)?.toLongOrNull()
+    }
+
+    /**
+     * Sets the author ID for a quote
+     *
+     * @param guildId guild ID
+     * @param quoteId quote ID
+     * @param authorId the author's user ID. set to -1L to delete
+     */
+    private fun setQuoteAuthorId(guildId: String, quoteId: String, authorId: Long) {
+        val redisKey = RedisKeyFormats.quoteAuthorId
+                .replace("{{guildid}}", guildId)
+                .replace("{{quoteid}}", quoteId)
+
+        if (authorId == -1L) {
+            jedis!!.del(redisKey)
+        } else {
+            jedis!!.set(redisKey, authorId.toString())
+        }
+    }
+
+    /**
      * Gets a quote's message text
      *
      * @param guildId guild ID
@@ -141,6 +179,40 @@ class QuoteDAO private constructor() {
             jedis!!.del(redisKey)
         } else {
             jedis!!.set(redisKey, message)
+        }
+    }
+
+    /**
+     * Gets the quote's message ID
+     *
+     * @param guildId guild ID
+     * @param quoteId quote ID
+     * @return the message ID, null if not found
+     */
+    fun getQuoteMessageId(guildId: String, quoteId: String): Long? {
+        val redisKey = RedisKeyFormats.quoteMessageId
+                .replace("{{guildid}}", guildId)
+                .replace("{{quoteid}}", quoteId)
+
+        return jedis!!.get(redisKey)?.toLongOrNull()
+    }
+
+    /**
+     * Sets the message ID for a quote
+     *
+     * @param guildId guild ID
+     * @param quoteId quote ID
+     * @param messageId the quote's message ID. set to -1L to delete
+     */
+    private fun setQuoteMessageId(guildId: String, quoteId: String, messageId: Long) {
+        val redisKey = RedisKeyFormats.quoteMessageId
+                .replace("{{guildid}}", guildId)
+                .replace("{{quoteid}}", quoteId)
+
+        if (messageId == -1L) {
+            jedis!!.del(redisKey)
+        } else {
+            jedis!!.set(redisKey, messageId.toString())
         }
     }
 
