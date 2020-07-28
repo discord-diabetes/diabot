@@ -264,6 +264,17 @@ class QuoteDAO private constructor() {
     }
 
     /**
+     * Creates a list of quotes defined under a guild matching the given predicate
+     *
+     * @param guildId String
+     * @param predicate predicate
+     * @return list of [QuoteDTO]s matching the predicate
+     */
+    fun listQuotesByPredicate(guildId: String, predicate: (QuoteDTO) -> Boolean): List<QuoteDTO>? {
+        return listQuoteIds(guildId)?.mapNotNull { getQuote(guildId, it) }?.filter(predicate)
+    }
+
+    /**
      * Gets the amount of quotes in this guild
      *
      * @param guildId guild ID
