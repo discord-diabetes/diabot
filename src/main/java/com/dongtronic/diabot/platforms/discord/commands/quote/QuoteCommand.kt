@@ -26,6 +26,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     }
 
     override fun execute(event: CommandEvent) {
+        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+
         val mentions = mentionsRegex.find(event.args)
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 

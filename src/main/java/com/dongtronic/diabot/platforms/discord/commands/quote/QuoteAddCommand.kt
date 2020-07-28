@@ -20,6 +20,8 @@ class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(cate
     }
 
     override fun execute(event: CommandEvent) {
+        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true)) return
+
         val match = quoteRegex.matchEntire(event.args)
         if (match == null) {
             event.replyError("Could not parse quote. Please make sure you are using the correct format for this command")

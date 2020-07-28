@@ -14,6 +14,7 @@ class QuoteListener : ListenerAdapter() {
     override fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) {
         if (event.user.isBot) return
         if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
+        if (!QuoteDAO.checkRestrictions(event.channel)) return
 
         val author = event.member
         val guild = event.guild

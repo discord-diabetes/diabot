@@ -1,12 +1,15 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
+import net.dv8tion.jda.api.entities.TextChannel
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 
 class QuoteDAO private constructor() {
     private var jedis: Jedis? = null
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
+    val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
+    val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
 
     init {
         jedis = Jedis(System.getenv("REDIS_URL"))
@@ -322,6 +325,33 @@ class QuoteDAO private constructor() {
                 instance = QuoteDAO()
             }
             return instance as QuoteDAO
+        }
+
+        /**
+         * Checks the restrictions for the guild which the channel belongs to.
+         *
+         * @param channel the channel to send messages to
+         * @param warnDisabledGuild whether to send a warning message when the guild is not enabled for quotes
+         * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
+         * @return true if the guild passed restrictions, false if not
+         */
+        fun checkRestrictions(channel: TextChannel,
+                              warnDisabledGuild: Boolean = false,
+                              checkQuoteLimit: Boolean = true): Boolean {
+            if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
+                if (warnDisabledGuild) {
+                    channel.sendMessage("This guild is not permitted to use the quoting system").queue()
+                }
+                return false
+            }
+
+            val numOfQuotes = getInstance().quoteAmount(channel.guild.id) ?: 0
+            if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
+                channel.sendMessage("Could not create quote as your guild has reached " +
+                        "the max of ${getInstance().maxQuotes} quotes").queue()
+                return false
+            }
+            return true
         }
     }
 }

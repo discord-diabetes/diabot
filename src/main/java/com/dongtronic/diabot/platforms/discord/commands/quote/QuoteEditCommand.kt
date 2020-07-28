@@ -19,6 +19,8 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
     }
 
     override fun execute(event: CommandEvent) {
+        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+
         val match = quoteRegex.matchEntire(event.args)
         if (match == null) {
             event.replyError("Could not parse command. Please make sure you are using the correct format for this command")

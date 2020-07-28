@@ -18,6 +18,8 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
     }
 
     override fun execute(event: CommandEvent) {
+        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         if (args.isEmpty() || args[0].isBlank()) {
             event.replyError("No quote ID specified")
