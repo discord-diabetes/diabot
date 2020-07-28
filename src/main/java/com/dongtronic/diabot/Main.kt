@@ -118,7 +118,8 @@ object Main {
                         ConversionListener(),
                         RewardListener(),
                         UsernameEnforcementListener(),
-                        OhNoListener()
+                        OhNoListener(),
+                        QuoteListener()
                 )
                 // start it up!
                 .build()
