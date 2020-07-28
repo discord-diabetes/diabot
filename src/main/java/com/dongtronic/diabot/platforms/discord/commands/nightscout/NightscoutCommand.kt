@@ -51,7 +51,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         this.help = "Get the most recent info from any Nightscout site"
         this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
         this.guildOnly = false
-        this.aliases = arrayOf("ns", "bg")
+        this.aliases = arrayOf("ns", "bg", "bs")
         this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns public false")
         this.children = arrayOf(
                 NightscoutSetUrlCommand(category, this),
