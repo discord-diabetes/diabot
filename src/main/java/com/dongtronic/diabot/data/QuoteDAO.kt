@@ -128,7 +128,7 @@ class QuoteDAO private constructor() {
                 .returnDocument(ReturnDocument.AFTER)
 
         return quoteIndexes!!.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
-                Updates.inc("quoteIndex", 1), options)
+                Updates.inc("quoteIndex", 1L), options)
                 .toMono()
                 .subscribeOn(scheduler)
                 .map { it.quoteIndex }
