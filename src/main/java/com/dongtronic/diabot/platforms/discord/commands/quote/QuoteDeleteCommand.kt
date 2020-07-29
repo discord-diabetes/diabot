@@ -25,17 +25,21 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
             event.replyError("No quote ID specified")
             return
         }
-
-        if (args[0].toLongOrNull() == null) {
+        val quoteId = args[0].toLongOrNull()
+        if (quoteId == null) {
             event.replyError("Quote ID must be numeric")
             return
         }
 
-        if (QuoteDAO.getInstance().getQuote(event.guild.id, args[0]) != null) {
-            QuoteDAO.getInstance().deleteQuote(event.guild.id, args[0])
-            event.replySuccess("Quote #${args[0]} deleted")
-        } else {
-            event.replyError("No quote found for #${args[0]}")
-        }
+        QuoteDAO.getInstance().deleteQuote(event.guild.idLong, quoteId).subscribe({
+            if (it.wasAcknowledged()) {
+                event.replySuccess("Quote #$quoteId deleted")
+            } else {
+                event.replyError("No quote found for #$quoteId")
+            }
+        }, {
+            event.replyError("Could not delete quote")
+            logger.error(it.message)
+        })
     }
 }

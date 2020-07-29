@@ -6,7 +6,10 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
+import org.bson.conversions.Bson
+import org.litote.kmongo.eq
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
@@ -34,27 +37,27 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         val quote = when {
             mentions != null -> {
                 val name = resolveNameById(mentions.groups["uid"]!!.value, event)
-                getRandomQuote(event.guild.id) { it.author.equals(name, ignoreCase = true) }
+                getRandomQuote(event.guild.idLong, QuoteDTO::author eq name)
             }
             args.isNotEmpty() -> {
                 if (args.all { it.toLongOrNull() != null }) {
                     // may be a quote id
-                    QuoteDAO.getInstance().getQuote(event.guild.id, args[0])
+                    QuoteDAO.getInstance().getQuote(event.guild.idLong, args[0].toLong())
                 } else {
                     // may be a username
                     val joined = args.joinToString(" ")
-                    getRandomQuote(event.guild.id) { it.author.equals(joined, ignoreCase = true) }
+                    getRandomQuote(event.guild.idLong, QuoteDTO::author eq joined)
                 }
             }
-            else -> getRandomQuote(event.guild.id)
+            else -> getRandomQuote(event.guild.idLong)
         }
 
-        if (quote != null) {
-            val messageStripped = stripMentions(quote.message, event)
-            event.reply(createEmbed(quote.copy(message = messageStripped)))
-        } else {
+        quote.subscribe({
+            val messageStripped = stripMentions(it.message, event)
+            event.reply(createEmbed(it.copy(message = messageStripped)))
+        }, {
             event.replyError("Could not find any quote")
-        }
+        })
     }
 
     /**
@@ -65,7 +68,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun createEmbed(quoteDTO: QuoteDTO): MessageEmbed {
         val builder = EmbedBuilder()
-        builder.setAuthor("#" + quoteDTO.id)
+        builder.setAuthor("#" + quoteDTO.quoteId)
 
         val descriptionBuilder = StringBuilder(quoteDTO.message)
         descriptionBuilder.append("\n")
@@ -81,14 +84,11 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      * Gets a random quote fitting the given predicate, if any.
      *
      * @param guildId the guild ID to look under
-     * @param predicate filter for certain quotes
+     * @param filter filter for certain quotes
      * @return a random [QuoteDTO], or null if none found
      */
-    private fun getRandomQuote(guildId: String, predicate: (QuoteDTO) -> Boolean = { true }): QuoteDTO? {
-        val quotes = QuoteDAO.getInstance().listQuotesByPredicate(guildId, predicate)
-        if (quotes.isNullOrEmpty())
-            return null
-        return quotes.random()
+    private fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
+        return QuoteDAO.getInstance().getQuotes(guildId, filter).collectList().map { it.random() }
     }
 
     /**

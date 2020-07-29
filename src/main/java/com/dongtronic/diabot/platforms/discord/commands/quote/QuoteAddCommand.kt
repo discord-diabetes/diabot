@@ -30,14 +30,17 @@ class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(cate
         val author = match.groups["author"]!!.value.trim()
         val message = match.groups["message"]!!.value.trim()
 
-        val quote = QuoteDAO.getInstance().addQuote(
-                guildId = event.guild.id,
-                quote = QuoteDTO(author = author, message = message, messageId = event.message.idLong)
-        )
-        if (quote != null) {
-            event.replySuccess("New quote added by ${event.author.name} as #${quote.id}")
-        } else {
-            event.replyError("Could not add quote")
-        }
+        val quoteDto = QuoteDTO(guildId = event.guild.idLong,
+                author = author,
+                message = message,
+                messageId = event.message.idLong)
+
+        QuoteDAO.getInstance().addQuote(quoteDto).subscribe(
+                {
+                    event.replySuccess("New quote added by ${event.author.name} as #${it.quoteId}")
+                },
+                {
+                    event.replyError("Could not add quote: ${it.message}")
+                })
     }
 }

@@ -27,18 +27,33 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
             return
         }
 
-        val id = match.groups["qid"]!!.value.trim()
-        val oldQuote = QuoteDAO.getInstance().getQuote(event.guild.id, id)
-        if (oldQuote == null) {
-            event.replyError("No quote found for ID: $id")
+        val id = match.groups["qid"]!!.value.trim().toLongOrNull()
+        if (id == null) {
+            event.replyError("Quote ID must be numeric")
             return
         }
 
         val author = match.groups["author"]!!.value.trim()
         val message = match.groups["message"]!!.value.trim()
-        val dto = oldQuote.copy(author = author, message = message, messageId = event.message.idLong)
+        val oldQuote = QuoteDAO.getInstance().getQuote(event.guild.idLong, id)
 
-        QuoteDAO.getInstance().setQuote(event.guild.id, dto, false)
-        event.replySuccess("Quote #$id edited")
+        oldQuote.flatMap {
+            val dto = it.copy(author = author, message = message, messageId = event.message.idLong)
+            QuoteDAO.getInstance().updateQuote(dto)
+        }.subscribe({
+            if (it.wasAcknowledged()) {
+                event.replySuccess("Quote #$id edited")
+            } else {
+                event.replyError("Could not edit quote #$id")
+            }
+        }, {
+            if (it is NoSuchElementException) {
+                event.replyError("No quote found for #$id")
+            } else {
+                event.replyError("Could not edit quote #$id")
+
+            }
+        })
+
     }
 }
