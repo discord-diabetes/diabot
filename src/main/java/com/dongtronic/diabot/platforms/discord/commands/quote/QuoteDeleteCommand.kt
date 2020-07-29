@@ -58,8 +58,12 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
                 event.replyError("No quote found for #$quoteId")
             }
         }, {
-            event.replyError("Could not delete quote")
-            logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
+            if (it is NoSuchElementException) {
+                event.replyError("No quote found for #$quoteId")
+            } else {
+                event.replyError("Could not delete quote #$quoteId")
+                logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
+            }
         })
     }
 }
