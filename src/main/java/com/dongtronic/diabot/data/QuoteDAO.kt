@@ -17,11 +17,13 @@ import org.litote.kmongo.reactivestreams.updateOne
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
     private var collection: MongoCollection<QuoteDTO>? = null
     private var quoteIndexes: MongoCollection<QuoteIndexDTO>? = null
+    private val scheduler = Schedulers.boundedElastic()
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
@@ -39,7 +41,7 @@ class QuoteDAO private constructor() {
      * @return [QuoteDTO] instance matching the quote ID
      */
     fun getQuote(guildId: Long, quoteId: Long): Mono<QuoteDTO> {
-        return collection!!.findOne(filter(guildId, quoteId))
+        return collection!!.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
     }
 
     /**
@@ -60,7 +62,7 @@ class QuoteDAO private constructor() {
 
                 quoteDTO
             }
-        }
+        }.subscribeOn(scheduler)
     }
 
     /**
@@ -70,7 +72,8 @@ class QuoteDAO private constructor() {
      * @return the result of the update command
      */
     fun updateQuote(quoteDTO: QuoteDTO): Mono<UpdateResult> {
-        return collection!!.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO).toMono()
+        return collection!!.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO)
+                .toMono().subscribeOn(scheduler)
     }
 
     /**
@@ -81,7 +84,8 @@ class QuoteDAO private constructor() {
      * @return the result of the delete command
      */
     fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
-        return collection!!.deleteOne(filter(guildId, quoteId)).toMono()
+        return collection!!.deleteOne(filter(guildId, quoteId))
+                .toMono().subscribeOn(scheduler)
     }
 
     /**
@@ -97,7 +101,7 @@ class QuoteDAO private constructor() {
         else
             filter(guildId)
 
-        return collection!!.findMany(joinedFilter)
+        return collection!!.findMany(joinedFilter).subscribeOn(scheduler)
     }
 
     /**
@@ -107,7 +111,8 @@ class QuoteDAO private constructor() {
      * @return number of quotes for the specified guild
      */
     fun quoteAmount(guildId: Long): Mono<Long> {
-        return collection!!.countDocuments(filter(guildId)).toMono()
+        return collection!!.countDocuments(filter(guildId))
+                .toMono().subscribeOn(scheduler)
     }
 
     /**
@@ -125,6 +130,7 @@ class QuoteDAO private constructor() {
         return quoteIndexes!!.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
                 Updates.inc("quoteIndex", 1), options)
                 .toMono()
+                .subscribeOn(scheduler)
                 .map { it.quoteIndex }
     }
 
