@@ -28,15 +28,6 @@ object RedisKeyFormats {
     const val ruleTitle = "{{guildid}}:rules:{{ruleid}}:title"
     const val ruleMessage = "{{guildid}}:rules:{{ruleid}}:message"
 
-    // Quotes
-    const val quoteIds = "{{guildid}}:quotes"
-    const val quoteIndex = "{{guildid}}:quotes:index"
-    const val quoteAuthor = "{{guildid}}:quotes:{{quoteid}}:author"
-    const val quoteAuthorId = "{{guildid}}:quotes:{{quoteid}}:authorid"
-    const val quoteMessage = "{{guildid}}:quotes:{{quoteid}}:message"
-    const val quoteMessageId = "{{guildid}}:quotes:{{quoteid}}:messageid"
-    const val quoteTime = "{{guildid}}:quotes:{{quoteid}}:time"
-
     // Project info
     const val infoList = "info:projects"
     const val infoText = "info:{{project}}"
