@@ -4,6 +4,7 @@ import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
@@ -14,6 +15,7 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
         this.help = "Deletes a quote by its ID"
         this.guildOnly = true
         this.aliases = arrayOf("remove", "del", "d")
+        this.userPermissions = arrayOf(Permission.MESSAGE_MANAGE)
         this.examples = arrayOf(this.parent!!.name + " delete 1337")
     }
 

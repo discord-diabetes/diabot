@@ -4,6 +4,7 @@ import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 
 class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
@@ -15,6 +16,7 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
         this.help = "Edits an existing quote by its ID"
         this.guildOnly = true
         this.aliases = arrayOf("e")
+        this.userPermissions = arrayOf(Permission.MESSAGE_MANAGE)
         this.examples = arrayOf(this.parent!!.name + " edit 1337 \"edited quote\" - edited author")
     }
 
