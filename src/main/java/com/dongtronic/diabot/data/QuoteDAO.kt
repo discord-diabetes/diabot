@@ -28,7 +28,7 @@ class QuoteDAO private constructor() {
 
     init {
         collection = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
-        quoteIndexes = MongoDB.getInstance().database.getCollection("quote-numbers", QuoteIndexDTO::class.java)
+        quoteIndexes = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
     }
 
     /**
