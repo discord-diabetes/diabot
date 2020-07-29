@@ -22,6 +22,7 @@ class QuoteListener : ListenerAdapter() {
         event.channel.retrieveMessageById(event.messageId).queue { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.idLong,
+                    channelId = event.channel.idLong,
                     author = message.author.name,
                     authorId = message.author.idLong,
                     message = message.contentRaw,

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 /**
  * @property quoteId the quote's ID
  * @property guildId the guild in which this quote belongs to
+ * @property channelId the channel which this quote is located under
  * @property author the quote's author
  * @property authorId the author's user ID
  * @property message the quote message
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 data class QuoteDTO(
         val quoteId: Long? = null,
         val guildId: Long,
+        val channelId: Long,
         val author: String,
         val authorId: Long = 0,
         val message: String,

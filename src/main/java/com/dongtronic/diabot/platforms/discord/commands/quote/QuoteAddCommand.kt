@@ -31,6 +31,7 @@ class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(cate
         val message = match.groups["message"]!!.value.trim()
 
         val quoteDto = QuoteDTO(guildId = event.guild.idLong,
+                channelId = event.channel.idLong,
                 author = author,
                 message = message,
                 messageId = event.message.idLong)

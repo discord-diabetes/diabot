@@ -38,7 +38,11 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
         val oldQuote = QuoteDAO.getInstance().getQuote(event.guild.idLong, id)
 
         oldQuote.flatMap {
-            val dto = it.copy(author = author, message = message, messageId = event.message.idLong)
+            val dto = it.copy(
+                    author = author,
+                    message = message,
+                    messageId = event.message.idLong,
+                    channelId = event.channel.idLong)
             QuoteDAO.getInstance().updateQuote(dto)
         }.subscribe({
             if (it.wasAcknowledged()) {
