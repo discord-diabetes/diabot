@@ -41,7 +41,7 @@ class QuoteListener : ListenerAdapter() {
                     messageId = message.idLong
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                event.channel.sendMessage("New quote added by ${author.user.name} as #${it.quoteId}").queue()
+                event.channel.sendMessage("New quote added by ${author.effectiveName} as #${it.quoteId}").queue()
             }, {
                 event.channel.sendMessage("Could not create quote for message: ${message.id}").queue()
             })

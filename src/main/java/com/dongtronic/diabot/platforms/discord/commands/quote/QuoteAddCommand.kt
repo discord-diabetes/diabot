@@ -38,7 +38,7 @@ class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(cate
 
         QuoteDAO.getInstance().addQuote(quoteDto).subscribe(
                 {
-                    event.replySuccess("New quote added by ${event.author.name} as #${it.quoteId}")
+                    event.replySuccess("New quote added by ${event.member.effectiveName} as #${it.quoteId}")
                 },
                 {
                     event.replyError("Could not add quote: ${it.message}")
