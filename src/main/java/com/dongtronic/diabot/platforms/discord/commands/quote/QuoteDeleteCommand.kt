@@ -14,7 +14,7 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
         this.name = "delete"
         this.help = "Deletes a quote by its ID"
         this.guildOnly = true
-        this.aliases = arrayOf("remove", "del", "d")
+        this.aliases = arrayOf("remove", "del", "d", "rm")
         this.userPermissions = arrayOf(Permission.MESSAGE_MANAGE)
         this.examples = arrayOf(this.parent!!.name + " delete 1337")
     }
