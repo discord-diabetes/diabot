@@ -39,7 +39,7 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
             }
         }, {
             event.replyError("Could not delete quote")
-            logger.error(it.message)
+            logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
         })
     }
 }

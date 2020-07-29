@@ -59,7 +59,7 @@ class QuoteDAO private constructor() {
 
             collection!!.insertOne(quoteDTO).toMono().map {
                 if (!it.wasAcknowledged())
-                    throw IllegalStateException("Could not insert")
+                    throw IllegalStateException("Could not insert quote")
 
                 quoteDTO
             }

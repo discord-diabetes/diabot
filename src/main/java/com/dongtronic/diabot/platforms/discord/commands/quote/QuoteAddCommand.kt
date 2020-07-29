@@ -42,6 +42,7 @@ class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(cate
                 },
                 {
                     event.replyError("Could not add quote: ${it.message}")
+                    logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
                 })
     }
 }

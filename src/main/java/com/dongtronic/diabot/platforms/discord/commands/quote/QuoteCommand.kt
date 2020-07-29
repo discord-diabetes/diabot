@@ -58,6 +58,9 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
             event.reply(createEmbed(it.copy(message = messageStripped)))
         }, {
             event.replyError("Could not find any quote")
+            if (it !is NoSuchElementException) {
+                logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
+            }
         })
     }
 

@@ -55,7 +55,7 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
                 event.replyError("No quote found for #$id")
             } else {
                 event.replyError("Could not edit quote #$id")
-
+                logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
             }
         })
 
