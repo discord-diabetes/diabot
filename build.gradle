@@ -34,12 +34,16 @@ dependencies {
 
     // Database
     compile 'redis.clients:jedis:3.3.0'
+    compile 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
+    compile 'org.litote.kmongo:kmongo-async:4.0.3'
 
     // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     // Misc
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile 'io.projectreactor:reactor-core:3.3.8.RELEASE'
+    compile 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
 }
 
 
