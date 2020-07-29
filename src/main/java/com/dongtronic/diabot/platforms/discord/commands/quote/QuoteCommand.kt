@@ -14,6 +14,7 @@ import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     private val mentionsRegex = Regex("<@(?<uid>\\d+)>")
+    private val discordMessageLink = "https://discordapp.com/channels/{{guild}}/{{channel}}/{{message}}"
     private val logger = LoggerFactory.getLogger(QuoteCommand::class.java)
 
     init {
@@ -73,6 +74,14 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         val descriptionBuilder = StringBuilder(quoteDTO.message)
         descriptionBuilder.append("\n")
         descriptionBuilder.append("- ").append(quoteDTO.author)
+
+        if (quoteDTO.channelId != 0L) {
+            val jumpLink = discordMessageLink.replace("{{guild}}", quoteDTO.guildId.toString())
+                    .replace("{{channel}}", quoteDTO.channelId.toString())
+                    .replace("{{message}}", quoteDTO.messageId.toString())
+            val jumpText = "[(Jump)]($jumpLink)"
+            descriptionBuilder.append(" ").append(jumpText)
+        }
 
         builder.setDescription(descriptionBuilder.toString())
 
