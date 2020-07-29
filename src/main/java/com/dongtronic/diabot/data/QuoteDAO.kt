@@ -18,10 +18,8 @@ import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import redis.clients.jedis.Jedis
 
 class QuoteDAO private constructor() {
-    private var jedis: Jedis? = null
     private var collection: MongoCollection<QuoteDTO>? = null
     private var quoteIndexes: MongoCollection<QuoteIndexDTO>? = null
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
@@ -29,7 +27,6 @@ class QuoteDAO private constructor() {
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
 
     init {
-        jedis = Jedis(System.getenv("REDIS_URL"))
         collection = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
         quoteIndexes = MongoDB.getInstance().database.getCollection("quote-numbers", QuoteIndexDTO::class.java)
     }
