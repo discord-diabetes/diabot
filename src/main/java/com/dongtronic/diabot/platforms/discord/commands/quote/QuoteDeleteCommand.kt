@@ -34,7 +34,7 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
         }
 
         QuoteDAO.getInstance().deleteQuote(event.guild.idLong, quoteId).subscribe({
-            if (it.wasAcknowledged()) {
+            if (it.wasAcknowledged() && it.deletedCount != 0L) {
                 event.replySuccess("Quote #$quoteId deleted")
             } else {
                 event.replyError("No quote found for #$quoteId")
