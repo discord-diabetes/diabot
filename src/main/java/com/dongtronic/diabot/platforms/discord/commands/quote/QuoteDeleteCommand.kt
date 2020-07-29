@@ -4,8 +4,11 @@ import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import com.mongodb.client.result.DeleteResult
 import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
     private val logger = LoggerFactory.getLogger(QuoteDeleteCommand::class.java)
@@ -15,7 +18,6 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
         this.help = "Deletes a quote by its ID"
         this.guildOnly = true
         this.aliases = arrayOf("remove", "del", "d", "rm")
-        this.userPermissions = arrayOf(Permission.MESSAGE_MANAGE)
         this.examples = arrayOf(this.parent!!.name + " delete 1337")
     }
 
@@ -33,15 +35,35 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
             return
         }
 
-        QuoteDAO.getInstance().deleteQuote(event.guild.idLong, quoteId).subscribe({
+        val deleteCommand = QuoteDAO.getInstance().deleteQuote(event.guild.idLong, quoteId)
+        var execution: Mono<DeleteResult> = deleteCommand
+
+        if (!event.member.hasPermission(Permission.MESSAGE_MANAGE)) {
+            execution = QuoteDAO.getInstance().getQuote(event.guild.idLong, quoteId).flatMap {
+                if (it.authorId == event.author.idLong) {
+                    // this will be mapped to the delete command
+                    it.toMono()
+                } else {
+                    event.replyError("You may not delete this quote as you are not the author of it.")
+                    // this will end the execution
+                    Mono.empty()
+                }
+            }.flatMap { deleteCommand }
+        }
+
+        execution.subscribe({
             if (it.wasAcknowledged() && it.deletedCount != 0L) {
                 event.replySuccess("Quote #$quoteId deleted")
             } else {
                 event.replyError("No quote found for #$quoteId")
             }
         }, {
-            event.replyError("Could not delete quote")
-            logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
+            if (it is NoSuchElementException) {
+                event.replyError("No quote found for #$quoteId")
+            } else {
+                event.replyError("Could not delete quote #$quoteId")
+                logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
+            }
         })
     }
 }
