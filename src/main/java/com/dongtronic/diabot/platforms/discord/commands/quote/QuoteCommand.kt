@@ -78,7 +78,9 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         descriptionBuilder.append("\n")
         descriptionBuilder.append("- ").append(quoteDTO.author)
 
-        if (quoteDTO.channelId != 0L) {
+        if (quoteDTO.guildId != 0L
+                && quoteDTO.channelId != 0L
+                && quoteDTO.messageId != 0L) {
             val jumpLink = discordMessageLink.replace("{{guild}}", quoteDTO.guildId.toString())
                     .replace("{{channel}}", quoteDTO.channelId.toString())
                     .replace("{{message}}", quoteDTO.messageId.toString())
