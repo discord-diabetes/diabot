@@ -2,7 +2,11 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.data.QuoteDTO
+import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
+import com.jagrosh.jdautilities.command.CommandClient
+import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.litote.kmongo.eq
@@ -11,7 +15,8 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.function.Consumer
 
-class QuoteListener : ListenerAdapter() {
+class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
+    private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
     // https://emojiguide.org/speech-balloon
     private val speechEmoji = "U+1f4ac"
     private val logger = LoggerFactory.getLogger(QuoteListener::class.java)
@@ -27,7 +32,7 @@ class QuoteListener : ListenerAdapter() {
         val messageRetrieval = Mono.defer {
             // defer to prevent retrieving message until subscribe
             event.channel.retrieveMessageById(event.messageId)
-                .submit().toMono()
+                    .submit().toMono()
         }
 
         val quoteMessage = Consumer<Message> { message ->
@@ -56,5 +61,24 @@ class QuoteListener : ListenerAdapter() {
                         messageRetrieval.subscribe(quoteMessage)
                     }
                 })
+    }
+
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+        if (event.author.isBot || !event.isFromGuild) return
+
+        val msg = event.message.contentStripped
+        if (msg.startsWith(".")) {
+            val fullCommand = msg.substringAfter('.')
+            // split the command name from the arguments (if any)
+            val cmd = fullCommand.split(' ', limit = 2)
+
+            if (quoteCommand.isCommandFor(cmd[0])) {
+                if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = false)) return
+
+                val arguments = cmd.getOrNull(1) ?: ""
+                val commandEvent = CommandEvent(event, arguments, client)
+                quoteCommand.run(commandEvent)
+            }
+        }
     }
 }
