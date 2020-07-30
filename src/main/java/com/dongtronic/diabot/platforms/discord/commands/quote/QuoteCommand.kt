@@ -101,7 +101,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      * @return a random [QuoteDTO], or null if none found
      */
     private fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
-        return QuoteDAO.getInstance().getQuotes(guildId, filter).collectList().map { it.random() }
+        return QuoteDAO.getInstance().getRandomQuote(guildId, filter)
     }
 
     /**

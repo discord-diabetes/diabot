@@ -5,8 +5,12 @@ import com.mongodb.client.model.CollationStrength
 import com.mongodb.reactivestreams.client.MongoCollection
 import com.mongodb.reactivestreams.client.MongoDatabase
 import org.bson.conversions.Bson
+import org.litote.kmongo.and
+import org.litote.kmongo.match
 import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.reactivestreams.aggregate
 import org.litote.kmongo.reactivestreams.find
+import org.litote.kmongo.sample
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -36,6 +40,12 @@ val caseCollation: Collation = Collation.builder()
 
 fun <T> MongoCollection<T>.findOne(vararg filter: Bson): Mono<T> {
     return Mono.from(find(*filter).collation(caseCollation)).errorOnEmpty()
+}
+
+inline fun <reified T : Any> MongoCollection<T>.findOneRandom(vararg filter: Bson): Mono<T> {
+    val filters = match(and(*filter))
+    val count = sample(1)
+    return Mono.from(aggregate<T>(filters, count).collation(caseCollation)).errorOnEmpty()
 }
 
 fun <T> MongoCollection<T>.findMany(vararg filter: Bson): Flux<T> {

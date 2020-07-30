@@ -3,6 +3,7 @@ package com.dongtronic.diabot.data
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.findMany
 import com.dongtronic.diabot.util.findOne
+import com.dongtronic.diabot.util.findOneRandom
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
@@ -42,6 +43,38 @@ class QuoteDAO private constructor() {
      */
     fun getQuote(guildId: Long, quoteId: Long): Mono<QuoteDTO> {
         return collection!!.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
+    }
+
+    /**
+     * Returns all quotes defined under a guild matching the given filter, if any
+     *
+     * @param guildId guild ID
+     * @param filter the mongo filter to match against, if any
+     * @return all quotes matching the filter for the specified guild
+     */
+    fun getQuotes(guildId: Long, filter: Bson? = null): Flux<QuoteDTO> {
+        val joinedFilter = if (filter != null)
+            and(filter(guildId), filter)
+        else
+            filter(guildId)
+
+        return collection!!.findMany(joinedFilter).subscribeOn(scheduler)
+    }
+
+    /**
+     * Returns a random quote defined under a guild matching the given filter, if any
+     *
+     * @param guildId guild ID
+     * @param filter the mongo filter to match against, if any
+     * @return a random quote matching the filter for the specified guild
+     */
+    fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
+        val joinedFilter = if (filter != null)
+            and(filter(guildId), filter)
+        else
+            filter(guildId)
+
+        return collection!!.findOneRandom(joinedFilter).subscribeOn(scheduler)
     }
 
     /**
@@ -86,22 +119,6 @@ class QuoteDAO private constructor() {
     fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
         return collection!!.deleteOne(filter(guildId, quoteId))
                 .toMono().subscribeOn(scheduler)
-    }
-
-    /**
-     * Returns all quotes defined under a guild matching the given filter, if any
-     *
-     * @param guildId guild ID
-     * @param filter the mongo filter to match against, if any
-     * @return all quotes matching the filter for the specified guild
-     */
-    fun getQuotes(guildId: Long, filter: Bson? = null): Flux<QuoteDTO> {
-        val joinedFilter = if (filter != null)
-            and(filter(guildId), filter)
-        else
-            filter(guildId)
-
-        return collection!!.findMany(joinedFilter).subscribeOn(scheduler)
     }
 
     /**
