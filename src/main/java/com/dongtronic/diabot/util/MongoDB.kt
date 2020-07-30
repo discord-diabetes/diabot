@@ -1,11 +1,12 @@
 package com.dongtronic.diabot.util
 
+import com.mongodb.client.model.Collation
+import com.mongodb.client.model.CollationStrength
 import com.mongodb.reactivestreams.client.MongoCollection
 import com.mongodb.reactivestreams.client.MongoDatabase
 import org.bson.conversions.Bson
 import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.reactivestreams.find
-import org.litote.kmongo.reactivestreams.findOne
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -24,12 +25,21 @@ class MongoDB {
         }
     }
 }
+
+/**
+ * Collation for case-insensitive queries
+ */
+val caseCollation: Collation = Collation.builder()
+        .collationStrength(CollationStrength.SECONDARY)
+        .locale("en")
+        .build()
+
 fun <T> MongoCollection<T>.findOne(vararg filter: Bson): Mono<T> {
-    return Mono.from(findOne(*filter)).errorOnEmpty()
+    return Mono.from(find(*filter).collation(caseCollation)).errorOnEmpty()
 }
 
 fun <T> MongoCollection<T>.findMany(vararg filter: Bson): Flux<T> {
-    return Flux.from(find(*filter)).errorOnEmpty()
+    return Flux.from(find(*filter).collation(caseCollation)).errorOnEmpty()
 }
 
 fun <T> Mono<T>.errorOnEmpty(): Mono<T> {
