@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
-    private val mentionsRegex = Regex("<@(?<uid>\\d+)>")
+    val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
     private val discordMessageLink = "https://discordapp.com/channels/{{guild}}/{{channel}}/{{message}}"
     private val logger = LoggerFactory.getLogger(QuoteCommand::class.java)
 
