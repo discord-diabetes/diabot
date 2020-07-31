@@ -3,19 +3,19 @@ package com.dongtronic.diabot.platforms.discord.commands.quote
 import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.data.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.bson.conversions.Bson
 import org.litote.kmongo.eq
-import org.slf4j.LoggerFactory
 import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
     private val discordMessageLink = "https://discordapp.com/channels/{{guild}}/{{channel}}/{{message}}"
-    private val logger = LoggerFactory.getLogger(QuoteCommand::class.java)
+    private val logger by Logger()
 
     init {
         this.name = "quote"

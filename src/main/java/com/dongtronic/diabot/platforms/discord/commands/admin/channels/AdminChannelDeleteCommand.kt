@@ -1,14 +1,14 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.channels
 
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.AdminDAO
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
 
 class AdminChannelDeleteCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
-    private val logger = LoggerFactory.getLogger(AdminChannelDeleteCommand::class.java)
+    private val logger by Logger()
 
     init {
         this.name = "delete"

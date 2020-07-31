@@ -1,18 +1,18 @@
 package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.data.A1cDTO
+import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MGDL
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MMOL
-import com.dongtronic.diabot.data.A1cDTO
-import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import org.slf4j.LoggerFactory
 
 class EstimationCommand(category: Command.Category) : DiscordCommand(category, null) {
 
-    private val logger = LoggerFactory.getLogger(EstimationCommand::class.java)
+    private val logger by Logger()
 
     init {
         this.name = "estimate"

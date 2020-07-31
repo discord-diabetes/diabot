@@ -1,17 +1,17 @@
 package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
-import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
+import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import org.slf4j.LoggerFactory
 
 class ConvertCommand(category: Command.Category) : DiscordCommand(category, null) {
 
-    private val logger = LoggerFactory.getLogger(ConvertCommand::class.java)
+    private val logger by Logger()
 
     init {
         this.name = "convert"

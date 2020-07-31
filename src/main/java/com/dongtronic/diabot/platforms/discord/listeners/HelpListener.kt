@@ -2,6 +2,7 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.exceptions.NoCommandFoundException
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
@@ -11,7 +12,6 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.requests.ErrorResponse
-import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -19,7 +19,7 @@ import java.util.function.Consumer
 import kotlin.collections.ArrayList
 
 class HelpListener : Consumer<CommandEvent> {
-    private val logger = LoggerFactory.getLogger(HelpListener::class.java)
+    private val logger by Logger()
 
     /**
      * Executed when the attempt to send a DM to a user fails

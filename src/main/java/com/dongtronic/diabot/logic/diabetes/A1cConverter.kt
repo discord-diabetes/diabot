@@ -3,14 +3,14 @@ package com.dongtronic.diabot.logic.diabetes
 import com.dongtronic.diabot.data.A1cDTO
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
-import org.slf4j.LoggerFactory
+import com.dongtronic.diabot.util.Logger
 
 /**
  * A1c conversion logic
  */
 object A1cConverter {
 
-    private val logger = LoggerFactory.getLogger(A1cConverter::class.java)
+    private val logger by Logger()
 
     @Throws(UnknownUnitException::class)
     fun estimateA1c(originalValue: String, unit: String?): A1cDTO {

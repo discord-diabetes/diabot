@@ -11,6 +11,7 @@ import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.LimitedSystemDnsResolver
+import com.dongtronic.diabot.util.Logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.stream.MalformedJsonException
@@ -28,7 +29,6 @@ import org.apache.http.client.methods.RequestBuilder
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
-import org.slf4j.LoggerFactory
 import java.awt.Color
 import java.io.IOException
 import java.net.UnknownHostException
@@ -38,7 +38,7 @@ import java.time.ZonedDateTime
 
 class NightscoutCommand(category: Command.Category) : DiscordCommand(category, null) {
 
-    private val logger = LoggerFactory.getLogger(NightscoutCommand::class.java)
+    private val logger by Logger()
     private val httpClient: HttpClient
     private val requestConfig: RequestConfig
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
