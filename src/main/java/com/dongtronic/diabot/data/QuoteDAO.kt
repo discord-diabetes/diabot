@@ -6,6 +6,7 @@ import com.dongtronic.diabot.util.findOne
 import com.dongtronic.diabot.util.findOneRandom
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.client.result.DeleteResult
@@ -13,6 +14,7 @@ import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import net.dv8tion.jda.api.entities.TextChannel
 import org.bson.conversions.Bson
+import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.updateOne
 import org.slf4j.LoggerFactory
@@ -31,6 +33,14 @@ class QuoteDAO private constructor() {
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
+
+    init {
+        // Create a unique index
+        val options = IndexOptions().unique(true).name(QuoteDTO::guildId.name)
+        quoteIndexes!!.createIndex(descending(QuoteDTO::guildId), options).toMono()
+                .subscribeOn(scheduler)
+                .subscribe()
+    }
 
     /**
      * Gets a [QuoteDTO] from a quote ID
