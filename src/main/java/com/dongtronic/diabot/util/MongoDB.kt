@@ -1,5 +1,7 @@
 package com.dongtronic.diabot.util
 
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
 import com.mongodb.client.model.Collation
 import com.mongodb.client.model.CollationStrength
 import com.mongodb.reactivestreams.client.MongoCollection
@@ -13,9 +15,17 @@ import org.litote.kmongo.reactivestreams.find
 import org.litote.kmongo.sample
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.concurrent.TimeUnit
 
 class MongoDB {
-    val client = KMongo.createClient(System.getenv("MONGO_URI"))
+    private val clientSettings: MongoClientSettings = MongoClientSettings.builder()
+            .applyToConnectionPoolSettings {
+                // close connections after 1 hour of inactivity
+                it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
+            }
+            .applyConnectionString(ConnectionString(System.getenv("MONGO_URI")))
+            .build()
+    val client = KMongo.createClient(clientSettings)
     val database: MongoDatabase = client.getDatabase("diabot")
 
     companion object {
