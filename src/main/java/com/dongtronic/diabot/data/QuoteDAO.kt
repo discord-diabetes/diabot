@@ -86,17 +86,29 @@ class QuoteDAO private constructor() {
     }
 
     /**
-     * Creates a copy of the provided [QuoteDTO] instance with a valid quote ID and inserts it into the database.
+     * Inserts a quote into the database.
+     * If the provided quote's ID is null, this will create a copy of it with a valid quote ID
      *
      * @param quote the quote to insert
+     * @param incrementId whether to increment the guild-wide quote ID index.
+     * This will only have an effect if the quote already has a valid quote ID
      * @return the created [QuoteDTO] instance if successful
      */
-    fun addQuote(quote: QuoteDTO): Mono<QuoteDTO> {
-        return incrementId(quote.guildId)
-                .onErrorMap { IllegalStateException("Could not find guild's quote index") }
-                .flatMap { id ->
-            val quoteDTO = quote.copy(quoteId = id)
+    fun addQuote(quote: QuoteDTO, incrementId: Boolean = true): Mono<QuoteDTO> {
+        val quoteWithId = if (incrementId || quote.quoteId == null) {
+            incrementId(quote.guildId)
+                    .onErrorMap { IllegalStateException("Could not find guild's quote index") }
+                    .map {
+                        if (quote.quoteId == null)
+                            quote.copy(quoteId = it)
+                        else
+                            quote
+                    }
+        } else {
+            quote.toMono()
+        }
 
+        return quoteWithId.flatMap { quoteDTO ->
             collection!!.insertOne(quoteDTO).toMono().map {
                 if (!it.wasAcknowledged())
                     throw IllegalStateException("Could not insert quote")
