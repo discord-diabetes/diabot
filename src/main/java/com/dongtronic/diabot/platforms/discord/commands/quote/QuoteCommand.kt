@@ -26,7 +26,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         this.children = arrayOf(
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
-                QuoteEditCommand(category, this))
+                QuoteEditCommand(category, this),
+                QuoteImportCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
