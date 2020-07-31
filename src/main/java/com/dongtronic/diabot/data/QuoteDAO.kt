@@ -24,9 +24,9 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
-    val collection: MongoCollection<QuoteDTO>?
+    val collection: MongoCollection<QuoteDTO>
             = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
-    val quoteIndexes: MongoCollection<QuoteIndexDTO>?
+    val quoteIndexes: MongoCollection<QuoteIndexDTO>
             = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
@@ -37,7 +37,7 @@ class QuoteDAO private constructor() {
     init {
         // Create a unique index
         val options = IndexOptions().unique(true).name(QuoteDTO::guildId.name)
-        quoteIndexes!!.createIndex(descending(QuoteDTO::guildId), options).toMono()
+        quoteIndexes.createIndex(descending(QuoteDTO::guildId), options).toMono()
                 .subscribeOn(scheduler)
                 .subscribe()
     }
@@ -50,7 +50,7 @@ class QuoteDAO private constructor() {
      * @return [QuoteDTO] instance matching the quote ID
      */
     fun getQuote(guildId: Long, quoteId: Long): Mono<QuoteDTO> {
-        return collection!!.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
+        return collection.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
     }
 
     /**
@@ -66,7 +66,7 @@ class QuoteDAO private constructor() {
         else
             filter(guildId)
 
-        return collection!!.findMany(joinedFilter).subscribeOn(scheduler)
+        return collection.findMany(joinedFilter).subscribeOn(scheduler)
     }
 
     /**
@@ -82,7 +82,7 @@ class QuoteDAO private constructor() {
         else
             filter(guildId)
 
-        return collection!!.findOneRandom(joinedFilter).subscribeOn(scheduler)
+        return collection.findOneRandom(joinedFilter).subscribeOn(scheduler)
     }
 
     /**
@@ -109,7 +109,7 @@ class QuoteDAO private constructor() {
         }
 
         return quoteWithId.flatMap { quoteDTO ->
-            collection!!.insertOne(quoteDTO).toMono().map {
+            collection.insertOne(quoteDTO).toMono().map {
                 if (!it.wasAcknowledged())
                     throw IllegalStateException("Could not insert quote")
 
@@ -125,7 +125,7 @@ class QuoteDAO private constructor() {
      * @return the result of the update command
      */
     fun updateQuote(quoteDTO: QuoteDTO): Mono<UpdateResult> {
-        return collection!!.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO)
+        return collection.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO)
                 .toMono().subscribeOn(scheduler)
     }
 
@@ -137,7 +137,7 @@ class QuoteDAO private constructor() {
      * @return the result of the delete command
      */
     fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
-        return collection!!.deleteOne(filter(guildId, quoteId))
+        return collection.deleteOne(filter(guildId, quoteId))
                 .toMono().subscribeOn(scheduler)
     }
 
@@ -148,7 +148,7 @@ class QuoteDAO private constructor() {
      * @return number of quotes for the specified guild
      */
     fun quoteAmount(guildId: Long): Mono<Long> {
-        return collection!!.countDocuments(filter(guildId))
+        return collection.countDocuments(filter(guildId))
                 .toMono().subscribeOn(scheduler)
     }
 
@@ -164,7 +164,7 @@ class QuoteDAO private constructor() {
                 .upsert(true)
                 .returnDocument(ReturnDocument.AFTER)
 
-        return quoteIndexes!!.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
+        return quoteIndexes.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
                 Updates.inc("quoteIndex", 1L), options)
                 .toMono()
                 .subscribeOn(scheduler)
