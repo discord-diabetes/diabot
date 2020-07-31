@@ -22,17 +22,15 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
-    private var collection: MongoCollection<QuoteDTO>? = null
-    private var quoteIndexes: MongoCollection<QuoteIndexDTO>? = null
+    val collection: MongoCollection<QuoteDTO>?
+            = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
+    val quoteIndexes: MongoCollection<QuoteIndexDTO>?
+            = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
+
     private val scheduler = Schedulers.boundedElastic()
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
-
-    init {
-        collection = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
-        quoteIndexes = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
-    }
 
     /**
      * Gets a [QuoteDTO] from a quote ID
