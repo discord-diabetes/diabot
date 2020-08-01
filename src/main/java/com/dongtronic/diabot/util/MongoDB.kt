@@ -49,7 +49,7 @@ val caseCollation: Collation = Collation.builder()
         .build()
 
 fun <T> MongoCollection<T>.findOne(vararg filter: Bson): Mono<T> {
-    return Mono.from(find(*filter).collation(caseCollation)).errorOnEmpty()
+    return Mono.from(find(*filter).collation(caseCollation).limit(1)).errorOnEmpty()
 }
 
 inline fun <reified T : Any> MongoCollection<T>.findOneRandom(vararg filter: Bson): Mono<T> {
