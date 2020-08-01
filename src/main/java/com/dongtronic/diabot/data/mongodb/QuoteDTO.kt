@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.mongodb
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 

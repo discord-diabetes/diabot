@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.utils
 
-import com.dongtronic.diabot.data.AdminDAO
+import com.dongtronic.diabot.data.redis.AdminDAO
 import com.dongtronic.diabot.exceptions.NotAnAdminChannelException
 import com.jagrosh.jdautilities.command.CommandEvent
 

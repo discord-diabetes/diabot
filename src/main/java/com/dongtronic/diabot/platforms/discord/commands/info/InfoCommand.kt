@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.dongtronic.diabot.data.InfoDAO
+import com.dongtronic.diabot.data.redis.InfoDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.CommandEvent

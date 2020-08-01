@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.Filters.and

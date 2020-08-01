@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.data.QuoteDAO
-import com.dongtronic.diabot.data.QuoteDTO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.CommandClient

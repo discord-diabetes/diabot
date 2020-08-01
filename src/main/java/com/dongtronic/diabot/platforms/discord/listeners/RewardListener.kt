@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.data.redis.RewardDAO
 import com.dongtronic.diabot.platforms.discord.utils.RoleUtils
 import com.dongtronic.diabot.util.Logger
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent

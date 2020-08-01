@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.redis
 
 import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.RedisKeyFormats

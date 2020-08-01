@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.quote
 
-import com.dongtronic.diabot.data.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command

@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.rewards
 
-import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.data.redis.RewardDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command

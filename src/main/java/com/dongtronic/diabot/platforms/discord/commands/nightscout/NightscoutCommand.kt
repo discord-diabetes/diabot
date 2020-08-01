@@ -1,8 +1,8 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.NightscoutDAO
-import com.dongtronic.diabot.data.NightscoutDTO
-import com.dongtronic.diabot.data.NightscoutUserDTO
+import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.redis.NightscoutDTO
+import com.dongtronic.diabot.data.redis.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
