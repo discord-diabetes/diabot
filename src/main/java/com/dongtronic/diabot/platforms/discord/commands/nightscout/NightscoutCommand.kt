@@ -105,6 +105,13 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
 
     }
 
+    /**
+     * Loads all the necessary data from a Nightscout instance and replies with an embed of it.
+     *
+     * @param endpoint The NS URL to load
+     * @param userDTO Data necessary for loading/rendering
+     * @param event [CommandEvent]
+     */
     private fun buildNightscoutResponse(endpoint: String, userDTO: NightscoutUserDTO, event: CommandEvent) {
         val dto = NightscoutDTO()
 
@@ -146,7 +153,11 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
     }
 
-
+    /**
+     * Grabs data for the command sender and builds a Nightscout response.
+     *
+     * @param event [CommandEvent]
+     */
     private fun getStoredData(event: CommandEvent) {
         val endpoint = getNightscoutHost(event.author) + "/api/v1/"
         val userDTO = NightscoutUserDTO()
@@ -155,6 +166,11 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         buildNightscoutResponse(endpoint, userDTO, event)
     }
 
+    /**
+     * Grabs data for another user/URL (depending on the arguments) and builds a Nightscout response.
+     *
+     * @param event [CommandEvent]
+     */
     private fun getUnstoredData(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val userDTO = NightscoutUserDTO()
@@ -205,7 +221,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
                             getNightscoutHost(user) + "/api/v1/"
 
                         }
-                        testNightscoutInstance(domain) -> {
+                        isNightscoutInstance(domain) -> {
                             "$domain/api/v1/"
                         }
                         else -> {
@@ -292,6 +308,14 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return Pair(mmolString, mgdlString)
     }
 
+    /**
+     * Formats a glucose value and delta (if available)
+     *
+     * @param glucose The glucose value.
+     * @param delta The current delta.
+     * @param negative Whether the delta is falling.
+     * @return Formatted glucose and delta
+     */
     private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
         val builder = StringBuilder()
 
@@ -314,6 +338,12 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return builder.toString()
     }
 
+    /**
+     * Adds reactions to a message based on the glucose value.
+     *
+     * @param dto The Nightscout DTO holding the glucose data.
+     * @param response The message to react to.
+     */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
         // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
         if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
@@ -327,6 +357,12 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         }
     }
 
+    /**
+     * Adjust an embed's color based on the current glucose and ranges.
+     *
+     * @param dto The Nightscout DTO holding the glucose and range data.
+     * @param builder The embed to set colors on.
+     */
     private fun setResponseColor(dto: NightscoutDTO, builder: EmbedBuilder) {
         val glucose = dto.glucose!!.mgdl.toDouble()
 
@@ -339,7 +375,13 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         }
     }
 
-
+    /**
+     * Gets a Nightscout URL for the given user.
+     *
+     * @param user The user to get a URL for.
+     * @throws [UnconfiguredNightscoutException] if there is no URL set for this user.
+     * @return Nightscout URL for the given user
+     */
     private fun getNightscoutHost(user: User): String {
         val url = NightscoutDAO.getInstance().getNightscoutUrl(user)
 
@@ -359,7 +401,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
     private fun getUnstoredDataForDomain(domain: String, event: CommandEvent, userDTO: NightscoutUserDTO): Boolean {
         // Test if the Nightscout hosted at the given domain requires a token
         // If a token is not needed, skip grabbing data
-        if (testNightscoutForToken(domain)) {
+        if (needsNightscoutToken(domain)) {
             // Get user ID from domain. If no user is found, respond with an error
             val userId = getUserIdForDomain(domain)
             val user: User?
@@ -398,7 +440,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      *
      * @return true if a token is required, false if not
      */
-    private fun testNightscoutForToken(domain: String): Boolean {
+    private fun needsNightscoutToken(domain: String): Boolean {
         try {
             getJson("$domain/api/v1/status", null)
         } catch (exception: NightscoutStatusException) {
@@ -416,7 +458,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      *
      * @return true if the instance exists, false if not
      */
-    private fun testNightscoutInstance(domain: String): Boolean {
+    private fun isNightscoutInstance(domain: String): Boolean {
 
         val request = RequestBuilder.get()
         val url = "$domain/api/v1/status"
@@ -457,10 +499,25 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         userDTO.avatarUrl = user.avatarUrl
     }
 
+    /**
+     * Gets the publicity status for a user's Nightscout in a guild.
+     *
+     * @param user User to look up publicity status for.
+     * @param guildId Guild to get the publicity status under.
+     * @return Whether a user's Nightscout is public in a guild.
+     */
     private fun getNightscoutPublic(user: User, guildId: String): Boolean {
         return NightscoutDAO.getInstance().isNightscoutPublic(user, guildId)
     }
 
+    /**
+     * Loads a URL and gets its output as a string.
+     *
+     * @param url URL to load.
+     * @param token Nightscout token, if needed.
+     * @param query Parameters to use for the request.
+     * @return The URL's contents
+     */
     private fun getJson(url: String, token: String?, vararg query: NameValuePair): String {
         val request = RequestBuilder.get()
 
@@ -488,6 +545,14 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return body
     }
 
+    /**
+     * Loads Nightscout's `entries.json` API endpoint and gets its contents.
+     *
+     * @param url NS base URL to load
+     * @param token NS token, if necessary
+     * @return The `entries.json` endpoint's contents.
+     * @throws MalformedJsonException
+     */
     @Throws(MalformedJsonException::class)
     private fun getGlucoseJson(url: String, token: String?): String {
         val endpoint = "$url/entries.json"
@@ -504,6 +569,15 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return json
     }
 
+    /**
+     * Fetches a Nightscout's entries and puts the data in a [NightscoutDTO] instance
+     *
+     * @param url NS base URL to load
+     * @param token NS token, if necessary
+     * @param dto NS data
+     * @throws IOException
+     * @throws UnknownUnitException
+     */
     @Throws(IOException::class, UnknownUnitException::class)
     private fun getEntries(url: String, token: String?, dto: NightscoutDTO) {
         val json = getGlucoseJson(url, token)
@@ -558,6 +632,13 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         dto.trend = trend
     }
 
+    /**
+     * Fetches a Nightscout's settings and puts the data in a [NightscoutDTO] instance
+     *
+     * @param url NS base URL to load
+     * @param token NS token, if necessary
+     * @param dto NS data
+     */
     private fun getSettings(url: String, token: String?, dto: NightscoutDTO) {
         val endpoint = "$url/status.json"
         val json = getJson(endpoint, token)
@@ -581,12 +662,23 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         dto.units = units
     }
 
+    /**
+     * Converts a unix epoch in milliseconds to a [ZonedDateTime] instance
+     *
+     * @param epoch Unix epoch (in milliseconds)
+     * @return [ZonedDateTime]
+     */
     private fun getTimestamp(epoch: Long?): ZonedDateTime {
-
         val i = Instant.ofEpochSecond(epoch!! / 1000)
         return ZonedDateTime.ofInstant(i, ZoneOffset.UTC)
     }
 
+    /**
+     * Gets a NS token for a user, if any.
+     *
+     * @param user The user to get a token for.
+     * @return NS token. Null if none exist
+     */
     private fun getToken(user: User): String? {
         if (NightscoutDAO.getInstance().isNightscoutToken(user)) {
             return NightscoutDAO.getInstance().getNightscoutToken(user)
@@ -595,6 +687,13 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return null
     }
 
+    /**
+     * Gets a user's configured display options, if configured.
+     * If not configured, this will give default display options.
+     *
+     * @param user The user to get display options for.
+     * @return The display options to display for the given user.
+     */
     private fun getDisplayOptions(user: User): Array<String> {
         if (NightscoutDAO.getInstance().isNightscoutDisplay(user)) {
             return NightscoutDAO.getInstance().getNightscoutDisplay(user).split(" ").toTypedArray()
