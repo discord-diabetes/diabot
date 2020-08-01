@@ -151,6 +151,45 @@ class NightscoutDAO private constructor() {
                 .subscribeOn(scheduler)
     }
 
+    /**
+     * Changes a user's NS display settings.
+     *
+     * @param userId The user ID to change display settings for.
+     * @param append The modification type for the display settings.
+     * `TRUE` will append to the currently existing settings (if any).
+     * `FALSE` will delete from the currently existing settings.
+     * `NULL` will set the user's display settings to the ones provided.
+     * @param displaySettings The display settings to update with.
+     * @return The user's new display settings.
+     */
+    fun updateDisplay(userId: Long, append: Boolean? = null, vararg displaySettings: String): Mono<List<String>> {
+        val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
+        var settingsList = displaySettings.toList()
+
+        if (displaySettings.isEmpty()) {
+            // delete the key instead of making it blank
+            return deleteUser(userId, NightscoutUserDTO::displayOptions)
+                    .flatMap { Mono.just(listOf("reset")) }
+        }
+
+        if (settingsList.any { it == "none" }) {
+            settingsList = listOf()
+        }
+
+        @Suppress("CascadeIf")
+        val update = if (append == true) {
+            addEachToSet(NightscoutUserDTO::displayOptions, settingsList)
+        } else if (append == false) {
+            pullAll(NightscoutUserDTO::displayOptions, settingsList)
+        } else {
+            setValue(NightscoutUserDTO::displayOptions, settingsList)
+        }
+
+        return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
+                .map { it.displayOptions.ifEmpty { listOf("none") } }
+                .subscribeOn(scheduler)
+    }
+
     companion object {
         val instance: NightscoutDAO by lazy { NightscoutDAO() }
 

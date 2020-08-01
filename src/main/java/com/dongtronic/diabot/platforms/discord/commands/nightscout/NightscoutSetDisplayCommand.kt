@@ -1,12 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
+import reactor.core.publisher.Mono
 
 class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
     companion object {
@@ -30,42 +31,50 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
         val args = event.args.split("[\\s,]+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val nickname = NicknameUtils.determineAuthorDisplayName(event)
 
-        when {
-            args.size == 1 && args[0] == "reset" -> {
-                resetNightscoutDisplay(event.author)
-                event.replySuccess("Reset Nightscout display options for $nickname")
-            }
-
-            args.isNotEmpty() -> {
-                var options = args
-                // Prioritize `none` option over any others provided
-                if (options.contains("none")) {
-                    options = arrayOf("none")
-                }
-
-                // verify options and set
-                for (opt in options) {
-                    if (!validOptions.contains(opt.toLowerCase())) {
-                        event.replyError("Unsupported display option provided, use `diabot nightscout display` to see possible options")
-                        return
-                    }
-                }
-
-                setNightscoutDisplay(event.author, options.joinToString(" "))
-                event.replySuccess("Nightscout display options for $nickname set to: " +
-                        options.joinToString(" ", "`", "`"))
-            }
-
-            else -> event.reply("Possible display options: " +
-                    validOptions.joinToString("`, `", "`", "`"))
+        if (args.isEmpty()) {
+            event.reply("Possible display options: ${formatOptions()}")
+            return
         }
+
+        val updateDisplay = if (args.size != 1 || args[0] != "reset") {
+            // remove duplicates via Set
+            var options = args.toSet()
+            // Prioritize `none` option over any others provided
+            if (options.contains("none")) {
+                options = setOf("none")
+            }
+
+            // verify options and set
+            for (opt in options) {
+                if (!validOptions.contains(opt.toLowerCase())) {
+                    event.replyError("Unsupported display option provided (`$opt`), use `diabot nightscout display` to see possible options")
+                    return
+                }
+            }
+
+            setNightscoutDisplay(event.author, *options.toTypedArray())
+        } else {
+            // provide no args for reset
+            setNightscoutDisplay(event.author)
+        }
+
+        updateDisplay.subscribe({ newOptions ->
+            if (newOptions.any { it == "reset" }) {
+                event.replySuccess("Reset Nightscout display options for $nickname")
+            } else {
+                event.replySuccess("Nightscout display options for $nickname set to: ${formatOptions(newOptions)}")
+            }
+        }, {
+            logger.warn("Error while setting NS display options", it)
+            event.replyError("Could not set Nightscout display options for $nickname")
+        })
     }
 
-    private fun setNightscoutDisplay(user: User, options: String) {
-        NightscoutDAO.getInstance().setNightscoutDisplay(user, options)
+    private fun setNightscoutDisplay(user: User, vararg options: String): Mono<List<String>> {
+        return NightscoutDAO.instance.updateDisplay(user.idLong, null, *options)
     }
 
-    private fun resetNightscoutDisplay(user: User) {
-        NightscoutDAO.getInstance().removeNightscoutDisplay(user)
+    private fun formatOptions(options: List<String> = validOptions.toList()): String {
+        return options.joinToString(" ", "`", "`")
     }
 }
