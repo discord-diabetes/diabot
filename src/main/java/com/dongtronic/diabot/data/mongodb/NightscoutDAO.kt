@@ -5,6 +5,7 @@ import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.findOne
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
+import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertOneResult
 import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
@@ -13,6 +14,7 @@ import org.litote.kmongo.*
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
+import kotlin.reflect.KProperty
 
 class NightscoutDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
@@ -47,6 +49,40 @@ class NightscoutDAO private constructor() {
      */
     fun addUser(dto: NightscoutUserDTO): Mono<InsertOneResult> {
         return collection.insertOne(dto).toMono()
+                .subscribeOn(scheduler)
+    }
+
+    /**
+     * Deletes stored NS data belonging to the given user.
+     * If no properties are given, all of their NS data will be deleted from the database.
+     *
+     * @param dto The user's DTO.
+     * @param fields Which fields to delete. If this is not provided then all of the user's data will be deleted.
+     * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
+     * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
+     */
+    fun deleteUser(dto: NightscoutUserDTO, vararg fields: KProperty<*>): Mono<*> {
+        return deleteUser(dto.userId, *fields)
+    }
+
+    /**
+     * Deletes stored NS data belonging to the given user.
+     * If no properties are given, all of their NS data will be deleted from the database.
+     *
+     * @param userId The user's ID.
+     * @param fields Which fields to delete. If this is not provided then all of the user's data will be deleted.
+     * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
+     * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
+     */
+    fun deleteUser(userId: Long, vararg fields: KProperty<*>): Mono<*> {
+        if (fields.isNullOrEmpty()) {
+            return collection.deleteOne(filter(userId)).toMono()
+                    .subscribeOn(scheduler)
+        }
+
+        val unsets = fields.map { unset(it) }
+        val combined = combine(unsets)
+        return collection.updateOne(filter(userId), combined).toMono()
                 .subscribeOn(scheduler)
     }
 
