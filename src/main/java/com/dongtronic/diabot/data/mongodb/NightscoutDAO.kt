@@ -132,6 +132,25 @@ class NightscoutDAO private constructor() {
                 .subscribeOn(scheduler)
     }
 
+    /**
+     * Sets a token to be used when fetching data from a user's Nightscout.
+     *
+     * @param userId The user's ID
+     * @param token The Nightscout token. If null, the token key will be deleted.
+     * @return The result of setting the user's Nightscout token
+     */
+    fun setToken(userId: Long, token: String?): Mono<UpdateResult> {
+        if (token == null) {
+            // delete the key instead of setting it to null
+            return deleteUser(userId, NightscoutUserDTO::token).ofType(UpdateResult::class.java)
+        }
+
+        return collection.updateOne(NightscoutUserDTO::userId eq userId,
+                setValue(NightscoutUserDTO::token, token), upsert())
+                .toMono()
+                .subscribeOn(scheduler)
+    }
+
     companion object {
         val instance: NightscoutDAO by lazy { NightscoutDAO() }
 
