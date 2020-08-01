@@ -16,4 +16,14 @@ data class NightscoutUserDTO(
             // only set once
             field = field ?: value
         }
+
+    /**
+     * Checks if this NS user has set their NS to be public in the provided guild.
+     *
+     * @param guildId The ID of the guild
+     * @return Whether this Nightscout is public in this guild.
+     */
+    fun isNightscoutPublic(guildId: Long): Boolean {
+        return publicGuilds.contains(guildId)
+    }
 }
