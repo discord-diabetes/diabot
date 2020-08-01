@@ -1,14 +1,15 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.Logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import reactor.core.publisher.Mono
 
 class NightscoutPublicCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
-
+    private val nightscoutDAO = NightscoutDAO.instance
     private val logger by Logger()
 
     init {
@@ -23,29 +24,30 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
 
     override fun execute(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
-        if(args.isEmpty()) {
+        val result: Mono<Boolean> = if(args.isEmpty()) {
             // toggle visibility if no arguments are provided
-            val newVisibility = !NightscoutDAO.getInstance().isNightscoutPublic(event.author, event.guild.id)
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, newVisibility)
-            reply(event, newVisibility)
-            return
-        }
-
-        val mode = args[0].toUpperCase()
-
-        if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, true)
-            reply(event, true)
+            nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, null)
         } else {
-            NightscoutDAO.getInstance().setNightscoutPublic(event.author, event.guild, false)
-            reply(event, false)
+            val mode = args[0].toUpperCase()
+
+            if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
+                nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, true)
+            } else {
+                nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, false)
+            }
         }
+
+        reply(event, result)
     }
 
-    fun reply(event: CommandEvent, public: Boolean) {
+    fun reply(event: CommandEvent, result: Mono<Boolean>) {
         val authorNick = NicknameUtils.determineAuthorDisplayName(event)
-        val visibility = if (public) "public" else "private"
-        event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
+        result.subscribe({ public ->
+            val visibility = if (public) "public" else "private"
+            event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
+        }, {
+            event.replyError("Nightscout data for $authorNick could not be changed in **${event.guild.name}**")
+            logger.warn("Could not change Nightscout privacy", it)
+        })
     }
 }
