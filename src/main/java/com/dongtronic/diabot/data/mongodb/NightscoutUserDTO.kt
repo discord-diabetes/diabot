@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 @JsonAutoDetect
 data class NightscoutUserDTO(
         val userId: Long,
-        val url: String,
+        val url: String? = null,
         val token: String? = null,
         val displayOptions: List<String> = NightscoutSetDisplayCommand.enabledOptions.toList(),
         val publicGuilds: List<Long> = emptyList()
