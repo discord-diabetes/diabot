@@ -11,6 +11,15 @@ data class NightscoutUserDTO(
         val displayOptions: List<String> = NightscoutSetDisplayCommand.enabledOptions.toList(),
         val publicGuilds: List<Long> = emptyList()
 ) {
+    /**
+     * Nightscout's API endpoint
+     */
+    val apiEndpoint: String
+        get() {
+            val trimmed = url!!.removeSuffix("/")
+            return trimmed.plus("/api/v1/")
+        }
+
     var avatarUrl: String? = null
         set(value) {
             // only set once
