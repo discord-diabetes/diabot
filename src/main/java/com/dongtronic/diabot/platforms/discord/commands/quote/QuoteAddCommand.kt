@@ -3,13 +3,13 @@ package com.dongtronic.diabot.platforms.discord.commands.quote
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 
 class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
     private val mentionsRegex = parent.mentionsRegex
     private val quoteRegex = Regex("\"(?<message>[\\s\\S]*)\" ?- ?(?<author>.*[^\\s])")
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "add"

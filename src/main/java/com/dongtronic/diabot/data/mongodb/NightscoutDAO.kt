@@ -1,9 +1,9 @@
 package com.dongtronic.diabot.data.mongodb
 
-import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.findMany
 import com.dongtronic.diabot.util.findOne
+import com.dongtronic.diabot.util.logger
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.result.DeleteResult
@@ -22,7 +22,7 @@ class NightscoutDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<NightscoutUserDTO> = mongo.getCollection("nightscout", NightscoutUserDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         // Create a unique index

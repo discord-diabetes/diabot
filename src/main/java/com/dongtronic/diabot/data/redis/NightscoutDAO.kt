@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.data.redis
 
-import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.RedisKeyFormats
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import redis.clients.jedis.Jedis
@@ -9,7 +9,7 @@ import java.util.*
 
 class NightscoutDAO private constructor() {
     private var jedis: Jedis? = null
-    private val logger by Logger()
+    private val logger = logger()
 
 
     init {

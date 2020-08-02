@@ -2,13 +2,13 @@ package com.dongtronic.diabot.platforms.discord.commands.info
 
 import com.dongtronic.diabot.data.redis.InfoDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 
 class InfoCommand(category: Category) : DiscordCommand(category, null) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "info"

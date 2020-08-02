@@ -3,7 +3,7 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import com.mongodb.client.result.DeleteResult
@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 
 class NightscoutDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "delete"

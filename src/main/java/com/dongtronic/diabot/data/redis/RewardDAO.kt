@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.data.redis
 
-import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.RedisKeyFormats
+import com.dongtronic.diabot.util.logger
 import redis.clients.jedis.Jedis
 
 class RewardDAO private constructor() {
     private var jedis: Jedis? = null
-    private val logger by Logger()
+    private val logger = logger()
 
 
     init {

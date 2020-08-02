@@ -2,14 +2,14 @@ package com.dongtronic.diabot.platforms.discord.commands.quote
 
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
 
 class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
     private val quoteRegex = Regex("(?<qid>.*) \"(?<message>[\\s\\S]*)\" ?- ?(?<author>.*[^\\s])")
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "edit"

@@ -10,7 +10,7 @@ import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.processPebb
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.google.gson.stream.MalformedJsonException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -33,7 +33,7 @@ import java.time.ZonedDateTime
 @Suppress("DuplicatedCode")
 class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(category, null) {
 
-    private val logger by Logger()
+    private val logger = logger()
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
 
     init {

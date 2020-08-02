@@ -3,13 +3,13 @@ package com.dongtronic.diabot.platforms.discord.commands.misc
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.logic.nutrition.NutritionixCommunicator
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 
 class NutritionCommand(category: Category) : DiscordCommand(category, null) {
 
-    val logger by Logger()
+    val logger = logger()
 
     init {
         this.name = "nutrition"

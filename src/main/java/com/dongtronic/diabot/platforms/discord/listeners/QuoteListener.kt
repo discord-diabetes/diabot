@@ -3,7 +3,7 @@ package com.dongtronic.diabot.platforms.discord.listeners
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.Message
@@ -19,7 +19,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
     private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
     // https://emojiguide.org/speech-balloon
     private val speechEmoji = "U+1f4ac"
-    private val logger by Logger()
+    private val logger = logger()
 
     override fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) {
         if (event.user.isBot) return

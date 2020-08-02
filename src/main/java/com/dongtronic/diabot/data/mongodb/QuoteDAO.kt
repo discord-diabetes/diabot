@@ -26,7 +26,7 @@ class QuoteDAO private constructor() {
             = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
-    private val logger by Logger()
+    private val logger = logger()
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
 
