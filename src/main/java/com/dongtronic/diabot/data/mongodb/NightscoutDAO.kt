@@ -2,6 +2,7 @@ package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.MongoDB
+import com.dongtronic.diabot.util.findMany
 import com.dongtronic.diabot.util.findOne
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
@@ -11,6 +12,7 @@ import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
@@ -38,6 +40,17 @@ class NightscoutDAO private constructor() {
      */
     fun getUser(userId: Long): Mono<NightscoutUserDTO> {
         return collection.findOne(filter(userId)).subscribeOn(scheduler)
+    }
+
+    /**
+     * Searches for users with the given Nightscout URL
+     *
+     * @param url The URL to look up
+     * @return [NightscoutUserDTO]s with the given URL.
+     */
+    fun getUsersForURL(url: String): Flux<NightscoutUserDTO> {
+        return collection.findMany(NightscoutUserDTO::url eq url)
+                .subscribeOn(scheduler)
     }
 
     /**
