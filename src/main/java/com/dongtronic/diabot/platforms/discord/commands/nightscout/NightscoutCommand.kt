@@ -1,14 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.data.redis.NightscoutDTO
-import com.dongtronic.diabot.data.redis.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getEntries
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getSettings
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.isNightscoutInstance
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.needsNightscoutToken
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.processPebble
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
@@ -79,31 +78,30 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
     /**
      * Loads all the necessary data from a Nightscout instance and replies with an embed of it.
      *
-     * @param endpoint The NS URL to load
      * @param userDTO Data necessary for loading/rendering
      * @param event [CommandEvent]
      */
-    private fun buildNightscoutResponse(endpoint: String, userDTO: NightscoutUserDTO, event: CommandEvent) {
-        val dto = NightscoutDTO()
+    private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: CommandEvent) {
+        val nsDto = NightscoutDTO()
 
         try {
-            getSettings(endpoint, userDTO.token, dto)
-            getEntries(endpoint, userDTO.token, dto)
-            processPebble(endpoint, userDTO.token, dto)
+            getSettings(userDTO.apiEndpoint, userDTO.token, nsDto)
+            getEntries(userDTO.apiEndpoint, userDTO.token, nsDto)
+            processPebble(userDTO.apiEndpoint, userDTO.token, nsDto)
         } catch (exception: NoNightscoutDataException) {
             event.reactError()
-            logger.info("No nightscout data from $endpoint")
+            logger.info("No nightscout data from ${userDTO.url}")
             return
         } catch (exception: MalformedJsonException) {
             event.reactError()
-            logger.warn("Malformed JSON from $endpoint")
+            logger.warn("Malformed JSON from ${userDTO.url}")
             return
         } catch (exception: NightscoutStatusException) {
             if (exception.status == 401) {
                 event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
             } else {
                 event.reactError()
-                logger.warn("Connection status ${exception.status} from $endpoint")
+                logger.warn("Connection status ${exception.status} from ${userDTO.url}")
             }
 
             return
@@ -112,16 +110,17 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         val channelType = event.channelType;
         var shortReply = false
         if (channelType == ChannelType.TEXT) {
-            shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
-                    userDTO.displayOptions.contains("simple")
+            // todo
+//            shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
+//                    userDTO.displayOptions.contains("simple")
         }
 
         val builder = EmbedBuilder()
 
-        buildResponse(dto, userDTO.avatarUrl, userDTO.displayOptions, shortReply, builder)
+        buildResponse(nsDto, userDTO.avatarUrl, userDTO.displayOptions, shortReply, builder)
 
         val embed = builder.build()
-        event.reply(embed) { replyMessage -> addReactions(dto, replyMessage) }
+        event.reply(embed) { replyMessage -> addReactions(nsDto, replyMessage) }
     }
 
     /**
@@ -130,11 +129,8 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      * @param event [CommandEvent]
      */
     private fun getStoredData(event: CommandEvent) {
-        val endpoint = getNightscoutHost(event.author) + "/api/v1/"
-        val userDTO = NightscoutUserDTO()
-
-        getUserDto(event.author, userDTO)
-        buildNightscoutResponse(endpoint, userDTO, event)
+        val userDTO = getUserDto(event.author)
+        buildNightscoutResponse(userDTO, event)
     }
 
     /**
@@ -143,74 +139,75 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      * @param event [CommandEvent]
      */
     private fun getUnstoredData(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val userDTO = NightscoutUserDTO()
-        val namedMembers = event.event.guild.getMembersByName(args[0], true) + event.event.guild.getMembersByNickname(args[0], true)
-        val mentionedMembers = event.event.message.mentionedMembers
-
-        val endpoint = when {
-            mentionedMembers.size == 1 -> {
-                val user = mentionedMembers[0].user
-                try {
-                    if (!getNightscoutPublic(user, event.guild.id)) {
-                        event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
-                        return
-                    }
-                    getUserDto(user, userDTO)
-                    getNightscoutHost(user) + "/api/v1/"
-                } catch (ex: UnconfiguredNightscoutException) {
-                    throw IllegalArgumentException("User does not have a configured Nightscout URL.")
-                }
-            }
-            mentionedMembers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
-            event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
-
-            else -> {
-
-                val hostname = args[0]
-                if (hostname.contains("http://") || hostname.contains("https://")) {
-                    var domain = hostname
-                    if (domain.endsWith("/")) {
-                        domain = domain.trimEnd('/')
-                    }
-
-                    // If Nightscout data cannot be retrieved from this domain then stop
-                    if (!getUnstoredDataForDomain(domain, event, userDTO))
-                        return
-
-                    "$domain/api/v1/"
-                }
-                // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
-
-                else if (namedMembers.size == 1) {
-                    val user = namedMembers[0].user
-                    val domain = "https://$hostname.herokuapp.com"
-
-                    when {
-                        getNightscoutPublic(user, event.guild.id) -> {
-                            getUserDto(user, userDTO)
-                            getNightscoutHost(user) + "/api/v1/"
-
-                        }
-                        isNightscoutInstance(domain) -> {
-                            "$domain/api/v1/"
-                        }
-                        else -> {
-                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
-                            return
-                        }
-                    }
-
-                } else {
-                    "https://$hostname.herokuapp.com/api/v1/"
-                }
-            }
-        }
-
-        buildNightscoutResponse(endpoint, userDTO, event)
+        // todo
+//        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+//        val userDTO = NightscoutUserDTO()
+//        val namedMembers = event.event.guild.getMembersByName(args[0], true) + event.event.guild.getMembersByNickname(args[0], true)
+//        val mentionedMembers = event.event.message.mentionedMembers
+//
+//        val endpoint = when {
+//            mentionedMembers.size == 1 -> {
+//                val user = mentionedMembers[0].user
+//                try {
+//                    if (!getNightscoutPublic(user, event.guild.id)) {
+//                        event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
+//                        return
+//                    }
+//                    getUserDto(user, userDTO)
+//                    getNightscoutHost(user) + "/api/v1/"
+//                } catch (ex: UnconfiguredNightscoutException) {
+//                    throw IllegalArgumentException("User does not have a configured Nightscout URL.")
+//                }
+//            }
+//            mentionedMembers.size > 1 -> throw IllegalArgumentException("Too many mentioned users.")
+//            event.event.message.mentionsEveryone() -> throw IllegalArgumentException("Cannot handle mentioning everyone.")
+//
+//            else -> {
+//
+//                val hostname = args[0]
+//                if (hostname.contains("http://") || hostname.contains("https://")) {
+//                    var domain = hostname
+//                    if (domain.endsWith("/")) {
+//                        domain = domain.trimEnd('/')
+//                    }
+//
+//                    // If Nightscout data cannot be retrieved from this domain then stop
+//                    if (!getUnstoredDataForDomain(domain, event, userDTO))
+//                        return
+//
+//                    "$domain/api/v1/"
+//                }
+//                // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
+//
+//                else if (namedMembers.size == 1) {
+//                    val user = namedMembers[0].user
+//                    val domain = "https://$hostname.herokuapp.com"
+//
+//                    when {
+//                        getNightscoutPublic(user, event.guild.id) -> {
+//                            getUserDto(user, userDTO)
+//                            getNightscoutHost(user) + "/api/v1/"
+//
+//                        }
+//                        isNightscoutInstance(domain) -> {
+//                            "$domain/api/v1/"
+//                        }
+//                        else -> {
+//                            event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private")
+//                            return
+//                        }
+//                    }
+//
+//                } else {
+//                    "https://$hostname.herokuapp.com/api/v1/"
+//                }
+//            }
+//        }
+//
+//        buildNightscoutResponse(endpoint, userDTO, event)
     }
 
-    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: Array<String>, short: Boolean, builder: EmbedBuilder) {
+    private fun buildResponse(dto: NightscoutDTO, avatarUrl: String?, displayOptions: List<String>, short: Boolean, builder: EmbedBuilder) {
         if (displayOptions.contains("title")) builder.setTitle(dto.title)
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
@@ -320,22 +317,22 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         }
     }
 
-    /**
-     * Gets a Nightscout URL for the given user.
-     *
-     * @param user The user to get a URL for.
-     * @throws [UnconfiguredNightscoutException] if there is no URL set for this user.
-     * @return Nightscout URL for the given user
-     */
-    private fun getNightscoutHost(user: User): String {
-        val url = NightscoutDAO.getInstance().getNightscoutUrl(user)
-
-        if (url == null) {
-            throw UnconfiguredNightscoutException()
-        } else {
-            return url
-        }
-    }
+//    /**
+//     * Gets a Nightscout URL for the given user.
+//     *
+//     * @param user The user to get a URL for.
+//     * @throws [UnconfiguredNightscoutException] if there is no URL set for this user.
+//     * @return Nightscout URL for the given user
+//     */
+//    private fun getNightscoutHost(user: User): String {
+//        val url = NightscoutDAO.getInstance().getNightscoutUrl(user)
+//
+//        if (url == null) {
+//            throw UnconfiguredNightscoutException()
+//        } else {
+//            return url
+//        }
+//    }
 
     /**
      * Gets token, display options, and an avatar URL for the domain given.
@@ -348,108 +345,55 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         // If a token is not needed, skip grabbing data
         if (needsNightscoutToken(domain)) {
             // Get user ID from domain. If no user is found, respond with an error
-            val userId = getUserIdForDomain(domain)
+            val userDto = getUsersForDomain(domain)
             val user: User?
 
-            if (userId == null) {
+            if (userDto == null) {
                 event.replyError("Token secured Nightscout does not belong to any user.")
                 return false
             }
 
-            user = event.jda.getUserById(userId)
+            user = event.jda.getUserById(userDto.userId)
 
             if (user == null) {
-                event.replyError("Couldn't find user $userId")
+                event.replyError("Couldn't find user ${userDto.userId}")
                 return false
             }
 
-            if (!NightscoutDAO.getInstance().isNightscoutPublic(user, event.guild.id)) {
+            if (!userDTO.isNightscoutPublic(event.guild.idLong)) {
                 // Nightscout data is private
                 event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
                 return false
             }
 
-            if (!NightscoutDAO.getInstance().isNightscoutToken(user)) {
+            if (userDTO.token == null) {
                 // No token found
                 event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is unreadable due to missing token.")
                 return false
             }
 
-            getUserDto(user, userDTO)
+            getUserDto(user)
         }
         return true
     }
 
     /**
-     * Finds a user ID in the redis database matching with the Nightscout domain given
+     * Finds a user in the database matching with the Nightscout domain given
      */
-    private fun getUserIdForDomain(domain: String): String? {
-        val users = NightscoutDAO.getInstance().listUsers()
-
-        // Loop through database and find a userId that matches with the domain provided
-        for ((uid, value) in users) {
-            if (value == domain) {
-                return uid.substring(0, uid.indexOf(":"))
-            }
-        }
+    private fun getUsersForDomain(domain: String): NightscoutUserDTO? {
+        // todo
+        val users = NightscoutDAO.instance.getUsersForURL(domain).blockFirst()
 
         // If no users are found with the given domain, return null
-        return null
+        return users
     }
 
     /**
      * Sets the data inside the given NightscoutUserDTO for the given user
      */
-    private fun getUserDto(user: User, userDTO: NightscoutUserDTO) {
-        userDTO.token = getToken(user)
-        userDTO.displayOptions = getDisplayOptions(user)
-        userDTO.avatarUrl = user.avatarUrl
-    }
-
-    /**
-     * Gets the publicity status for a user's Nightscout in a guild.
-     *
-     * @param user User to look up publicity status for.
-     * @param guildId Guild to get the publicity status under.
-     * @return Whether a user's Nightscout is public in a guild.
-     */
-    private fun getNightscoutPublic(user: User, guildId: String): Boolean {
-        return NightscoutDAO.getInstance().isNightscoutPublic(user, guildId)
-    }
-
-    /**
-     * Gets a NS token for a user, if any.
-     *
-     * @param user The user to get a token for.
-     * @return NS token. Null if none exist
-     */
-    private fun getToken(user: User): String? {
-        if (NightscoutDAO.getInstance().isNightscoutToken(user)) {
-            return NightscoutDAO.getInstance().getNightscoutToken(user)
-        }
-
-        return null
-    }
-
-    /**
-     * Gets a user's configured display options, if configured.
-     * If not configured, this will give default display options.
-     *
-     * @param user The user to get display options for.
-     * @return The display options to display for the given user.
-     */
-    private fun getDisplayOptions(user: User): Array<String> {
-        if (NightscoutDAO.getInstance().isNightscoutDisplay(user)) {
-            return NightscoutDAO.getInstance().getNightscoutDisplay(user).split(" ").toTypedArray()
-        }
-        // if there are no options set in redis, then have the default be all options
-        return getDefaultDisplayOptions()
-    }
-
-    /**
-     * Provides display options with everything enabled
-     */
-    private fun getDefaultDisplayOptions(): Array<String> {
-        return NightscoutSetDisplayCommand.enabledOptions
+    private fun getUserDto(user: User): NightscoutUserDTO {
+        val dto = NightscoutDAO.instance.getUser(user.idLong).block()!!
+        dto.avatarUrl = user.avatarUrl
+        return dto
     }
 }
