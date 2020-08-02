@@ -1,4 +1,4 @@
 package com.dongtronic.diabot.exceptions
 
-class NightscoutPrivateException(displayName: String = "this nightscout")
-    : NightscoutDataException("Nightscout data for $displayName is private")
+class NightscoutPrivateException(displayName: String? = null)
+    : NightscoutDataException("Nightscout data for ${displayName ?: "this nightscout"} is private")

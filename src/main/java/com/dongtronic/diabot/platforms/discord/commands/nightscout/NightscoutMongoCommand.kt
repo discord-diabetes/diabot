@@ -202,7 +202,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
     private fun getDataFromDomain(domain: String, event: CommandEvent): Mono<NightscoutUserDTO> {
         val userDtos = getUsersForDomain(domain)
 
-        return userDtos.map { userDTO ->
+        return userDtos.flatMap { userDTO ->
             val user = event.jda.getUserById(userDTO.userId)
 //                    ?: throw IllegalArgumentException("Couldn't find user ${userDTO.userId}")
 
@@ -210,18 +210,19 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
             val mutual = user?.mutualGuilds?.contains(event.guild) == true
             val publicForGuild = userDTO.isNightscoutPublic(event.guild.idLong)
 
-            if (hasToken && !mutual) {
-                throw NightscoutPrivateException()
+            if (!mutual) {
+                // strip all personal info
+                return@flatMap Mono.empty<NightscoutUserDTO>()
             }
 
             if (!publicForGuild) {
-                if (user != null)
-                    throw NightscoutPrivateException(event.nameOf(user))
+                return@flatMap if (user != null)
+                    NightscoutPrivateException(event.nameOf(user)).toMono<NightscoutUserDTO>()
                 else
-                    throw NightscoutPrivateException()
+                    NightscoutPrivateException().toMono()
             }
 
-            userDTO.copy(jdaUser = user)
+            userDTO.copy(jdaUser = user).toMono()
         }.singleOrEmpty()
                 .switchIfEmpty { NightscoutUserDTO(url = domain).toMono() }
 //                .errorOnEmpty(IllegalArgumentException("Nightscout at "))
