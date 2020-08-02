@@ -252,7 +252,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
 
         val builder = EmbedBuilder()
 
-        buildResponse(nsDto, userDTO.avatarUrl, userDTO.displayOptions, shortReply, builder)
+        buildResponse(nsDto, userDTO.jdaUser?.avatarUrl, userDTO.displayOptions, shortReply, builder)
 
         val embed = builder.build()
         event.reply(embed) { replyMessage -> addReactions(nsDto, replyMessage) }
@@ -383,7 +383,6 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      */
     private fun getUserDto(user: User): NightscoutUserDTO {
         val dto = NightscoutDAO.instance.getUser(user.idLong).block()!!
-        dto.avatarUrl = user.avatarUrl
-        return dto
+        return dto.copy(jdaUser = user)
     }
 }

@@ -2,7 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import com.mongodb.client.result.UpdateResult
@@ -11,8 +11,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import reactor.core.publisher.Mono
 
 class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
-
-    private val logger by Logger()
 
     init {
         this.name = "set"
@@ -50,26 +48,30 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
         }
     }
 
-    private fun validateNightscoutUrl(url: String): String {
-        var finalUrl = url
-        if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            logger.warn("Missing scheme in Nightscout URL: $finalUrl, adding https://")
-            finalUrl = "https://$finalUrl"
-        }
-
-        if (finalUrl.endsWith("/")) {
-            finalUrl = finalUrl.trimEnd('/')
-        }
-
-        if (finalUrl.endsWith("/api/v1")) {
-            finalUrl = finalUrl.removeSuffix("/api/v1")
-        }
-
-        return finalUrl
-    }
-
     private fun setNightscoutUrl(user: User, url: String): Mono<UpdateResult> {
         val finalUrl = validateNightscoutUrl(url)
         return NightscoutDAO.instance.setUrl(user.idLong, finalUrl)
+    }
+
+    companion object {
+        private val logger = logger()
+
+        fun validateNightscoutUrl(url: String): String {
+            var finalUrl = url
+            if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
+                logger.warn("Missing scheme in Nightscout URL: $finalUrl, adding https://")
+                finalUrl = "https://$finalUrl"
+            }
+
+            if (finalUrl.endsWith("/")) {
+                finalUrl = finalUrl.trimEnd('/')
+            }
+
+            if (finalUrl.endsWith("/api/v1")) {
+                finalUrl = finalUrl.removeSuffix("/api/v1")
+            }
+
+            return finalUrl
+        }
     }
 }

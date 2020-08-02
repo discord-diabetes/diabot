@@ -62,10 +62,10 @@ fun <T> MongoCollection<T>.findMany(vararg filter: Bson): Flux<T> {
     return Flux.from(find(*filter).collation(caseCollation)).errorOnEmpty()
 }
 
-fun <T> Mono<T>.errorOnEmpty(): Mono<T> {
-    return switchIfEmpty(Mono.error(NoSuchElementException()))
+fun <T> Mono<T>.errorOnEmpty(throwable: Throwable = NoSuchElementException()): Mono<T> {
+    return switchIfEmpty(Mono.error(throwable))
 }
 
-fun <T> Flux<T>.errorOnEmpty(): Flux<T> {
-    return switchIfEmpty(Flux.error(NoSuchElementException()))
+fun <T> Flux<T>.errorOnEmpty(throwable: Throwable = NoSuchElementException()): Flux<T> {
+    return switchIfEmpty(Flux.error(throwable))
 }

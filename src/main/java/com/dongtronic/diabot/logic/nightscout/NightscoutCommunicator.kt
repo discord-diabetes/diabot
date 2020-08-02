@@ -127,7 +127,7 @@ object NightscoutCommunicator {
      * @param dto NS DTO
      */
     fun processPebble(url: String, token: String?, dto: NightscoutDTO) {
-        val endpoint = url.replace("/api/v1/", "/pebble")
+        val endpoint = url.replace("/api/v1", "/pebble")
         val json = getJson(endpoint, token)
 
         val bgsJson: JsonObject
