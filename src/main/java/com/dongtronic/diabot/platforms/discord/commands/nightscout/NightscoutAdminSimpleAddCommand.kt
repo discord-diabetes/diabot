@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.dongtronic.diabot.util.logger
@@ -25,9 +26,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
 
     override fun execute(event: CommandEvent) {
         try {
-            if (!CommandUtils.requireAdminChannel(event)) {
-                return
-            }
+            if (!CommandUtils.requireAdminChannel(event)) return
 
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
@@ -50,9 +49,12 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
 
             logger.info("Adding channel ${channel.id} as short channel for ${event.guild.id}")
 
-            NightscoutDAO.getInstance().addShortChannel(event.guild.id, channel.id)
-
-            event.replySuccess("Added channel **${channel.name}** (`${channel.id}`) as short reply channel")
+            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+                    .subscribe({
+                        event.replySuccess("Set channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                    }, {
+                        event.replyError("Could not set channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                    })
         } catch (ex: Exception) {
             event.replyError(ex.message)
             return
