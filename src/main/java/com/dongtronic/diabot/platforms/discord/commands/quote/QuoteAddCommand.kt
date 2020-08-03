@@ -42,12 +42,12 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
             }
         }
 
-        val quoteDto = QuoteDTO(guildId = event.guild.idLong,
-                channelId = event.channel.idLong,
+        val quoteDto = QuoteDTO(guildId = event.guild.id,
+                channelId = event.channel.id,
                 author = author,
-                authorId = authorId,
+                authorId = authorId.toString(),
                 message = message,
-                messageId = event.message.idLong)
+                messageId = event.message.id)
 
         QuoteDAO.getInstance().addQuote(quoteDto).subscribe(
                 {

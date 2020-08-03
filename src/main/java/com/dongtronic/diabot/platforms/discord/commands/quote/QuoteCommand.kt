@@ -38,19 +38,19 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         val quote = when {
             event.message.mentionedMembers.isNotEmpty() -> {
                 val member = event.message.mentionedMembers.first()
-                getRandomQuote(event.guild.idLong, QuoteDTO::authorId eq member.idLong)
+                getRandomQuote(event.guild.id, QuoteDTO::authorId eq member.id)
             }
             args.isNotEmpty() -> {
                 if (args.all { it.toLongOrNull() != null }) {
                     // may be a quote id
-                    QuoteDAO.getInstance().getQuote(event.guild.idLong, args[0].toLong())
+                    QuoteDAO.getInstance().getQuote(event.guild.id, args[0])
                 } else {
                     // may be a username
                     val joined = args.joinToString(" ")
-                    getRandomQuote(event.guild.idLong, QuoteDTO::author eq joined)
+                    getRandomQuote(event.guild.id, QuoteDTO::author eq joined)
                 }
             }
-            else -> getRandomQuote(event.guild.idLong)
+            else -> getRandomQuote(event.guild.id)
         }
 
         quote.subscribe({
@@ -78,12 +78,12 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         descriptionBuilder.append("\n")
         descriptionBuilder.append("- ").append(quoteDTO.author)
 
-        if (quoteDTO.guildId != 0L
-                && quoteDTO.channelId != 0L
-                && quoteDTO.messageId != 0L) {
-            val jumpLink = discordMessageLink.replace("{{guild}}", quoteDTO.guildId.toString())
-                    .replace("{{channel}}", quoteDTO.channelId.toString())
-                    .replace("{{message}}", quoteDTO.messageId.toString())
+        if (quoteDTO.guildId != "0"
+                && quoteDTO.channelId != "0"
+                && quoteDTO.messageId != "0") {
+            val jumpLink = discordMessageLink.replace("{{guild}}", quoteDTO.guildId)
+                    .replace("{{channel}}", quoteDTO.channelId)
+                    .replace("{{message}}", quoteDTO.messageId)
             val jumpText = "[(Jump)]($jumpLink)"
             descriptionBuilder.append(" ").append(jumpText)
         }
@@ -101,7 +101,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      * @param filter filter for certain quotes
      * @return a random [QuoteDTO], or null if none found
      */
-    private fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
+    private fun getRandomQuote(guildId: String, filter: Bson? = null): Mono<QuoteDTO> {
         return QuoteDAO.getInstance().getRandomQuote(guildId, filter)
     }
 

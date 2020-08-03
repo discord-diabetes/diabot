@@ -14,13 +14,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
  */
 @JsonAutoDetect
 data class QuoteDTO(
-        val quoteId: Long? = null,
-        val guildId: Long,
-        val channelId: Long,
+        val quoteId: String? = null,
+        val guildId: String,
+        val channelId: String,
         val author: String,
-        val authorId: Long = 0,
+        val authorId: String = "",
         val message: String,
-        val messageId: Long,
+        val messageId: String,
         val time: Long = System.currentTimeMillis() / 1000
 )
 
@@ -30,6 +30,6 @@ data class QuoteDTO(
  */
 @JsonAutoDetect
 data class QuoteIndexDTO(
-        val guildId: Long,
+        val guildId: String,
         val quoteIndex: Long = 1
 )

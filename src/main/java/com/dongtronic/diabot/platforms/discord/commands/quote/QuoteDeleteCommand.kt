@@ -35,12 +35,12 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
             return
         }
 
-        val deleteCommand = QuoteDAO.getInstance().deleteQuote(event.guild.idLong, quoteId)
+        val deleteCommand = QuoteDAO.getInstance().deleteQuote(event.guild.id, quoteId.toString())
         var execution: Mono<DeleteResult> = deleteCommand
 
         if (!event.member.hasPermission(Permission.MESSAGE_MANAGE)) {
-            execution = QuoteDAO.getInstance().getQuote(event.guild.idLong, quoteId).flatMap {
-                if (it.authorId == event.author.idLong) {
+            execution = QuoteDAO.getInstance().getQuote(event.guild.id, quoteId.toString()).flatMap {
+                if (it.authorId == event.author.id) {
                     // this will be mapped to the delete command
                     it.toMono()
                 } else {
