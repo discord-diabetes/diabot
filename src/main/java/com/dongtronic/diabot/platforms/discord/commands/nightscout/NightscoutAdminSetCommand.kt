@@ -52,7 +52,9 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
             NightscoutDAO.instance.setUrl(user.idLong, url).subscribe({
                 event.reply("Admin set Nightscout URL for ${event.nameOf(user)} [requested by ${event.authorName}]")
             }, {
-                event.replyError("Could not set Nightscout URL for ${event.nameOf(user)}")
+                val msg = "Could not set Nightscout URL for ${event.nameOf(user)} (${user.id})"
+                logger.warn(msg, it)
+                event.replyError(msg)
             })
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)

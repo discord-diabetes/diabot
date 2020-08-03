@@ -53,7 +53,9 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
                     .subscribe({
                         event.replySuccess("Set channel **${channel.name}** (`${channel.id}`) as short reply channel")
                     }, {
-                        event.replyError("Could not set channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                        val msg = "Could not set channel ${channel.name} (${channel.id}) as short reply channel"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
                     })
         } catch (ex: Exception) {
             event.replyError(ex.message)

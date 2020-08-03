@@ -53,7 +53,9 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
                     .subscribe({
                         event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
                     }, {
-                        event.replyError("Could not remove channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                        val msg = "Could not remove channel ${channel.name} (${channel.id}) as short reply channel"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
                     })
         } catch (ex: Exception) {
             event.replyError(ex.message)

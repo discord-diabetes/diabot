@@ -47,8 +47,9 @@ class NightscoutAdminSimpleListCommand(category: Command.Category, parent: Comma
 
                     event.reply(builder.build())
                 }, {
-                    event.replyError("Could not access list of short Nightscout channels")
-                    logger.warn("Could not retrieve list of short Nightscout channels", it)
+                    val msg = "Could not access list of short Nightscout channels"
+                    logger.warn(msg + " for ${event.guild.id}", it)
+                    event.replyError(msg)
                 })
     }
 }
