@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.channels
 
-import com.dongtronic.diabot.data.redis.AdminDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
@@ -35,9 +36,14 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
             val channel = event.jda.getTextChannelById(channelId)
                     ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
-            AdminDAO.getInstance().addAdminChannel(event.guild.id, channelId)
-
-            event.reply("Added admin channel ${channel.name} (`$channelId`)")
+            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.ADMIN)
+                    .subscribe({
+                        event.replySuccess("Added admin channel ${channel.name} (`${channel.id}`)")
+                    }, {
+                        val msg = "Could not set admin channel ${channel.name} (`${channel.id}`)"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
+                    })
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)
         }
