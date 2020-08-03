@@ -35,6 +35,15 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     .submit().toMono()
         }
 
+        /**
+         * Replies to the channel only if the reacting user has permission to send messages
+         */
+        val reply: (message: String) -> Unit = {
+            if (event.channel.canTalk(event.member)) {
+                event.channel.sendMessage(it).queue()
+            }
+        }
+
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.idLong,
@@ -45,9 +54,9 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     messageId = message.idLong
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                event.channel.sendMessage("New quote added by ${author.effectiveName} as #${it.quoteId}").queue()
+                reply("New quote added by ${author.effectiveName} as #${it.quoteId}")
             }, {
-                event.channel.sendMessage("Could not create quote for message: ${message.id}").queue()
+                reply("Could not create quote for message: ${message.id}")
             })
         }
 
