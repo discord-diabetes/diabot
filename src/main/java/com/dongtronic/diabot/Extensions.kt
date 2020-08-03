@@ -4,6 +4,7 @@ import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.requests.RestAction
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
@@ -16,4 +17,12 @@ fun CommandEvent.nameOf(user: User): String {
 
 fun <T> RestAction<T>.submitMono(): Mono<T> {
     return submit().toMono()
+}
+
+@Suppress("ReactiveStreamsUnusedPublisher")
+fun <T, U : Any> Flux<T>.mapNotNull(transform: (T) -> U?): Flux<U> {
+    return this.flatMap {
+        val result = transform.invoke(it)
+        return@flatMap result?.toMono() ?: Flux.empty<U>()
+    }
 }
