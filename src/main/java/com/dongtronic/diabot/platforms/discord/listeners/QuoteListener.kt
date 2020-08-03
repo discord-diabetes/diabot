@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -64,10 +65,12 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 // search for any quotes with this message ID
                 .getQuotes(guild.idLong, QuoteDTO::messageId eq event.messageIdLong)
                 .toMono()
-                .subscribe({/*ignored*/}, {
-                    if (it is NoSuchElementException) {
-                        // if there is no quotes then proceed
-                        messageRetrieval.subscribe(quoteMessage)
+                .subscribe({/*ignored*/}, { error ->
+                    // if there are no quotes then proceed
+                    if (error is NoSuchElementException) {
+                        messageRetrieval
+                                .filter { it.type == MessageType.DEFAULT && !it.author.isBot }
+                                .subscribe(quoteMessage)
                     }
                 })
     }
