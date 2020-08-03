@@ -1,5 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.data.redis.NightscoutDTO
@@ -255,16 +257,18 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
             }
 
             nsDto.toMono()
-        }.zipWhen {
+        }.zipWhen { nsDto ->
             val channelType = event.channelType
-            var shortReply = false
+            var shortReply = false.toMono()
             if (channelType == ChannelType.TEXT) {
-                // todo
-//            shortReply = NightscoutDAO.getInstance().listShortChannels(event.guild.id).contains(event.channel.id) ||
-//                    userDTO.displayOptions.contains("simple")
+                shortReply = if (userDTO.displayOptions.contains("simple")) {
+                    true.toMono()
+                } else {
+                    ChannelDAO.instance.hasAttribute(event.channel.idLong, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+                }
             }
 
-            buildResponse(it, userDTO.jdaUser?.avatarUrl, userDTO.displayOptions, shortReply).build().toMono()
+            shortReply.map { buildResponse(nsDto, userDTO.jdaUser?.avatarUrl, userDTO.displayOptions, it).build() }
         }
     }
 
@@ -404,19 +408,20 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
     /**
      * Sets the data inside the given NightscoutUserDTO for the given user
      */
-    private fun getUserDto(user: User, throwable: Throwable? = UnconfiguredNightscoutException()): Mono<NightscoutUserDTO> {
+    private fun getUserDto(user: User, throwable: Throwable = UnconfiguredNightscoutException()): Mono<NightscoutUserDTO> {
         return NightscoutDAO.instance.getUser(user.idLong)
                 .onErrorResume {
                     if (it is NoSuchElementException) {
-                        if (throwable != null)
-                            return@onErrorResume throwable.toMono()
-                        else
-                            return@onErrorResume Mono.empty()
+                        return@onErrorResume throwable.toMono()
                     }
 
                     it.toMono()
+                }.flatMap {
+                    if (it.url != null) {
+                        it.copy(jdaUser = user).toMono()
+                    } else {
+                        throwable.toMono()
+                    }
                 }
-                .filter { it.url != null }
-                .doOnNext { it.copy(jdaUser = user) }
     }
 }
