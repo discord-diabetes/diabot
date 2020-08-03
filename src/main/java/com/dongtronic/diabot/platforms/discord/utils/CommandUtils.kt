@@ -8,6 +8,7 @@ object CommandUtils {
 
     fun requireAdminChannel(event: CommandEvent): Boolean {
         return try {
+            // todo: this needs to be converted to mongo
             val adminChannels = AdminDAO.getInstance().listAdminChannels(event.guild.id)
                     ?: throw NotAnAdminChannelException()
 
