@@ -69,19 +69,6 @@ class NightscoutDAO private constructor() {
      * Deletes stored NS data belonging to the given user.
      * If no properties are given, all of their NS data will be deleted from the database.
      *
-     * @param dto The user's DTO.
-     * @param fields Which fields to delete. If this is not provided then all of the user's data will be deleted.
-     * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
-     * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
-     */
-    fun deleteUser(dto: NightscoutUserDTO, vararg fields: KProperty<*>): Mono<*> {
-        return deleteUser(dto.userId, *fields)
-    }
-
-    /**
-     * Deletes stored NS data belonging to the given user.
-     * If no properties are given, all of their NS data will be deleted from the database.
-     *
      * @param userId The user's ID.
      * @param fields Which fields to delete. If this is not provided then all of the user's data will be deleted.
      * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
@@ -89,6 +76,7 @@ class NightscoutDAO private constructor() {
      */
     fun deleteUser(userId: Long, vararg fields: KProperty<*>): Mono<*> {
         if (fields.isNullOrEmpty()) {
+            // delete all of the user's data
             return collection.deleteOne(filter(userId)).toMono()
                     .subscribeOn(scheduler)
         }
@@ -140,7 +128,7 @@ class NightscoutDAO private constructor() {
             }
         }
 
-        return update.flatMap { collection.findOneAndUpdate(filter(userId), it, upsertAfter).toMono() }
+        return update.flatMap { collection.findOneAndUpdate(userFilter, it, upsertAfter).toMono() }
                 .map { it.publicGuilds.contains(guildId) }
                 .subscribeOn(scheduler)
     }
