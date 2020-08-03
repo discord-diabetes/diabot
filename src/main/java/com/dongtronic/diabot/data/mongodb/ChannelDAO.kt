@@ -8,8 +8,10 @@ import com.mongodb.client.result.InsertOneResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 class ChannelDAO private constructor() {
@@ -24,6 +26,11 @@ class ChannelDAO private constructor() {
         collection.createIndex(descending(ChannelDTO::channelId), options).toMono()
                 .subscribeOn(scheduler)
                 .subscribe()
+    }
+
+    fun getChannels(guildId: Long): Flux<ChannelDTO> {
+        return collection.find(filterGuild(guildId))
+                .toFlux().subscribeOn(scheduler)
     }
 
     fun getChannel(channelId: Long, guildId: Long? = null): Mono<ChannelDTO> {
@@ -82,9 +89,13 @@ class ChannelDAO private constructor() {
         fun filter(channelId: Long, guildId: Long? = null): Bson {
             var filter = ChannelDTO::channelId eq channelId
             if (guildId != null)
-                filter = and(filter, ChannelDTO::guildId eq guildId)
+                filter = and(filter, filterGuild(guildId))
 
             return filter
+        }
+
+        fun filterGuild(guildId: Long): Bson {
+            return ChannelDTO::guildId eq guildId
         }
     }
 }
