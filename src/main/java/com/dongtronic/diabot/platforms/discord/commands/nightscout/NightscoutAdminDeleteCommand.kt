@@ -1,11 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
+import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import com.mongodb.client.result.UpdateResult
 import org.apache.commons.lang3.StringUtils
 
 class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
@@ -43,21 +45,24 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
 
             val userId = args[0]
 
-            val user = event.jda.getUserById(userId) ?: throw IllegalArgumentException("User with ID `$userId` does not exist in this server")
+            val user = event.jda.getUserById(userId)
+                    ?: throw IllegalArgumentException("User with ID `$userId` does not exist in this server")
 
             logger.info("Deleting Nightscout URL for user $userId [requested by ${event.author.name}]")
 
-            val existingUrl = NightscoutDAO.getInstance().getNightscoutUrl(user)
-
-            if(existingUrl.isNullOrBlank()) {
-                event.reply("User **${NicknameUtils.determineDisplayName(event, user)}** (`$userId`) does not have a Nightscout URL configured")
-                return
-            }
-
-            NightscoutDAO.getInstance().removeNIghtscoutUrl(user)
-
-            event.replySuccess("Deleted Nightscout URL for user **${NicknameUtils.determineDisplayName(event, user)}** (`$userId`)")
-
+            NightscoutDAO.instance.deleteUser(user.idLong, NightscoutUserDTO::url)
+                    .ofType(UpdateResult::class.java)
+                    .subscribe({
+                        if (it.modifiedCount == 0L) {
+                            event.reply("User **${event.nameOf(user)}** (`$userId`) does not have a Nightscout URL configured")
+                        } else {
+                            event.replySuccess("Deleted Nightscout URL for user **${event.nameOf(user)}** (`$userId`)")
+                        }
+                    }, {
+                        val msg = "Could not delete Nightscout URL ${event.nameOf(user)} (`$userId`)"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
+                    })
         } catch (ex: NullPointerException) {
             event.replyError("Invalid user ID provided")
         }

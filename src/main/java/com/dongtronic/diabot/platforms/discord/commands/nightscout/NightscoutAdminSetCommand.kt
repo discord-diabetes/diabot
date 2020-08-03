@@ -1,7 +1,10 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDAO
+import com.dongtronic.diabot.authorName
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSetUrlCommand.Companion.validateNightscoutUrl
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -46,24 +49,13 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
-            NightscoutDAO.getInstance().setNightscoutUrl(user, url)
-
-            event.reply("Admin set Nightscout URL for ${user.discriminator} [requested by ${event.author.name}]")
+            NightscoutDAO.instance.setUrl(user.idLong, url).subscribe({
+                event.reply("Admin set Nightscout URL for ${event.nameOf(user)} [requested by ${event.authorName}]")
+            }, {
+                event.replyError("Could not set Nightscout URL for ${event.nameOf(user)}")
+            })
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)
         }
-    }
-
-    private fun validateNightscoutUrl(url: String): String {
-        var finalUrl = url
-        if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            throw IllegalArgumentException("Url must contain scheme")
-        }
-
-        if (finalUrl.endsWith("/")) {
-            finalUrl = finalUrl.trimEnd('/')
-        }
-
-        return finalUrl
     }
 }
