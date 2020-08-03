@@ -28,16 +28,36 @@ class ChannelDAO private constructor() {
                 .subscribe()
     }
 
+    /**
+     * Gets all of the channel objects stored in the database for a guild.
+     *
+     * @param guildId The guild's ID
+     * @return [ChannelDTO]s for this guild
+     */
     fun getChannels(guildId: Long): Flux<ChannelDTO> {
         return collection.find(filterGuild(guildId))
                 .toFlux().subscribeOn(scheduler)
     }
 
+    /**
+     * Gets a single channel object stored in the database from a channel and, optionally, a guild ID.
+     *
+     * @param channelId The channel's ID
+     * @param guildId Optional. The guild's ID
+     * @return A [ChannelDTO] for this channel
+     */
     fun getChannel(channelId: Long, guildId: Long? = null): Mono<ChannelDTO> {
         return collection.find(filter(channelId, guildId))
                 .toMono().subscribeOn(scheduler)
     }
 
+    /**
+     * Checks if a channel has an attribute attached to it.
+     *
+     * @param channelId The channel ID to check under
+     * @param attribute The attribute to check for
+     * @return True if the channel has the given attribute
+     */
     fun hasAttribute(channelId: Long, attribute: ChannelDTO.ChannelAttribute): Mono<Boolean> {
         return collection.countDocuments(and(filter(channelId), ChannelDTO::attributes `in` listOf(attribute)))
                 .toMono().subscribeOn(scheduler)
@@ -56,6 +76,16 @@ class ChannelDAO private constructor() {
                 .subscribeOn(scheduler)
     }
 
+    /**
+     * Adds or removes an attribute from a channel.
+     * If the channel does not exist in the database already then a [ChannelDTO] will be created.
+     *
+     * @param guildId The guild ID for this channel
+     * @param channelId The channel ID
+     * @param attribute The attribute to add or remove
+     * @param add Whether to add the given attribute or remove it.
+     * @return The updated [ChannelDTO]
+     */
     fun changeAttribute(
             guildId: Long,
             channelId: Long,
