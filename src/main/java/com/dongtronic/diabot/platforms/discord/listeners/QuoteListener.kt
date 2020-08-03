@@ -7,6 +7,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -35,6 +36,15 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     .submit().toMono()
         }
 
+        /**
+         * Replies to the channel only if the reacting user has permission to send messages
+         */
+        val reply: (message: String) -> Unit = {
+            if (event.channel.canTalk(event.member)) {
+                event.channel.sendMessage(it).queue()
+            }
+        }
+
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.idLong,
@@ -45,9 +55,9 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     messageId = message.idLong
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                event.channel.sendMessage("New quote added by ${author.effectiveName} as #${it.quoteId}").queue()
+                reply("New quote added by ${author.effectiveName} as #${it.quoteId}")
             }, {
-                event.channel.sendMessage("Could not create quote for message: ${message.id}").queue()
+                reply("Could not create quote for message: ${message.id}")
             })
         }
 
@@ -55,10 +65,12 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 // search for any quotes with this message ID
                 .getQuotes(guild.idLong, QuoteDTO::messageId eq event.messageIdLong)
                 .toMono()
-                .subscribe({/*ignored*/}, {
-                    if (it is NoSuchElementException) {
-                        // if there is no quotes then proceed
-                        messageRetrieval.subscribe(quoteMessage)
+                .subscribe({/*ignored*/}, { error ->
+                    // if there are no quotes then proceed
+                    if (error is NoSuchElementException) {
+                        messageRetrieval
+                                .filter { it.type == MessageType.DEFAULT && !it.author.isBot }
+                                .subscribe(quoteMessage)
                     }
                 })
     }
