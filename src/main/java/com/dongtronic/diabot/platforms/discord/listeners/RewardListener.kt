@@ -1,44 +1,54 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.data.redis.RewardDAO
-import com.dongtronic.diabot.platforms.discord.utils.RoleUtils
+import com.dongtronic.diabot.data.mongodb.RewardsDAO
+import com.dongtronic.diabot.data.mongodb.RewardsDTO
 import com.dongtronic.diabot.util.logger
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class RewardListener : ListenerAdapter() {
     private val logger = logger()
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+        if (!event.guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
         if (event.author.isBot) return
 
         val author = event.author
         val guild = event.guild
         val member = guild.getMember(author) ?: return
 
-        val userRoles = member.roles
-
-        if(RewardDAO.getInstance().getOptOut(guild.id, author.id)) {
-            // Skip users that have opted out
-            return
-        }
-
-        val potentialRewards = RewardDAO.getInstance().getSimpleRewards(guild.id)
-
-        val rewards = RoleUtils.buildRewardsMap(potentialRewards, guild)
-
-        // Check if user applies for new rewards
-        for ((required, rewardList) in rewards) {
-            if (userRoles.contains(required)) {
-                for(reward in rewardList) {
-                    if(!userRoles.contains(reward)) {
-                        guild.addRoleToMember(member, reward).queue()
-                        logger.info("Assigning reward roles ${reward.name} (${reward.id}) to ${author.name}")
-                    }
+        RewardsDAO.instance.isOptOut(guild.id, author.id)
+                // if the user isn't opted out
+                .filter { !it }
+                // get the rewards for this guild
+                .flatMap { RewardsDAO.instance.getRewards(guild.id) }
+                .doOnNext { rewards ->
+                    rewards.forEach { applyRoles(member, it) }
                 }
-            }
-        }
+                .subscribe({}, {
+                    if (it is InsufficientPermissionException) {
+                        logger.warn("Could not assign reward to user ${member.effectiveName} due to lack of permission")
+                    } else {
+                        logger.warn("Could not assign reward to user ${member.effectiveName}", it)
+                    }
+                })
     }
 
+    private fun applyRoles(member: Member, dto: RewardsDTO) {
+        val userRoles = member.roles
+        val required = dto.requiredToRole(member.guild) ?: return
+        if (!userRoles.contains(required)) return
 
+        val rewards = dto.rewardsToRoles(member.guild)
+
+        rewards.forEach {
+            if (userRoles.contains(it)) return@forEach
+
+            member.guild.addRoleToMember(member, it).queue()
+            logger.info("Assigning reward roles ${it.name} (${it.id}) to ${member.effectiveName}")
+        }
+    }
 }

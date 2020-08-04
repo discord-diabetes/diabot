@@ -1,8 +1,8 @@
 package com.dongtronic.diabot.platforms.discord.commands.rewards
 
-import com.dongtronic.diabot.data.redis.RewardDAO
+import com.dongtronic.diabot.data.mongodb.RewardsDAO
+import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -23,10 +23,12 @@ class RewardsOptOutCommand(category: Category, parent: Command) : DiscordCommand
         val guildId = event.guild.id
 
         val user = event.author
-
-        RewardDAO.getInstance().optOut(guildId, user.id)
-
-        logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards")
-        event.reply("User ${NicknameUtils.determineDisplayName(event, user)} opted out of rewards")
+        RewardsDAO.instance.changeOpt(guildId, user.id, true).subscribe({
+            logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards, $it")
+            event.reply("User ${event.nameOf(user)} opted out of rewards")
+        }, {
+            logger.warn("Error while opting user ${user.name}#${user.discriminator} (${user.id}) out of rewards", it)
+            event.replyError("Could not opt user ${event.nameOf(user)} out of rewards")
+        })
     }
 }
