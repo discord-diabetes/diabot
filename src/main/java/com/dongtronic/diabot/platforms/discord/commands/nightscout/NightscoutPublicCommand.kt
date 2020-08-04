@@ -26,14 +26,14 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val result: Mono<Boolean> = if(args.isEmpty()) {
             // toggle visibility if no arguments are provided
-            nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, null)
+            nightscoutDAO.changePrivacy(event.author.id, event.guild.id, null)
         } else {
             val mode = args[0].toUpperCase()
 
             if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
-                nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, true)
+                nightscoutDAO.changePrivacy(event.author.id, event.guild.id, true)
             } else {
-                nightscoutDAO.changePrivacy(event.author.idLong, event.guild.idLong, false)
+                nightscoutDAO.changePrivacy(event.author.id, event.guild.id, false)
             }
         }
 

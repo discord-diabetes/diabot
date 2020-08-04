@@ -49,7 +49,7 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
-            NightscoutDAO.instance.setUrl(user.idLong, url).subscribe({
+            NightscoutDAO.instance.setUrl(user.id, url).subscribe({
                 event.reply("Admin set Nightscout URL for ${event.nameOf(user)} [requested by ${event.authorName}]")
             }, {
                 val msg = "Could not set Nightscout URL for ${event.nameOf(user)} (${user.id})"

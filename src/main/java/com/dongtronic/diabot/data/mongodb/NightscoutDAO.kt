@@ -38,7 +38,7 @@ class NightscoutDAO private constructor() {
      * @param userId The user ID to look up
      * @return [NightscoutUserDTO] for this user
      */
-    fun getUser(userId: Long): Mono<NightscoutUserDTO> {
+    fun getUser(userId: String): Mono<NightscoutUserDTO> {
         return collection.findOne(filter(userId)).subscribeOn(scheduler)
     }
 
@@ -74,7 +74,7 @@ class NightscoutDAO private constructor() {
      * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
      * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
      */
-    fun deleteUser(userId: Long, vararg fields: KProperty<*>): Mono<*> {
+    fun deleteUser(userId: String, vararg fields: KProperty<*>): Mono<*> {
         if (fields.isNullOrEmpty()) {
             // delete all of the user's data
             return collection.deleteOne(filter(userId)).toMono()
@@ -94,7 +94,7 @@ class NightscoutDAO private constructor() {
      * @param url The user's Nightscout URL
      * @return The result of setting their URL
      */
-    fun setUrl(userId: Long, url: String): Mono<UpdateResult> {
+    fun setUrl(userId: String, url: String): Mono<UpdateResult> {
         return collection.updateOne(NightscoutUserDTO::userId eq userId,
                 setValue(NightscoutUserDTO::url, url), upsert())
                 .toMono()
@@ -110,7 +110,7 @@ class NightscoutDAO private constructor() {
      * If this is null, the privacy will be toggled instead.
      * @return This user's new privacy setting for the given guild.
      */
-    fun changePrivacy(userId: Long, guildId: Long, public: Boolean? = null): Mono<Boolean> {
+    fun changePrivacy(userId: String, guildId: String, public: Boolean? = null): Mono<Boolean> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         val userFilter = filter(userId)
         val newState = if (public != null) {
@@ -140,7 +140,7 @@ class NightscoutDAO private constructor() {
      * @param token The Nightscout token. If null, the token key will be deleted.
      * @return The result of setting the user's Nightscout token
      */
-    fun setToken(userId: Long, token: String?): Mono<UpdateResult> {
+    fun setToken(userId: String, token: String?): Mono<UpdateResult> {
         if (token == null) {
             // delete the key instead of setting it to null
             return deleteUser(userId, NightscoutUserDTO::token).ofType(UpdateResult::class.java)
@@ -163,7 +163,7 @@ class NightscoutDAO private constructor() {
      * @param displaySettings The display settings to update with.
      * @return The user's new display settings.
      */
-    fun updateDisplay(userId: Long, append: Boolean? = null, vararg displaySettings: String): Mono<List<String>> {
+    fun updateDisplay(userId: String, append: Boolean? = null, vararg displaySettings: String): Mono<List<String>> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         var settingsList = displaySettings.toList()
 
@@ -194,7 +194,7 @@ class NightscoutDAO private constructor() {
     companion object {
         val instance: NightscoutDAO by lazy { NightscoutDAO() }
 
-        fun filter(userId: Long): Bson {
+        fun filter(userId: String): Bson {
             return NightscoutUserDTO::userId eq userId
         }
     }

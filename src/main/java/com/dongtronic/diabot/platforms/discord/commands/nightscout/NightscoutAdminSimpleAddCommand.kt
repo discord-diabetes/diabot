@@ -21,7 +21,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
         this.aliases = arrayOf("a")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " add")
-        this.userPermissions = this.parent!!.userPermissions
+        this.userPermissions = this.parent.userPermissions
     }
 
     override fun execute(event: CommandEvent) {
@@ -49,7 +49,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
 
             logger.info("Adding channel ${channel.id} as short channel for ${event.guild.id}")
 
-            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
                     .subscribe({
                         event.replySuccess("Set channel **${channel.name}** (`${channel.id}`) as short reply channel")
                     }, {

@@ -28,7 +28,7 @@ class NightscoutAdminSimpleListCommand(category: Command.Category, parent: Comma
     override fun execute(event: CommandEvent) {
         if(!CommandUtils.requireAdminChannel(event)) return
 
-        ChannelDAO.instance.getChannels(event.guild.idLong)
+        ChannelDAO.instance.getChannels(event.guild.id)
                 .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT) }
                 .mapNotNull { event.guild.getTextChannelById(it.channelId) }
                 .collectList()

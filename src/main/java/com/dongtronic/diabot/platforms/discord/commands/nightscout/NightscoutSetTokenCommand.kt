@@ -58,6 +58,6 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
     }
 
     private fun setNightscoutToken(user: User, token: String?): Mono<UpdateResult> {
-        return NightscoutDAO.instance.setToken(user.idLong, token)
+        return NightscoutDAO.instance.setToken(user.id, token)
     }
 }

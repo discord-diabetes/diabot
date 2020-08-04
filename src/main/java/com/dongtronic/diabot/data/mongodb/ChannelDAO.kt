@@ -34,7 +34,7 @@ class ChannelDAO private constructor() {
      * @param guildId The guild's ID
      * @return [ChannelDTO]s for this guild
      */
-    fun getChannels(guildId: Long): Flux<ChannelDTO> {
+    fun getChannels(guildId: String): Flux<ChannelDTO> {
         return collection.find(filterGuild(guildId))
                 .toFlux().subscribeOn(scheduler)
     }
@@ -46,7 +46,7 @@ class ChannelDAO private constructor() {
      * @param guildId Optional. The guild's ID
      * @return A [ChannelDTO] for this channel
      */
-    fun getChannel(channelId: Long, guildId: Long? = null): Mono<ChannelDTO> {
+    fun getChannel(channelId: String, guildId: String? = null): Mono<ChannelDTO> {
         return collection.find(filter(channelId, guildId))
                 .toMono().subscribeOn(scheduler)
     }
@@ -58,7 +58,7 @@ class ChannelDAO private constructor() {
      * @param attribute The attribute to check for
      * @return True if the channel has the given attribute
      */
-    fun hasAttribute(channelId: Long, attribute: ChannelDTO.ChannelAttribute): Mono<Boolean> {
+    fun hasAttribute(channelId: String, attribute: ChannelDTO.ChannelAttribute): Mono<Boolean> {
         return collection.countDocuments(and(filter(channelId), ChannelDTO::attributes `in` listOf(attribute)))
                 .toMono().subscribeOn(scheduler)
                 .map { it != 0L }
@@ -87,8 +87,8 @@ class ChannelDAO private constructor() {
      * @return The updated [ChannelDTO]
      */
     fun changeAttribute(
-            guildId: Long,
-            channelId: Long,
+            guildId: String,
+            channelId: String,
             attribute: ChannelDTO.ChannelAttribute,
             add: Boolean = true
     ): Mono<ChannelDTO> {
@@ -116,7 +116,7 @@ class ChannelDAO private constructor() {
     companion object {
         val instance: ChannelDAO by lazy { ChannelDAO() }
 
-        fun filter(channelId: Long, guildId: Long? = null): Bson {
+        fun filter(channelId: String, guildId: String? = null): Bson {
             var filter = ChannelDTO::channelId eq channelId
             if (guildId != null)
                 filter = and(filter, filterGuild(guildId))
@@ -124,7 +124,7 @@ class ChannelDAO private constructor() {
             return filter
         }
 
-        fun filterGuild(guildId: Long): Bson {
+        fun filterGuild(guildId: String): Bson {
             return ChannelDTO::guildId eq guildId
         }
     }

@@ -36,7 +36,7 @@ class AdminChannelDeleteCommand(category: Category, parent: Command?) : DiscordC
             val channel = event.jda.getTextChannelById(channelId)
                     ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
-            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.ADMIN, false)
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN, false)
                     .subscribe({
                         event.replySuccess("Removed admin channel ${channel.name} (`${channel.id}`)")
                     }, {

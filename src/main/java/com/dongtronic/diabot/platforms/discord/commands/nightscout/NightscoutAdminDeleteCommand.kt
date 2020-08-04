@@ -50,7 +50,7 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
 
             logger.info("Deleting Nightscout URL for user $userId [requested by ${event.author.name}]")
 
-            NightscoutDAO.instance.deleteUser(user.idLong, NightscoutUserDTO::url)
+            NightscoutDAO.instance.deleteUser(user.id, NightscoutUserDTO::url)
                     .ofType(UpdateResult::class.java)
                     .subscribe({
                         if (it.modifiedCount == 0L) {

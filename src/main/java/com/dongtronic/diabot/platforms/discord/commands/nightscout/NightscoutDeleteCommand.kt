@@ -44,6 +44,6 @@ class NightscoutDeleteCommand(category: Command.Category, parent: Command?) : Di
 
     private fun removeNightscoutUrl(user: User, allData: Boolean): Mono<*> {
         val data = if (allData) emptyArray<KProperty<*>>() else arrayOf(NightscoutUserDTO::url)
-        return NightscoutDAO.instance.deleteUser(user.idLong, *data)
+        return NightscoutDAO.instance.deleteUser(user.id, *data)
     }
 }

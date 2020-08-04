@@ -49,7 +49,7 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
 
             logger.info("Removing channel ${channel.id} as short channel for ${event.guild.id}")
 
-            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, false)
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, false)
                     .subscribe({
                         event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
                     }, {

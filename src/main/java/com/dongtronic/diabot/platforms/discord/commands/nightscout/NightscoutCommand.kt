@@ -177,7 +177,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
                 if (foundUser != null) it to foundUser else null
             }?.firstOrNull {
                 it.second.mutualGuilds.contains(event.guild)
-                        && it.first.isNightscoutPublic(event.guild.idLong)
+                        && it.first.isNightscoutPublic(event.guild.id)
             }.let {
                 userDto = it?.first
                 user = it?.second
@@ -193,7 +193,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
                 return false
             }
 
-            if (!userDto.isNightscoutPublic(event.guild.idLong)) {
+            if (!userDto.isNightscoutPublic(event.guild.id)) {
                 // Nightscout data is private
                 event.replyError("Nightscout data for ${NicknameUtils.determineDisplayName(event, user)} is private.")
                 return false
@@ -382,7 +382,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      * Sets the data inside the given NightscoutUserDTO for the given user
      */
     private fun getUserDto(user: User): NightscoutUserDTO {
-        val dto = NightscoutDAO.instance.getUser(user.idLong).block()!!
+        val dto = NightscoutDAO.instance.getUser(user.id).block()!!
         return dto.copy(jdaUser = user)
     }
 }

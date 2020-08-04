@@ -50,7 +50,7 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
 
     private fun setNightscoutUrl(user: User, url: String): Mono<UpdateResult> {
         val finalUrl = validateNightscoutUrl(url)
-        return NightscoutDAO.instance.setUrl(user.idLong, finalUrl)
+        return NightscoutDAO.instance.setUrl(user.id, finalUrl)
     }
 
     companion object {

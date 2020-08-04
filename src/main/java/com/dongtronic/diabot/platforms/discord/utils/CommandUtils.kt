@@ -10,7 +10,7 @@ object CommandUtils {
     fun requireAdminChannel(event: CommandEvent): Boolean {
         return try {
             // todo: this needs to be converted to non-blocking
-            val isAdmin = ChannelDAO.instance.hasAttribute(event.channel.idLong, ChannelDTO.ChannelAttribute.ADMIN).block()
+            val isAdmin = ChannelDAO.instance.hasAttribute(event.channel.id, ChannelDTO.ChannelAttribute.ADMIN).block()
 
             if (isAdmin != true) {
                 throw NotAnAdminChannelException()

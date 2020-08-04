@@ -71,7 +71,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
     }
 
     private fun setNightscoutDisplay(user: User, vararg options: String): Mono<List<String>> {
-        return NightscoutDAO.instance.updateDisplay(user.idLong, null, *options)
+        return NightscoutDAO.instance.updateDisplay(user.id, null, *options)
     }
 
     private fun formatOptions(options: List<String> = validOptions.toList()): String {

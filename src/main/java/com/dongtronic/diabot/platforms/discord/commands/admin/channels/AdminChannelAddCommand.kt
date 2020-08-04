@@ -36,7 +36,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
             val channel = event.jda.getTextChannelById(channelId)
                     ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
-            ChannelDAO.instance.changeAttribute(event.guild.idLong, channel.idLong, ChannelDTO.ChannelAttribute.ADMIN)
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN)
                     .subscribe({
                         event.replySuccess("Added admin channel ${channel.name} (`${channel.id}`)")
                     }, {

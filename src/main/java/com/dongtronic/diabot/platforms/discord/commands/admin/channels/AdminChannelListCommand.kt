@@ -21,7 +21,7 @@ class AdminChannelListCommand(category: Category, parent: Command?) : DiscordCom
     }
 
     override fun execute(event: CommandEvent) {
-        ChannelDAO.instance.getChannels(event.guild.idLong)
+        ChannelDAO.instance.getChannels(event.guild.id)
                 .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.ADMIN) }
                 .mapNotNull { event.guild.getTextChannelById(it.channelId) }
                 .collectList()

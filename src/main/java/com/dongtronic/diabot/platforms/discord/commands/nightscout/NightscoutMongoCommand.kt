@@ -164,7 +164,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                 val user = mentionedMembers[0].user
                 getUserDto(user, IllegalArgumentException("User does not have a configured Nightscout URL."))
                         .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
-                            if (!t.isNightscoutPublic(event.guild.idLong)) {
+                            if (!t.isNightscoutPublic(event.guild.id)) {
                                 u.error(NightscoutPrivateException(event.nameOf(user)))
                             } else {
                                 u.next(t)
@@ -186,7 +186,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                     getUserDto(user)
                             .switchIfEmpty { fallbackDto }
                             .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
-                                if (!t.isNightscoutPublic(event.guild.idLong)) {
+                                if (!t.isNightscoutPublic(event.guild.id)) {
                                     u.error(NightscoutPrivateException(event.nameOf(user)))
                                 } else {
                                     u.next(t)
@@ -210,7 +210,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
 
             val hasToken = userDTO.token != null
             val mutual = user?.mutualGuilds?.contains(event.guild) == true
-            val publicForGuild = userDTO.isNightscoutPublic(event.guild.idLong)
+            val publicForGuild = userDTO.isNightscoutPublic(event.guild.id)
 
             if (!mutual) {
                 // strip all personal info
@@ -264,7 +264,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                 shortReply = if (userDTO.displayOptions.contains("simple")) {
                     true.toMono()
                 } else {
-                    ChannelDAO.instance.hasAttribute(event.channel.idLong, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+                    ChannelDAO.instance.hasAttribute(event.channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
                 }
             }
 
@@ -409,7 +409,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
      * Sets the data inside the given NightscoutUserDTO for the given user
      */
     private fun getUserDto(user: User, throwable: Throwable = UnconfiguredNightscoutException()): Mono<NightscoutUserDTO> {
-        return NightscoutDAO.instance.getUser(user.idLong)
+        return NightscoutDAO.instance.getUser(user.id)
                 .onErrorResume {
                     if (it is NoSuchElementException) {
                         return@onErrorResume throwable.toMono()
