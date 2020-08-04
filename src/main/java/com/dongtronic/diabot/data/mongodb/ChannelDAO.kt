@@ -4,6 +4,7 @@ import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.logger
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
+import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertOneResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.conversions.Bson
@@ -77,6 +78,17 @@ class ChannelDAO private constructor() {
     }
 
     /**
+     * Deletes a channel from the database.
+     *
+     * @param channelId The channel ID to delete
+     * @return The result of the deletion
+     */
+    fun deleteChannel(channelId: String): Mono<DeleteResult> {
+        return collection.deleteOne(filter(channelId)).toMono()
+                .subscribeOn(scheduler)
+    }
+
+    /**
      * Adds or removes an attribute from a channel.
      * If the channel does not exist in the database already then a [ChannelDTO] will be created.
      *
@@ -102,6 +114,8 @@ class ChannelDAO private constructor() {
 
         return collection.findOneAndUpdate(channelFilter, update, upsertAfter).toMono()
                 .subscribeOn(scheduler)
+                // delete document if channel attributes are empty
+                .doOnNext { if (it.attributes.isEmpty()) deleteChannel(it.channelId).subscribe() }
     }
 
     companion object {
