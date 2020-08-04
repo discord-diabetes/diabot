@@ -65,6 +65,8 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
                     })
         } catch (ex: NullPointerException) {
             event.replyError("Invalid user ID provided")
+        } catch (ex: IllegalArgumentException) {
+            event.replyError(ex.message)
         }
     }
 }
