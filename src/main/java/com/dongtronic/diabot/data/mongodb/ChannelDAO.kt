@@ -94,22 +94,13 @@ class ChannelDAO private constructor() {
     ): Mono<ChannelDTO> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         val channelFilter = filter(channelId, guildId)
-        val shouldAdd = if (add) {
-            Mono.just(add)
+        val update = if (add) {
+            addToSet(ChannelDTO::attributes, attribute)
         } else {
-            val filter = and(channelFilter, ChannelDTO::attributes `in` listOf(attribute))
-            collection.countDocuments(filter).toMono().map { it == 0L }
+            pull(ChannelDTO::attributes, attribute)
         }
 
-        val update = shouldAdd.map {
-            if (it) {
-                addToSet(ChannelDTO::attributes, attribute)
-            } else {
-                pull(ChannelDTO::attributes, attribute)
-            }
-        }
-
-        return update.flatMap { collection.findOneAndUpdate(channelFilter, it, upsertAfter).toMono() }
+        return collection.findOneAndUpdate(channelFilter, update, upsertAfter).toMono()
                 .subscribeOn(scheduler)
     }
 
