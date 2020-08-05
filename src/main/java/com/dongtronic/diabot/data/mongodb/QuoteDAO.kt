@@ -38,6 +38,7 @@ class QuoteDAO private constructor() {
                 .subscribeOn(scheduler)
                 .subscribe()
 
+        // Convert IDs stored in the collection from `Long` to `String`
         MongoQuoteConversion(collection, quoteIndexes).checkAndConvert()
                 .errorOnEmpty()
                 .subscribe({
