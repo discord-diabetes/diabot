@@ -105,6 +105,8 @@ object Main {
         // Custom help handler
         client.setHelpConsumer(HelpListener())
 
+        val builtClient = client.build()
+
         // start getting a bot account set up
         JDABuilder(token)
                 // set the game for when the bot is loading
@@ -114,12 +116,12 @@ object Main {
                 // add the listeners
                 .addEventListeners(
                         waiter,
-                        client.build(),
+                        builtClient,
                         ConversionListener(),
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),
-                        QuoteListener()
+                        QuoteListener(builtClient)
                 )
                 // start it up!
                 .build()

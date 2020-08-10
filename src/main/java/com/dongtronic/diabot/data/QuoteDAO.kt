@@ -3,8 +3,10 @@ package com.dongtronic.diabot.data
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.findMany
 import com.dongtronic.diabot.util.findOne
+import com.dongtronic.diabot.util.findOneRandom
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
+import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.client.result.DeleteResult
@@ -12,6 +14,7 @@ import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import net.dv8tion.jda.api.entities.TextChannel
 import org.bson.conversions.Bson
+import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.updateOne
 import org.slf4j.LoggerFactory
@@ -21,16 +24,22 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
-    private var collection: MongoCollection<QuoteDTO>? = null
-    private var quoteIndexes: MongoCollection<QuoteIndexDTO>? = null
+    val collection: MongoCollection<QuoteDTO>
+            = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
+    val quoteIndexes: MongoCollection<QuoteIndexDTO>
+            = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
+
     private val scheduler = Schedulers.boundedElastic()
     private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
 
     init {
-        collection = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
-        quoteIndexes = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
+        // Create a unique index
+        val options = IndexOptions().unique(true).name(QuoteDTO::guildId.name)
+        quoteIndexes.createIndex(descending(QuoteDTO::guildId), options).toMono()
+                .subscribeOn(scheduler)
+                .subscribe()
     }
 
     /**
@@ -41,51 +50,7 @@ class QuoteDAO private constructor() {
      * @return [QuoteDTO] instance matching the quote ID
      */
     fun getQuote(guildId: Long, quoteId: Long): Mono<QuoteDTO> {
-        return collection!!.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
-    }
-
-    /**
-     * Creates a copy of the provided [QuoteDTO] instance with a valid quote ID and inserts it into the database.
-     *
-     * @param quote the quote to insert
-     * @return the created [QuoteDTO] instance if successful
-     */
-    fun addQuote(quote: QuoteDTO): Mono<QuoteDTO> {
-        return incrementId(quote.guildId)
-                .onErrorMap { IllegalStateException("Could not find guild's quote index") }
-                .flatMap { id ->
-            val quoteDTO = quote.copy(quoteId = id)
-
-            collection!!.insertOne(quoteDTO).toMono().map {
-                if (!it.wasAcknowledged())
-                    throw IllegalStateException("Could not insert quote")
-
-                quoteDTO
-            }
-        }.subscribeOn(scheduler)
-    }
-
-    /**
-     * Updates the data of a [QuoteDTO] instance in the database
-     *
-     * @param quoteDTO quote DTO
-     * @return the result of the update command
-     */
-    fun updateQuote(quoteDTO: QuoteDTO): Mono<UpdateResult> {
-        return collection!!.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO)
-                .toMono().subscribeOn(scheduler)
-    }
-
-    /**
-     * Deletes a quote from the database
-     *
-     * @param guildId guild ID
-     * @param quoteId quote ID
-     * @return the result of the delete command
-     */
-    fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
-        return collection!!.deleteOne(filter(guildId, quoteId))
-                .toMono().subscribeOn(scheduler)
+        return collection.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
     }
 
     /**
@@ -101,7 +66,79 @@ class QuoteDAO private constructor() {
         else
             filter(guildId)
 
-        return collection!!.findMany(joinedFilter).subscribeOn(scheduler)
+        return collection.findMany(joinedFilter).subscribeOn(scheduler)
+    }
+
+    /**
+     * Returns a random quote defined under a guild matching the given filter, if any
+     *
+     * @param guildId guild ID
+     * @param filter the mongo filter to match against, if any
+     * @return a random quote matching the filter for the specified guild
+     */
+    fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
+        val joinedFilter = if (filter != null)
+            and(filter(guildId), filter)
+        else
+            filter(guildId)
+
+        return collection.findOneRandom(joinedFilter).subscribeOn(scheduler)
+    }
+
+    /**
+     * Inserts a quote into the database.
+     * If the provided quote's ID is null, this will create a copy of it with a valid quote ID
+     *
+     * @param quote the quote to insert
+     * @param incrementId whether to increment the guild-wide quote ID index.
+     * This will only have an effect if the quote already has a valid quote ID
+     * @return the created [QuoteDTO] instance if successful
+     */
+    fun addQuote(quote: QuoteDTO, incrementId: Boolean = true): Mono<QuoteDTO> {
+        val quoteWithId = if (incrementId || quote.quoteId == null) {
+            incrementId(quote.guildId)
+                    .onErrorMap { IllegalStateException("Could not find guild's quote index") }
+                    .map {
+                        if (quote.quoteId == null)
+                            quote.copy(quoteId = it)
+                        else
+                            quote
+                    }
+        } else {
+            quote.toMono()
+        }
+
+        return quoteWithId.flatMap { quoteDTO ->
+            collection.insertOne(quoteDTO).toMono().map {
+                if (!it.wasAcknowledged())
+                    throw IllegalStateException("Could not insert quote")
+
+                quoteDTO
+            }
+        }.subscribeOn(scheduler)
+    }
+
+    /**
+     * Updates the data of a [QuoteDTO] instance in the database
+     *
+     * @param quoteDTO quote DTO
+     * @return the result of the update command
+     */
+    fun updateQuote(quoteDTO: QuoteDTO): Mono<UpdateResult> {
+        return collection.updateOne(filter(quoteDTO.guildId, quoteDTO.quoteId), quoteDTO)
+                .toMono().subscribeOn(scheduler)
+    }
+
+    /**
+     * Deletes a quote from the database
+     *
+     * @param guildId guild ID
+     * @param quoteId quote ID
+     * @return the result of the delete command
+     */
+    fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
+        return collection.deleteOne(filter(guildId, quoteId))
+                .toMono().subscribeOn(scheduler)
     }
 
     /**
@@ -111,7 +148,7 @@ class QuoteDAO private constructor() {
      * @return number of quotes for the specified guild
      */
     fun quoteAmount(guildId: Long): Mono<Long> {
-        return collection!!.countDocuments(filter(guildId))
+        return collection.countDocuments(filter(guildId))
                 .toMono().subscribeOn(scheduler)
     }
 
@@ -127,7 +164,7 @@ class QuoteDAO private constructor() {
                 .upsert(true)
                 .returnDocument(ReturnDocument.AFTER)
 
-        return quoteIndexes!!.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
+        return quoteIndexes.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
                 Updates.inc("quoteIndex", 1L), options)
                 .toMono()
                 .subscribeOn(scheduler)

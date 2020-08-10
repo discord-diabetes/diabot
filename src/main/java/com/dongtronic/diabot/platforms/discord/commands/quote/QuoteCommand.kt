@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
-    private val mentionsRegex = Regex("<@(?<uid>\\d+)>")
+    val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
     private val discordMessageLink = "https://discordapp.com/channels/{{guild}}/{{channel}}/{{message}}"
     private val logger = LoggerFactory.getLogger(QuoteCommand::class.java)
 
@@ -26,7 +26,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         this.children = arrayOf(
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
-                QuoteEditCommand(category, this))
+                QuoteEditCommand(category, this),
+                QuoteImportCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
@@ -101,7 +102,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      * @return a random [QuoteDTO], or null if none found
      */
     private fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
-        return QuoteDAO.getInstance().getQuotes(guildId, filter).collectList().map { it.random() }
+        return QuoteDAO.getInstance().getRandomQuote(guildId, filter)
     }
 
     /**
