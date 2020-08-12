@@ -19,6 +19,9 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
+/**
+ * Converts the quotes in MongoDB from `Int64` to `String` for the IDs' data type
+ */
 class MongoQuoteConversion(private val quotes: MongoCollection<QuoteDTO>, private val quoteIndexes: MongoCollection<QuoteIndexDTO>) {
     private val logger = logger()
 
