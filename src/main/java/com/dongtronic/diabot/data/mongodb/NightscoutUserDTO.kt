@@ -17,6 +17,7 @@ data class NightscoutUserDTO(
      * Nightscout's API endpoint
      */
     val apiEndpoint: String
+        @JsonIgnore
         get() {
             val trimmed = url!!.removeSuffix("/")
             return trimmed.plus("/api/v1")
