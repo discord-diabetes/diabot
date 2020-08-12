@@ -20,7 +20,13 @@ class ChannelsMigrator : Migrator {
     private val logger = logger()
 
     override fun checkAndMigrate(): Flux<Long> {
-        TODO("Not yet implemented")
+        return needsMigration().flatMapMany { needsMigrating ->
+            if (needsMigrating) {
+                migrate()
+            } else {
+                Flux.empty()
+            }
+        }
     }
 
     override fun needsMigration(): Mono<Boolean> {
