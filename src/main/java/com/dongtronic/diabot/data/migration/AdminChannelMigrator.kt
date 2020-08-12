@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.redis.AdminDAO
 import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
+import org.litote.kmongo.contains
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
@@ -31,9 +32,12 @@ class AdminChannelMigrator : Migrator {
         val adminChannels = allKeys(RedisKeyFormats.adminChannelIds)
         val keys = jedis.keys(adminChannels)
 
-        return channelDAO.collection.countDocuments().toMono().map {
-            return@map it == 0L || keys.size.toLong() > it
-        }
+        return channelDAO.collection
+                .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.ADMIN)
+                .toMono()
+                .map {
+                    return@map it == 0L || keys.size.toLong() > it
+                }
     }
 
     override fun migrate(): Flux<Long> {
