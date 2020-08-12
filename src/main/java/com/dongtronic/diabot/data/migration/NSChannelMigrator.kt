@@ -31,8 +31,9 @@ class NSChannelMigrator : Migrator {
         val simpleNsChannels = allKeys(RedisKeyFormats.nightscoutShortChannelsFormat)
         val keys = jedis.keys(simpleNsChannels)
 
-        logger.info("Got keys $keys")
-        return keys.isNotEmpty().toMono()
+        return channelDAO.collection.countDocuments().toMono().map {
+            return@map it == 0L || keys.size.toLong() > it
+        }
     }
 
     override fun migrate(): Flux<Long> {

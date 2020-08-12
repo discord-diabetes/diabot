@@ -8,6 +8,7 @@ import com.dongtronic.diabot.util.logger
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
 class AdminChannelMigrator : Migrator {
@@ -30,8 +31,9 @@ class AdminChannelMigrator : Migrator {
         val adminChannels = allKeys(RedisKeyFormats.adminChannelIds)
         val keys = jedis.keys(adminChannels)
 
-        logger.info("Got keys $keys")
-        return Mono.just(keys.isNotEmpty())
+        return channelDAO.collection.countDocuments().toMono().map {
+            return@map it == 0L || keys.size.toLong() > it
+        }
     }
 
     override fun migrate(): Flux<Long> {
