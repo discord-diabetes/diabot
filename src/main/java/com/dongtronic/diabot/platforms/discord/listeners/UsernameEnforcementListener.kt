@@ -1,14 +1,14 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.data.AdminDAO
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.guild.member.GenericGuildMemberEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class UsernameEnforcementListener : ListenerAdapter() {
-    private val logger by Logger()
+    private val logger = logger()
 
     override fun onGuildMemberUpdateNickname(event: GuildMemberUpdateNicknameEvent) {
         val prevNick = if (event.oldNickname.isNullOrEmpty()) event.user.name else event.oldNickname

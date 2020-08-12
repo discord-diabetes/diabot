@@ -2,7 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands.quote
 
 import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import com.mongodb.client.result.DeleteResult
@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "delete"

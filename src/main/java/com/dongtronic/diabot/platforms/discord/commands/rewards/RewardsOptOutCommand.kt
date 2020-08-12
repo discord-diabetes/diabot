@@ -3,13 +3,13 @@ package com.dongtronic.diabot.platforms.discord.commands.rewards
 import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
 class RewardsOptOutCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "optout"

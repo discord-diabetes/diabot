@@ -4,7 +4,7 @@ import com.dongtronic.diabot.data.QuoteDAO
 import com.dongtronic.diabot.data.QuoteDTO
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent), EventListener {
     private val mapper = jacksonObjectMapper()
-    private val logger by Logger()
+    private val logger = logger()
     private val pendingRequests = mutableSetOf<User>()
     private var guildMessages = DirectProcessor.create<GuildMessageReceivedEvent>()
     private var eventListening = false

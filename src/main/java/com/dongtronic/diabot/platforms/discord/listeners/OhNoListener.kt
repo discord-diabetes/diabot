@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.util.Logger
 import com.dongtronic.diabot.util.Patterns
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.*
 
 class OhNoListener : ListenerAdapter() {
-    private val logger by Logger()
+    private val logger = logger()
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return

@@ -5,13 +5,13 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.username.AdminUser
 import com.dongtronic.diabot.platforms.discord.commands.admin.username.AdminUsernameEnableCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.username.AdminUsernameHintCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.username.AdminUsernamePatternCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
 class AdminUsernameCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "usernames"

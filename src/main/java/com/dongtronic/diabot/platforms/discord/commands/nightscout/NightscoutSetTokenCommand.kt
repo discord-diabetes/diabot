@@ -2,7 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 
 class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "token"

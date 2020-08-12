@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.platforms.discord.commands
 
-import com.dongtronic.diabot.util.Logger
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
 class SampleSubCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger by Logger()
+    private val logger = logger()
 
     init {
         this.name = "sub"
@@ -29,7 +29,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiscordCo
     }
 
     class SampleListSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
-        private val logger by Logger()
+        private val logger = logger()
 
         init {
             this.name = "list"
@@ -44,7 +44,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiscordCo
     }
 
     class SampleAddSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
-        private val logger by Logger()
+        private val logger = logger()
 
         init {
             this.name = "add"
@@ -59,7 +59,7 @@ class SampleSubCommand(category: Command.Category, parent: Command?) : DiscordCo
     }
 
     class SampleDeleteSubCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
-        private val logger by Logger()
+        private val logger = logger()
 
         init {
             this.name = "delete"
