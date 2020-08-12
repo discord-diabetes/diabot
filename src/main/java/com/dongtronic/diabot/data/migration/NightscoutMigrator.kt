@@ -55,15 +55,15 @@ class NightscoutMigrator : Migrator {
                 .toFlux()
     }
 
-    fun getPublicGuilds(userId: String): Set<String> {
-        return jedis.keys("$userId:*:nightscoutpublic").map { it.split(":")[1] }.toSet()
+    private fun getPublicGuilds(userId: String): Set<String> {
+        return jedis.keys("$userId:*:nightscoutpublic")
+                .map { it.split(":")[1] }
+                .toSet()
     }
 
-    fun getAllKeys(): Set<String> {
-        return jedis.keys("*:nightscout*") ?: emptySet()
-    }
-
-    fun getAllUids(): Set<String> {
-        return getAllKeys().map { it.substringBefore(":") }.toSet()
+    private fun getAllUids(): Set<String> {
+        return jedis.keys("*:nightscout*")
+                .map { it.substringBefore(":") }
+                .toSet()
     }
 }

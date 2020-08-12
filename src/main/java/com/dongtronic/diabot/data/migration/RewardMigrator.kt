@@ -33,12 +33,8 @@ class RewardMigrator : Migrator {
                 .toFlux()
     }
 
-    fun getAllKeys(): Set<String> {
-        return jedis.keys("*:simplerewards") ?: emptySet()
-    }
-
     fun getAllRewards(): List<RewardsDTO> {
-        return getAllKeys()
+        return jedis.keys("*:simplerewards")
                 .map { it.substringBefore(":") }
                 .toSet()
                 .flatMap {

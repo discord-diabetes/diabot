@@ -33,12 +33,8 @@ class RewardOptOutMigrator : Migrator {
                 .toFlux()
     }
 
-    fun getAllKeys(): Set<String> {
-        return jedis.keys("*:rewardoptouts") ?: emptySet()
-    }
-
-    fun getAllRewardOptOuts(): List<RewardOptOutsDTO> {
-        return getAllKeys()
+    private fun getAllRewardOptOuts(): List<RewardOptOutsDTO> {
+        return jedis.keys("*:rewardoptouts")
                 .map { it.substringBefore(":") }
                 .toSet()
                 .map {

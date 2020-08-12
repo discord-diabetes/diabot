@@ -7,12 +7,10 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
-import redis.clients.jedis.Jedis
 
 class ProjectsMigrator : Migrator {
     private val redis = com.dongtronic.diabot.data.redis.InfoDAO.getInstance()
     private val mongo = ProjectDAO.instance
-    private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
     private val logger = logger()
 
     override fun needsMigration(): Mono<Boolean> {

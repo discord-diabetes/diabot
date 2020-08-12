@@ -52,11 +52,9 @@ class UsernamesMigrator : Migrator {
                 .toFlux()
     }
 
-    fun getAllKeys(): Set<String> {
-        return jedis.keys("*:*username*") ?: emptySet()
-    }
-
-    fun getAllGids(): Set<String> {
-        return getAllKeys().map { it.substringBefore(":") }.toSet()
+    private fun getAllGids(): Set<String> {
+        return jedis.keys("*:*username*")
+                .map { it.substringBefore(":") }
+                .toSet()
     }
 }

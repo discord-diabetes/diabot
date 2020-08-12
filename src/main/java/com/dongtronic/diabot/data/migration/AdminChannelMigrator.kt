@@ -3,7 +3,6 @@ package com.dongtronic.diabot.data.migration
 import com.dongtronic.diabot.data.mongodb.ChannelDAO
 import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.redis.AdminDAO
-import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
 import org.litote.kmongo.contains
 import reactor.core.publisher.Flux
@@ -19,8 +18,7 @@ class AdminChannelMigrator : Migrator {
     private val logger = logger()
 
     override fun needsMigration(): Mono<Boolean> {
-        val adminChannels = allKeys(RedisKeyFormats.adminChannelIds)
-        val keys = jedis.keys(adminChannels)
+        val keys = jedis.keys("*:adminchannels")
 
         return channelDAO.collection
                 .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.ADMIN)
@@ -31,8 +29,7 @@ class AdminChannelMigrator : Migrator {
     }
 
     override fun migrate(): Flux<Long> {
-        val adminChannels = allKeys(RedisKeyFormats.adminChannelIds)
-        val keys = jedis.keys(adminChannels)
+        val keys = jedis.keys("*:adminchannels")
 
         logger.info("Got keys $keys")
         return Flux.fromIterable(keys)
@@ -47,13 +44,5 @@ class AdminChannelMigrator : Migrator {
                         channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
                     }.count()
                 }
-    }
-
-    private fun allKeys(format: String, userIds: Boolean = false): String {
-        var all = format.replace("{{guildid}}", "*")
-        if (userIds) {
-            all = all.replace("{{userid}}", "*")
-        }
-        return all
     }
 }

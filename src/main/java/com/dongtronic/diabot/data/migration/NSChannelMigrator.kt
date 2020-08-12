@@ -3,7 +3,6 @@ package com.dongtronic.diabot.data.migration
 import com.dongtronic.diabot.data.mongodb.ChannelDAO
 import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.redis.NightscoutDAO
-import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
 import org.litote.kmongo.contains
 import reactor.core.publisher.Flux
@@ -19,8 +18,7 @@ class NSChannelMigrator : Migrator {
     private val logger = logger()
 
     override fun needsMigration(): Mono<Boolean> {
-        val simpleNsChannels = allKeys(RedisKeyFormats.nightscoutShortChannelsFormat)
-        val keys = jedis.keys(simpleNsChannels)
+        val keys = jedis.keys("*:nightscoutshortchannels")
 
         return channelDAO.collection
                 .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
@@ -31,8 +29,7 @@ class NSChannelMigrator : Migrator {
     }
 
     override fun migrate(): Flux<Long> {
-        val simpleNsChannels = allKeys(RedisKeyFormats.nightscoutShortChannelsFormat)
-        val keys = jedis.keys(simpleNsChannels)
+        val keys = jedis.keys("*:nightscoutshortchannels")
 
         logger.info("Got keys $keys")
         return Flux.fromIterable(keys)
@@ -47,13 +44,5 @@ class NSChannelMigrator : Migrator {
                         channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
                     }.count()
                 }
-    }
-
-    private fun allKeys(format: String, userIds: Boolean = false): String {
-        var all = format.replace("{{guildid}}", "*")
-        if (userIds) {
-            all = all.replace("{{userid}}", "*")
-        }
-        return all
     }
 }
