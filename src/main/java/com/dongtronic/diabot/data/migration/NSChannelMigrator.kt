@@ -18,16 +18,6 @@ class NSChannelMigrator : Migrator {
     private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
     private val logger = logger()
 
-    override fun checkAndMigrate(): Flux<Long> {
-        return needsMigration().flatMapMany { needsMigrating ->
-            if (needsMigrating) {
-                migrate()
-            } else {
-                Flux.empty()
-            }
-        }
-    }
-
     override fun needsMigration(): Mono<Boolean> {
         val simpleNsChannels = allKeys(RedisKeyFormats.nightscoutShortChannelsFormat)
         val keys = jedis.keys(simpleNsChannels)

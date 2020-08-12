@@ -9,7 +9,15 @@ interface Migrator {
      *
      * @return The number of data objects migrated. This will be empty if `needsMigration` was false
      */
-    fun checkAndMigrate(): Flux<Long>
+    fun checkAndMigrate(): Flux<Long> {
+        return needsMigration().flatMapMany { needsMigrating ->
+            if (needsMigrating) {
+                migrate()
+            } else {
+                Flux.empty()
+            }
+        }
+    }
 
     /**
      * Checks if any data needs to be migrated.
