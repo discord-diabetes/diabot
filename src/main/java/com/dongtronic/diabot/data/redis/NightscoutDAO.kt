@@ -58,7 +58,7 @@ class NightscoutDAO private constructor() {
     fun getNightscoutDisplay(userId: String): String {
         val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", userId)
 
-        return jedis!!.get(redisKey).toString()
+        return jedis!!.get(redisKey)?.toString() ?: ""
     }
 
     fun setNightscoutDisplay(userId: String, display: String) {
