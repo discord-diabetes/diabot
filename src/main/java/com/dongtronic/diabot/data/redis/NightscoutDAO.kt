@@ -73,16 +73,10 @@ class NightscoutDAO private constructor() {
         jedis!!.del(redisKey)
     }
 
-    fun isNightscoutToken(userId: String): Boolean {
+    fun getNightscoutToken(userId: String): String? {
         val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", userId)
 
-        return !jedis!!.get(redisKey).isNullOrEmpty()
-    }
-
-    fun getNightscoutToken(userId: String): String {
-        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", userId)
-
-        return jedis!!.get(redisKey).toString()
+        return jedis!!.get(redisKey)?.toString()
     }
 
     fun setNightscoutToken(userId: String, token: String) {
