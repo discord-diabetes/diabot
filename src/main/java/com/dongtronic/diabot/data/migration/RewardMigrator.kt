@@ -34,11 +34,11 @@ class RewardMigrator : Migrator {
     override fun migrate(): Flux<Long> {
         return getAllRewards().toFlux()
                 .flatMap { mongo.importReward(it) }
-                .map { it.insertedId }
+                .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import reward: $u", t)
                 }
-                .filter { it != null }
+                .filter { it }
                 .count()
                 .toFlux()
     }

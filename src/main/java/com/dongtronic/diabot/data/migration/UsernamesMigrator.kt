@@ -53,11 +53,11 @@ class UsernamesMigrator : Migrator {
 
         return dtos.toFlux()
                 .flatMap { mongo.addGuild(it) }
-                .map { it.insertedId }
+                .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import guild username rule: $u", t)
                 }
-                .filter { it != null }
+                .filter { it }
                 .count()
                 .toFlux()
     }

@@ -34,11 +34,11 @@ class RewardOptOutMigrator : Migrator {
     override fun migrate(): Flux<Long> {
         return getAllRewardOptOuts().toFlux()
                 .flatMap { mongo.importOptOuts(it) }
-                .map { it.insertedId }
+                .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import reward opt-outs: $u", t)
                 }
-                .filter { it != null }
+                .filter { it }
                 .count()
                 .toFlux()
     }

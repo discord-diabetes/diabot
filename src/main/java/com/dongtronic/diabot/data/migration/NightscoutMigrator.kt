@@ -56,11 +56,11 @@ class NightscoutMigrator : Migrator {
 
         return dtos.toFlux()
                 .flatMap { mongo.addUser(it) }
-                .map { it.insertedId }
+                .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import nightscout: $u", t)
                 }
-                .filter { it != null }
+                .filter { it }
                 .count()
                 .toFlux()
     }
