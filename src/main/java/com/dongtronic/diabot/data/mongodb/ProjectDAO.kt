@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.util.MongoDB
+import com.dongtronic.diabot.util.findMany
 import com.dongtronic.diabot.util.findOne
 import com.dongtronic.diabot.util.logger
 import com.mongodb.client.model.IndexOptions
@@ -13,6 +14,7 @@ import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 import org.litote.kmongo.upsert
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
@@ -40,6 +42,16 @@ class ProjectDAO private constructor() {
      */
     fun getProject(name: String): Mono<ProjectDTO> {
         return collection.findOne(filter(name))
+                .subscribeOn(scheduler)
+    }
+
+    /**
+     * Gets all projects in the database
+     *
+     * @return [Flux] of all the projects in the database
+     */
+    fun listProjects(): Flux<ProjectDTO> {
+        return collection.findMany()
                 .subscribeOn(scheduler)
     }
 
