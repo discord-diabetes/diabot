@@ -1,5 +1,6 @@
 package com.dongtronic.diabot
 
+import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
@@ -28,6 +29,9 @@ object Main {
     @Throws(LoginException::class)
     @JvmStatic
     fun main(args: Array<String>) {
+        // Migrate data from Redis to MongoDB
+        MigrationManager().migrateIfNecessary()
+
         val token = System.getenv("DIABOTTOKEN") // token on dokku
 
         // create command categories

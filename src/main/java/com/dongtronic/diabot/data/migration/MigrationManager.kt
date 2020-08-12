@@ -22,6 +22,7 @@ class MigrationManager {
         if (migrate) {
             logger.info("Beginning migration")
             migrateAll().blockLast()
+            logger.info("Migration finished")
         }
     }
 
