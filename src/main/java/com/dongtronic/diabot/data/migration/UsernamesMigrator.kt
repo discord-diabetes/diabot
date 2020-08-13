@@ -27,6 +27,7 @@ class UsernamesMigrator : Migrator {
             val hint = redis.getUsernameHint(guildId)
             val pattern = redis.getUsernamePattern(guildId)
 
+            // if all of the data is useless then skip this guild
             if (!enforcing
                     && hint.isNullOrEmpty()
                     && pattern.isNullOrEmpty()) {
@@ -52,6 +53,9 @@ class UsernamesMigrator : Migrator {
                 .toFlux()
     }
 
+    /**
+     * Gets all the guild IDs with username rules
+     */
     private fun getAllGids(): Set<String> {
         return jedis.keys("*:*username*")
                 .map { it.substringBefore(":") }

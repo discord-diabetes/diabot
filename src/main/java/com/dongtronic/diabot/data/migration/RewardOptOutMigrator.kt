@@ -33,12 +33,13 @@ class RewardOptOutMigrator : Migrator {
                 .toFlux()
     }
 
+    /**
+     * Gets all of the guilds who have users opted-out for rewards
+     */
     private fun getAllRewardOptOuts(): List<RewardOptOutsDTO> {
         return jedis.keys("*:rewardoptouts")
                 .map { it.substringBefore(":") }
                 .toSet()
-                .map {
-                    RewardOptOutsDTO(it, redis.getOptOuts(it)!!)
-                }
+                .map { RewardOptOutsDTO(it, redis.getOptOuts(it)!!) }
     }
 }

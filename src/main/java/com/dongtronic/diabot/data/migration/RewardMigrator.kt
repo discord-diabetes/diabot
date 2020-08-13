@@ -33,27 +33,42 @@ class RewardMigrator : Migrator {
                 .toFlux()
     }
 
-    fun getAllRewards(): List<RewardsDTO> {
+    /**
+     * Gets a list of all the rewards in Redis
+     */
+    private fun getAllRewards(): List<RewardsDTO> {
         return jedis.keys("*:simplerewards")
+                // grab the guild ID only (before `:`)
                 .map { it.substringBefore(":") }
                 .toSet()
-                .flatMap {
-                    buildRewards(it, redis.getSimpleRewards(it)!!.toList())
+                .flatMap { guildId ->
+                    val guildRewards = redis.getSimpleRewards(guildId)!!.toList()
+                    buildRewards(guildId, guildRewards)
                 }
     }
 
-    fun buildRewards(guildId: String, rewards: List<String>): List<RewardsDTO> {
+    /**
+     * Converts a guild's rewards into a list of [RewardsDTO] objects.
+     *
+     * @param guildId The guild ID these rewards belong to
+     * @param rewards A list of `requiredRole:rewardRole` strings
+     * @return List of [RewardsDTO] objects belonging to a guild
+     */
+    private fun buildRewards(guildId: String, rewards: List<String>): List<RewardsDTO> {
         val mutableRewardMap = mutableMapOf<String, List<String>>()
+
         rewards.forEach {
             val required = it.substringBefore(":")
             val reward = it.substringAfter(":")
+
+            // build a list of rewards for each required role
             mutableRewardMap.merge(required, listOf(reward)) { old: List<String>, new: List<String> ->
+                // append reward role if the required role has several rewards
                 old.plus(new)
             }
         }
 
-        return mutableRewardMap.map {
-            RewardsDTO(guildId, it.key, it.value)
-        }
+        // convert all of the rewards to RewardsDTO
+        return mutableRewardMap.map { RewardsDTO(guildId, it.key, it.value) }
     }
 }

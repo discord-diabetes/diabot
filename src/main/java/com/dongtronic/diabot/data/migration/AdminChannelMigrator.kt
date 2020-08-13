@@ -36,11 +36,12 @@ class AdminChannelMigrator : Migrator {
                 .map {
                     val guildId = it.substringBefore(":")
                     val channels = adminRedis.listAdminChannels(guildId) ?: mutableListOf()
-
+                    // convert to a pair: guildId<=>listOfAdminChannels
                     it to channels
                 }.flatMap { pair ->
                     val guildId = pair.first.substringBefore(":")
                     return@flatMap pair.second.toFlux().flatMap {
+                        // add the ADMIN attribute to each channel
                         channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
                     }.count()
                 }

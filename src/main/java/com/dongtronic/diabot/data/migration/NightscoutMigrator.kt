@@ -28,6 +28,7 @@ class NightscoutMigrator : Migrator {
             val display = redis.getNightscoutDisplay(userId).split(" ")
             val public = getPublicGuilds(userId).toList()
 
+            // if all of their data is empty then skip them
             if (url == null
                     && token == null
                     && display.isNullOrEmpty()
@@ -55,12 +56,18 @@ class NightscoutMigrator : Migrator {
                 .toFlux()
     }
 
+    /**
+     * Gets a list of the guilds which a user has set their NS to public in, from redis
+     */
     private fun getPublicGuilds(userId: String): Set<String> {
         return jedis.keys("$userId:*:nightscoutpublic")
                 .map { it.split(":")[1] }
                 .toSet()
     }
 
+    /**
+     * Gets a list of all the user IDs which have any form of Nightscout data saved in redis
+     */
     private fun getAllUids(): Set<String> {
         return jedis.keys("*:nightscout*")
                 .map { it.substringBefore(":") }

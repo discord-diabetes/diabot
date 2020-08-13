@@ -36,12 +36,13 @@ class NSChannelMigrator : Migrator {
                 .map {
                     val guildId = it.substringBefore(":")
                     val channels = nightscoutRedis.listShortChannels(guildId)
-
+                    // convert to a pair: guildId<=>listOfShortChannels
                     it to channels
                 }.flatMap { pair ->
                     val guildId = pair.first.substringBefore(":")
                     return@flatMap pair.second.toFlux().flatMap {
-                        channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+                        // add the NIGHTSCOUT_SHORT attribute to each channel
+                        channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, true)
                     }.count()
                 }
     }
