@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.logic.nightscout
 
-import com.dongtronic.diabot.data.redis.NightscoutDTO
+import com.dongtronic.diabot.data.mongodb.NightscoutDTO
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnknownUnitException

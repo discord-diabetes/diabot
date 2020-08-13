@@ -1,10 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.mongodb.ChannelDAO
-import com.dongtronic.diabot.data.mongodb.ChannelDTO
-import com.dongtronic.diabot.data.mongodb.NightscoutDAO
-import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
-import com.dongtronic.diabot.data.redis.NightscoutDTO
+import com.dongtronic.diabot.data.mongodb.*
 import com.dongtronic.diabot.exceptions.*
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getEntries
 import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getSettings
@@ -14,7 +10,6 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.google.gson.stream.MalformedJsonException
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.ChannelType
@@ -35,7 +30,7 @@ import java.awt.Color
 import java.net.UnknownHostException
 import java.time.ZonedDateTime
 
-class NightscoutCommand(category: Command.Category) : DiscordCommand(category, null) {
+class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = logger()
     private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")

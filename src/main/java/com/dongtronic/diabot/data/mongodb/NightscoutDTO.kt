@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.data.redis
+package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.data.ConversionDTO
 import java.time.ZonedDateTime
