@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.SynchronousSink
+import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import reactor.util.function.Tuple2
@@ -56,25 +57,34 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
 
     override fun execute(event: CommandEvent) {
         val args = event.args.trim()
+        // grab the necessary data
         val embed = if (args.isBlank()) {
             getStoredData(event)
         } else {
             getUnstoredData(event)
-        }
-
-        embed.flatMap { data ->
+        }.flatMap { data ->
+            // send the message
             event.channel.sendMessage(data.t2)
-                    // publish the sent Message with the NightscoutDTO
-                    .submitMono().map { data.t1 to it }
-        }
-                .doOnNext { addReactions(it.first, it.second) }
-                .subscribe({
-                    logger.info("Sent: $it")
-                }, {
-                    handleError(it, event)
-                })
+                    .submitMono()
+                    .doOnSuccess { addReactions(data.t1, it) }
+        }.subscribeOn(Schedulers.boundedElastic())
+
+        embed.subscribe({
+            logger.debug("Sent Nightscout embed: $it")
+        }, {
+            handleError(it, event)
+        })
     }
 
+    /**
+     * Handles errors which occur either:
+     * - before fetching data from a Nightscout instance
+     * or
+     * - when replying
+     *
+     * @param ex The error which was thrown
+     * @param event The command event which called this command
+     */
     private fun handleError(ex: Throwable, event: CommandEvent) {
         when (ex) {
             is NightscoutDataException -> {
@@ -101,6 +111,13 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
         }
     }
 
+    /**
+     * Handles errors which occur while grabbing Nightscout data.
+     *
+     * @param ex The [Throwable] which was given
+     * @param event Command event which caused the bot to grab this Nightscout data
+     * @param userDTO The user data which was used for fetching
+     */
     private fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
         when (ex) {
             is NoNightscoutDataException -> {
@@ -123,7 +140,7 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                         event.replyError("Nightscout data is unreadable due to missing token.")
                     }
                 } else {
-                    event.reactError()
+                    event.replyError("Could not connect to Nightscout instance.")
                     logger.warn("Connection status ${ex.status} from ${userDTO.url}")
                 }
             }
@@ -132,8 +149,6 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
 
     /**
      * Grabs data for the command sender and builds a Nightscout response.
-     *
-     * @param event [CommandEvent]
      */
     private fun getStoredData(event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         return getUserDto(event.author)
@@ -142,8 +157,6 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
 
     /**
      * Grabs data for another user/URL (depending on the arguments) and builds a Nightscout response.
-     *
-     * @param event [CommandEvent]
      */
     private fun getUnstoredData(event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -162,7 +175,9 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
 
             mentionedMembers.size == 1 -> {
                 val user = mentionedMembers[0].user
-                getUserDto(user, IllegalArgumentException("User does not have a configured Nightscout URL."))
+                val exception = IllegalArgumentException("User does not have a configured Nightscout URL.")
+
+                getUserDto(user, exception)
                         .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
                             if (!t.isNightscoutPublic(event.guild.id)) {
                                 u.error(NightscoutPrivateException(event.nameOf(user)))
@@ -171,29 +186,29 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                             }
                         }
             }
-            // is a URL
             args.isNotEmpty() && args[0].matches("^https?://.*".toRegex()) -> {
+                // is a URL
                 val url = NightscoutSetUrlCommand.validateNightscoutUrl(args[0])
                 getDataFromDomain(url, event)
             }
-            // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
             else -> {
+                // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
                 val user = namedMembers.getOrNull(0)?.user
                 val domain = "https://${args[0]}.herokuapp.com"
                 val fallbackDto = NightscoutUserDTO(url = domain).toMono()
 
-                if (user != null) {
+                if (user == null) {
+                    fallbackDto
+                } else {
                     getUserDto(user)
                             .switchIfEmpty { fallbackDto }
-                            .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
-                                if (!t.isNightscoutPublic(event.guild.id)) {
-                                    u.error(NightscoutPrivateException(event.nameOf(user)))
+                            .handle { userDTO, sink: SynchronousSink<NightscoutUserDTO> ->
+                                if (!userDTO.isNightscoutPublic(event.guild.id)) {
+                                    sink.error(NightscoutPrivateException(event.nameOf(user)))
                                 } else {
-                                    u.next(t)
+                                    sink.next(userDTO)
                                 }
                             }
-                } else {
-                    fallbackDto
                 }
             }
         }
@@ -204,30 +219,29 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
     private fun getDataFromDomain(domain: String, event: CommandEvent): Mono<NightscoutUserDTO> {
         val userDtos = getUsersForDomain(domain)
 
-        return userDtos.flatMap { userDTO ->
-            val user = event.jda.getUserById(userDTO.userId)
-//                    ?: throw IllegalArgumentException("Couldn't find user ${userDTO.userId}")
+        return userDtos
+                .flatMap { userDTO ->
+                    val user = event.jda.getUserById(userDTO.userId)
 
-            val hasToken = userDTO.token != null
-            val mutual = user?.mutualGuilds?.contains(event.guild) == true
-            val publicForGuild = userDTO.isNightscoutPublic(event.guild.id)
+                    val mutual = user?.mutualGuilds?.contains(event.guild) == true
+                    val publicForGuild = userDTO.isNightscoutPublic(event.guild.id)
 
-            if (!mutual) {
-                // strip all personal info
-                return@flatMap Mono.empty<NightscoutUserDTO>()
-            }
+                    if (!mutual) {
+                        // strip all personal info
+                        return@flatMap Mono.empty<NightscoutUserDTO>()
+                    }
 
-            if (!publicForGuild) {
-                return@flatMap if (user != null)
-                    NightscoutPrivateException(event.nameOf(user)).toMono<NightscoutUserDTO>()
-                else
-                    NightscoutPrivateException().toMono()
-            }
+                    if (!publicForGuild) {
+                        return@flatMap if (user != null)
+                            NightscoutPrivateException(event.nameOf(user)).toMono<NightscoutUserDTO>()
+                        else
+                            NightscoutPrivateException().toMono()
+                    }
 
-            userDTO.copy(jdaUser = user).toMono()
-        }.singleOrEmpty()
+                    userDTO.copy(jdaUser = user).toMono()
+                }
+                .singleOrEmpty()
                 .switchIfEmpty { NightscoutUserDTO(url = domain).toMono() }
-//                .errorOnEmpty(IllegalArgumentException("Nightscout at "))
     }
 
     /**
@@ -252,8 +266,9 @@ class NightscoutMongoCommand(category: Command.Category) : DiscordCommand(catego
                         || exception is NoNightscoutDataException) {
                     handleGrabError(exception, event, userDTO)
                     return@defer Mono.empty<NightscoutDTO>()
+                } else {
+                    return@defer exception.toMono<NightscoutDTO>()
                 }
-                return@defer exception.toMono<NightscoutDTO>()
             }
 
             nsDto.toMono()
