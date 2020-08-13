@@ -20,10 +20,10 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
     }
 
     override fun execute(event: CommandEvent) {
-        if (!CommandUtils.requireAdminChannel(event)) {
-            return
-        }
+        CommandUtils.requireAdminChannel(event).subscribe { runCommand(event) }
+    }
 
+    private fun runCommand(event: CommandEvent) {
         logger.info("Listing all reward opt-outs for ${event.author.name}")
         RewardsDAO.instance.getOptOuts(event.guild.id)
                 .map { it.optOut }

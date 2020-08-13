@@ -25,9 +25,11 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
     }
 
     override fun execute(event: CommandEvent) {
-        try {
-            if (!CommandUtils.requireAdminChannel(event)) return
+        CommandUtils.requireAdminChannel(event).subscribe { runCommand(event) }
+    }
 
+    private fun runCommand(event: CommandEvent) {
+        try {
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
             if (args.size != 1) {
