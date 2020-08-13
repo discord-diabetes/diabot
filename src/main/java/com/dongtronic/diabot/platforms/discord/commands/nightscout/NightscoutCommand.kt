@@ -26,6 +26,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.SynchronousSink
 import reactor.core.scheduler.Schedulers
+import reactor.kotlin.core.publisher.onErrorMap
+import reactor.kotlin.core.publisher.onErrorResume
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import reactor.util.function.Tuple2
@@ -148,6 +150,9 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
 
     /**
      * Grabs data for the command sender and builds a Nightscout response.
+     *
+     * @param event Command event which called this command
+     * @return A nightscout DTO and an embed based on it
      */
     private fun getStoredData(event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         return getUserDto(event.author)
@@ -156,6 +161,9 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
 
     /**
      * Grabs data for another user/URL (depending on the arguments) and builds a Nightscout response.
+     *
+     * @param event Command event which called this command
+     * @return A nightscout DTO and an embed based on it
      */
     private fun getUnstoredData(event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -215,115 +223,137 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
         return endpoint.flatMap { buildNightscoutResponse(it, event) }
     }
 
+    /**
+     * Grabs user data for a Nightscout domain.
+     *
+     * @param domain The domain to look up
+     * @param event Command event which called this command
+     * @return NS user DTO for this domain. This will be a generic DTO if there was no data found.
+     */
     private fun getDataFromDomain(domain: String, event: CommandEvent): Mono<NightscoutUserDTO> {
         val userDtos = getUsersForDomain(domain)
+        // temporary userDTO for if this domain does not belong to anyone in the guild
+        val fallback = NightscoutUserDTO(url = domain).toMono()
 
         return userDtos
                 .flatMap { userDTO ->
-                    val user = event.jda.getUserById(userDTO.userId)
+                    val member =  event.guild.getMemberById(userDTO.userId)
+                    val user: User
+                    val publicInThisGuild = userDTO.isNightscoutPublic(event.guild.id)
 
-                    val mutual = user?.mutualGuilds?.contains(event.guild) == true
-                    val publicForGuild = userDTO.isNightscoutPublic(event.guild.id)
-
-                    if (!mutual) {
-                        // strip all personal info
-                        return@flatMap Mono.empty<NightscoutUserDTO>()
+                    if (member == null) {
+                        // use generic DTO if the user is not in the guild which we are replying in.
+                        // this is to prevent users in other guilds from being able to see whether a NS belongs to any diabot user
+                        return@flatMap fallback
                     }
 
-                    if (!publicForGuild) {
-                        return@flatMap if (user != null)
-                            NightscoutPrivateException(event.nameOf(user)).toMono<NightscoutUserDTO>()
-                        else
-                            NightscoutPrivateException().toMono()
+                    user = member.user
+
+                    if (!publicInThisGuild) {
+                        return@flatMap NightscoutPrivateException(event.nameOf(user))
+                                .toMono<NightscoutUserDTO>()
                     }
 
                     userDTO.copy(jdaUser = user).toMono()
                 }
                 .singleOrEmpty()
-                .switchIfEmpty { NightscoutUserDTO(url = domain).toMono() }
+                .switchIfEmpty { fallback }
     }
 
     /**
-     * Loads all the necessary data from a Nightscout instance and replies with an embed of it.
+     * Loads all the necessary data from a Nightscout instance and creates an embed of it.
      *
      * @param userDTO Data necessary for loading/rendering
-     * @param event [CommandEvent]
+     * @param event Command event which called this command
+     * @return A nightscout DTO and an embed based on it
      */
     private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
-        return Mono.defer {
-            // todo: this is probably not great threading :\
+        return Mono.fromCallable {
             val nsDto = NightscoutDTO()
 
-            try {
-                // blocking operations
-                getSettings(userDTO.apiEndpoint, userDTO.token, nsDto)
-                getEntries(userDTO.apiEndpoint, userDTO.token, nsDto)
-                processPebble(userDTO.apiEndpoint, userDTO.token, nsDto)
-            } catch (exception: Exception) {
-                if (exception is NightscoutStatusException
-                        || exception is MalformedJsonException
-                        || exception is NoNightscoutDataException) {
-                    handleGrabError(exception, event, userDTO)
-                    return@defer Mono.empty<NightscoutDTO>()
-                } else {
-                    return@defer exception.toMono<NightscoutDTO>()
-                }
-            }
+            getSettings(userDTO.apiEndpoint, userDTO.token, nsDto)
+            getEntries(userDTO.apiEndpoint, userDTO.token, nsDto)
+            processPebble(userDTO.apiEndpoint, userDTO.token, nsDto)
 
-            nsDto.toMono()
-        }.zipWhen { nsDto ->
+            nsDto
+        }.onErrorResume({ error ->
+            error is NightscoutStatusException
+                    || error is MalformedJsonException
+                    || error is NoNightscoutDataException
+        }, {
+            // fallback to `handleGrabError` if the error is any of the above
+            handleGrabError(it, event, userDTO)
+            Mono.empty<NightscoutDTO>()
+        }).zipWhen { nsDto ->
+            // attach a message embed to the NightscoutDTO
             val channelType = event.channelType
-            var shortReply = false.toMono()
+            var isShort = false.toMono()
             if (channelType == ChannelType.TEXT) {
-                shortReply = if (userDTO.displayOptions.contains("simple")) {
+                isShort = if (userDTO.displayOptions.contains("simple")) {
                     true.toMono()
                 } else {
                     ChannelDAO.instance.hasAttribute(event.channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
                 }
             }
 
-            shortReply.map { buildResponse(nsDto, userDTO.jdaUser?.avatarUrl, userDTO.displayOptions, it).build() }
+            isShort.map { buildResponse(nsDto, userDTO, it).build() }
         }
     }
 
+    /**
+     * Builds an embed from NS data.
+     *
+     * @param nsDTO The Nightscout data to build a response off of
+     * @param userDTO The owner of the [NightscoutDTO] data
+     * @param short Whether to exclude the user avatar from this embed
+     * @param builder Optional: the embed to build off of
+     * @return The embed which was created
+     */
     private fun buildResponse(
-            dto: NightscoutDTO,
-            avatarUrl: String?,
-            displayOptions: List<String>,
+            nsDTO: NightscoutDTO,
+            userDTO: NightscoutUserDTO,
             short: Boolean,
             builder: EmbedBuilder = EmbedBuilder()
     ): EmbedBuilder {
-        if (displayOptions.contains("title")) builder.setTitle(dto.title)
+        val displayOptions = userDTO.displayOptions
 
-        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(dto)
+        if (displayOptions.contains("title")) builder.setTitle(nsDTO.title)
 
-        val trendString = trendArrows[dto.trend]
+        val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
+
+        val trendString = trendArrows[nsDTO.trend]
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
-        if (dto.iob != 0.0F && displayOptions.contains("iob")) {
-            builder.addField("iob", dto.iob.toString(), true)
+        if (nsDTO.iob != 0.0F && displayOptions.contains("iob")) {
+            builder.addField("iob", nsDTO.iob.toString(), true)
         }
-        if (dto.cob != 0 && displayOptions.contains("cob")) {
-            builder.addField("cob", dto.cob.toString(), true)
-        }
-
-        setResponseColor(dto, builder)
-
-        if (avatarUrl != null && displayOptions.contains("avatar") && !short) {
-            builder.setThumbnail(avatarUrl)
+        if (nsDTO.cob != 0 && displayOptions.contains("cob")) {
+            builder.addField("cob", nsDTO.cob.toString(), true)
         }
 
-        builder.setTimestamp(dto.dateTime)
+        setResponseColor(nsDTO, builder)
+
+        if (userDTO.jdaUser?.avatarUrl != null && displayOptions.contains("avatar") && !short) {
+            builder.setThumbnail(userDTO.jdaUser.avatarUrl)
+        }
+
+        builder.setTimestamp(nsDTO.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (dto.dateTime!!.plusMinutes(15).isBefore(ZonedDateTime.now())) {
+        if (nsDTO.dateTime!!.plusMinutes(15).isBefore(ZonedDateTime.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 
         return builder
     }
 
+    /**
+     * Builds glucose strings from [NightscoutDTO] into mmol/L and mg/dL values, including delta if there is any.
+     *
+     * @param dto The Nightscout DTO to read glucose from
+     * @return A pair consisting of mmol/L in the first value and mg/dL in the second value
+     */
     private fun buildGlucoseStrings(dto: NightscoutDTO): Pair<String, String> {
         val mmolString: String
         val mgdlString: String
@@ -390,7 +420,7 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
      * Adjust an embed's color based on the current glucose and ranges.
      *
      * @param dto The Nightscout DTO holding the glucose and range data.
-     * @param builder The embed to set colors on.
+     * @param builder Optional: the embed to set colors on.
      */
     private fun setResponseColor(dto: NightscoutDTO, builder: EmbedBuilder = EmbedBuilder()): EmbedBuilder {
         val glucose = dto.glucose!!.mgdl.toDouble()
@@ -408,32 +438,31 @@ class NightscoutCommand(category: Command.Category) : DiscordCommand(category, n
 
     /**
      * Finds users in the database matching with the Nightscout domain given
+     *
+     * @param domain The domain to look up
+     * @return The [NightscoutUserDTO]s which match the given domain
      */
     private fun getUsersForDomain(domain: String): Flux<NightscoutUserDTO> {
         return NightscoutDAO.instance.getUsersForURL(domain)
-                .onErrorResume {
-                    if (it is NoSuchElementException)
-                        return@onErrorResume Mono.empty()
-
-                    it.toMono()
-                }
+                // if there are no users then return an empty Flux
+                .onErrorResume(NoSuchElementException::class) { Flux.empty() }
     }
 
     /**
-     * Sets the data inside the given NightscoutUserDTO for the given user
+     * Gets a [NightscoutUserDTO] for the given user.
+     *
+     * @param user The user to look up
+     * @param throwable The exception to throw if the user has not configured their Nightscout
+     * @return A [NightscoutUserDTO] instance belonging to the given user
      */
     private fun getUserDto(user: User, throwable: Throwable = UnconfiguredNightscoutException()): Mono<NightscoutUserDTO> {
         return NightscoutDAO.instance.getUser(user.id)
-                .onErrorResume {
-                    if (it is NoSuchElementException) {
-                        return@onErrorResume throwable.toMono()
-                    }
-
-                    it.toMono()
-                }.flatMap {
+                .onErrorMap(NoSuchElementException::class) { throwable }
+                .flatMap {
                     if (it.url != null) {
                         it.copy(jdaUser = user).toMono()
                     } else {
+                        // throw an exception if the url is blank
                         throwable.toMono()
                     }
                 }
