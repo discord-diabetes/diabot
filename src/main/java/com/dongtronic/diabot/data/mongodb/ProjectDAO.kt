@@ -1,9 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
-import com.dongtronic.diabot.util.MongoDB
-import com.dongtronic.diabot.util.findMany
-import com.dongtronic.diabot.util.findOne
-import com.dongtronic.diabot.util.logger
+import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertOneResult
@@ -22,7 +19,7 @@ import reactor.kotlin.core.publisher.toMono
 class ProjectDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<ProjectDTO>
-            = mongo.getCollection("projects", ProjectDTO::class.java)
+            = mongo.getCollection(DiabotCollection.PROJECTS.getEnv(), ProjectDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 

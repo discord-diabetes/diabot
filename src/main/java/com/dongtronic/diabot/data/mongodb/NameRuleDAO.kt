@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.util.DiabotCollection
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.findOne
 import com.dongtronic.diabot.util.logger
@@ -21,7 +22,7 @@ import kotlin.reflect.KProperty
 class NameRuleDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<NameRuleDTO>
-            = mongo.getCollection("name-rules", NameRuleDTO::class.java)
+            = mongo.getCollection(DiabotCollection.NAME_RULES.getEnv(), NameRuleDTO::class.java)
 
     private val ruleCache: Cache<String, NameRuleDTO> = Caffeine.newBuilder()
             .expireAfterAccess(240, TimeUnit.MINUTES)

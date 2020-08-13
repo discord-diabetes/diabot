@@ -22,9 +22,9 @@ import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
     val collection: MongoCollection<QuoteDTO>
-            = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
+            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTES.getEnv(), QuoteDTO::class.java)
     val quoteIndexes: MongoCollection<QuoteIndexDTO>
-            = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
+            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTE_INDEX.getEnv(), QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()

@@ -23,10 +23,10 @@ class MongoDB {
                 // close connections after 1 hour of inactivity
                 it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
             }
-            .applyConnectionString(ConnectionString(System.getenv("MONGO_URI")))
+            .applyConnectionString(ConnectionString(mongoEnv("URI")))
             .build()
     val client = KMongo.createClient(clientSettings)
-    val database: MongoDatabase = client.getDatabase("diabot")
+    val database: MongoDatabase = client.getDatabase(mongoEnv("DATABASE", "diabot"))
 
     companion object {
         private var instance: MongoDB? = null
@@ -38,6 +38,22 @@ class MongoDB {
             return instance as MongoDB
         }
     }
+}
+
+/**
+ * Gets the value of an environment variable, with a `MONGO_` prefix.
+ *
+ * @param key The key to grab
+ * @param default The default value to fallback to, if any.
+ * @return The value of the key or the default value.
+ */
+fun mongoEnv(key: String, default: String? = null): String {
+    val mongoKey = "MONGO_" + key.toUpperCase()
+
+    if (default == null)
+        return System.getenv(mongoKey)
+
+    return System.getenv().getOrDefault(mongoKey, default)
 }
 
 /**

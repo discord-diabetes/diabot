@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.util.DiabotCollection
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.logger
 import com.github.benmanes.caffeine.cache.Cache
@@ -19,8 +20,10 @@ import java.util.concurrent.TimeUnit
 
 class RewardsDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val rewards: MongoCollection<RewardsDTO> = mongo.getCollection("rewards", RewardsDTO::class.java)
-    val optOuts: MongoCollection<RewardOptOutsDTO> = mongo.getCollection("rewards-optout", RewardOptOutsDTO::class.java)
+    val rewards: MongoCollection<RewardsDTO>
+            = mongo.getCollection(DiabotCollection.REWARDS.getEnv(), RewardsDTO::class.java)
+    val optOuts: MongoCollection<RewardOptOutsDTO>
+            = mongo.getCollection(DiabotCollection.REWARDS_OPTOUT.getEnv(), RewardOptOutsDTO::class.java)
 
     private val guildRewardsCache: Cache<String, List<RewardsDTO>> = Caffeine.newBuilder()
             .expireAfterAccess(240, TimeUnit.MINUTES)

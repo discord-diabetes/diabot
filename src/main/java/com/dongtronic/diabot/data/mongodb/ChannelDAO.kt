@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.util.DiabotCollection
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.logger
 import com.mongodb.client.model.IndexOptions
@@ -17,7 +18,8 @@ import reactor.kotlin.core.publisher.toMono
 
 class ChannelDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<ChannelDTO> = mongo.getCollection("channels", ChannelDTO::class.java)
+    val collection: MongoCollection<ChannelDTO>
+            = mongo.getCollection(DiabotCollection.CHANNELS.getEnv(), ChannelDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 

@@ -1,9 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
-import com.dongtronic.diabot.util.MongoDB
-import com.dongtronic.diabot.util.findMany
-import com.dongtronic.diabot.util.findOne
-import com.dongtronic.diabot.util.logger
+import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.result.DeleteResult
@@ -20,7 +17,8 @@ import kotlin.reflect.KProperty
 
 class NightscoutDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<NightscoutUserDTO> = mongo.getCollection("nightscout", NightscoutUserDTO::class.java)
+    val collection: MongoCollection<NightscoutUserDTO>
+            = mongo.getCollection(DiabotCollection.NIGHTSCOUT.getEnv(), NightscoutUserDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
