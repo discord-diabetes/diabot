@@ -33,10 +33,10 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
             val requiredId = args[0]
             val rewardId = args[1]
 
-        val requiredRole = event.jda.getRoleById(requiredId)
-                ?: throw IllegalArgumentException("Role $requiredId does not exist")
-        val rewardRole = event.jda.getRoleById(rewardId)
-                ?: throw IllegalArgumentException("Role $rewardId does not exist")
+            val requiredRole = event.jda.getRoleById(requiredId)
+                    ?: throw IllegalArgumentException("Role $requiredId does not exist")
+            val rewardRole = event.jda.getRoleById(rewardId)
+                    ?: throw IllegalArgumentException("Role $rewardId does not exist")
 
             RewardsDAO.instance.changeRewardRole(event.guild.id, requiredId, rewardId, false).subscribe({
                 event.reply("Removed reward **${rewardRole.name}** for **${requiredRole.name}**")
