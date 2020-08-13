@@ -1,9 +1,6 @@
 package com.dongtronic.diabot.data
 
-import com.dongtronic.diabot.util.MongoDB
-import com.dongtronic.diabot.util.findMany
-import com.dongtronic.diabot.util.findOne
-import com.dongtronic.diabot.util.findOneRandom
+import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.IndexOptions
@@ -17,7 +14,6 @@ import org.bson.conversions.Bson
 import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.updateOne
-import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -30,7 +26,7 @@ class QuoteDAO private constructor() {
             = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
-    private val logger = LoggerFactory.getLogger(QuoteDAO::class.java)
+    private val logger = logger()
     val enabledGuilds = System.getenv().getOrDefault("QUOTE_ENABLE_GUILDS", "").split(",")
     val maxQuotes = System.getenv().getOrDefault("QUOTE_MAX", "5000").toIntOrNull() ?: 5000
 

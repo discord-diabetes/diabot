@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands.misc
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import org.slf4j.LoggerFactory
 
 class DisclaimerCommand(category: Command.Category) : DiscordCommand(category, null) {
 
-    private val logger = LoggerFactory.getLogger(DisclaimerCommand::class.java)
+    private val logger = logger()
 
     init {
         this.name = "disclaimer"

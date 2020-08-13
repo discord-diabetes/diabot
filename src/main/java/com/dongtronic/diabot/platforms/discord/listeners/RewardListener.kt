@@ -2,12 +2,12 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.data.RewardDAO
 import com.dongtronic.diabot.platforms.discord.utils.RoleUtils
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.slf4j.LoggerFactory
 
 class RewardListener : ListenerAdapter() {
-    private val logger = LoggerFactory.getLogger(RewardListener::class.java)
+    private val logger = logger()
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return

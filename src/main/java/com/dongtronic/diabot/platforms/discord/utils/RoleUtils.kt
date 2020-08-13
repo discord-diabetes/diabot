@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.platforms.discord.utils
 
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Role
-import org.slf4j.LoggerFactory
 import java.util.*
 
 object RoleUtils {
-    val logger = LoggerFactory.getLogger(RoleUtils.javaClass)!!
+    private val logger = logger()
 
     fun buildRewardsMap(potentialRewards: MutableList<String>?, guild: Guild): TreeMap<Role, MutableList<Role>> {
         val rewards: TreeMap<Role, MutableList<Role>> = TreeMap()

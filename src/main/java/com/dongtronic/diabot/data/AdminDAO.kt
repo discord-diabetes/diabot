@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
-import org.slf4j.LoggerFactory
+import com.dongtronic.diabot.util.logger
 import redis.clients.jedis.Jedis
 
 class AdminDAO private constructor() {
     private var jedis: Jedis? = null
-    private val logger = LoggerFactory.getLogger(AdminDAO::class.java)
+    private val logger = logger()
 
 
     init {

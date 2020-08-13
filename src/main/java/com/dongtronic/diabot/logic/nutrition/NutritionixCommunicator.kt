@@ -3,19 +3,19 @@ package com.dongtronic.diabot.logic.nutrition
 import com.dongtronic.diabot.data.nutrition.NutritionRequestDTO
 import com.dongtronic.diabot.data.nutrition.NutritionResponseDTO
 import com.dongtronic.diabot.exceptions.RequestStatusException
+import com.dongtronic.diabot.util.logger
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.client.methods.RequestBuilder
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import org.slf4j.LoggerFactory
 
 object NutritionixCommunicator {
     private val appid = System.getenv("nutritionixappid")
     private val secret = System.getenv("nutritionixsecret")
     private const val baseUrl = "https://trackapi.nutritionix.com/v2"
     private val mapper = ObjectMapper()
-    private val logger = LoggerFactory.getLogger(NutritionixCommunicator::class.java)
+    private val logger = logger()
 
     public fun getNutritionInfo(input: String): NutritionResponseDTO {
         val url = "$baseUrl/natural/nutrients"

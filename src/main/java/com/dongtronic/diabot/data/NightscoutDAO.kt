@@ -1,15 +1,15 @@
 package com.dongtronic.diabot.data
 
 import com.dongtronic.diabot.util.RedisKeyFormats
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
-import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import java.util.*
 
 class NightscoutDAO private constructor() {
     private var jedis: Jedis? = null
-    private val logger = LoggerFactory.getLogger(NightscoutDAO::class.java)
+    private val logger = logger()
 
 
     init {

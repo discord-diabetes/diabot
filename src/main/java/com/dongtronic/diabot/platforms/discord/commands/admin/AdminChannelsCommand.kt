@@ -4,14 +4,14 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.channels.AdminChannelAddCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.channels.AdminChannelDeleteCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.channels.AdminChannelListCommand
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import org.slf4j.LoggerFactory
 
 class AdminChannelsCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(AdminChannelsCommand::class.java)
+    private val logger = logger()
 
     init {
         this.name = "channels"

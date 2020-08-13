@@ -1,15 +1,15 @@
 package com.dongtronic.diabot.platforms.discord.commands.rewards
 
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.RewardDAO
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import org.slf4j.LoggerFactory
 
 class RewardsOptInCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(RewardsOptInCommand::class.java)
+    private val logger = logger()
 
     init {
         this.name = "optin"

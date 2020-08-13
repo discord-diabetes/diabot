@@ -1,16 +1,14 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.data.InfoDAO
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import org.slf4j.LoggerFactory
-import java.lang.Exception
 
 class InfoDeleteCommand(category: Command.Category, parent: Command) : DiscordCommand(category, parent) {
-
-    private val logger = LoggerFactory.getLogger(InfoDeleteCommand::class.java)
+    private val logger = logger()
 
     init {
         this.name = "delete"

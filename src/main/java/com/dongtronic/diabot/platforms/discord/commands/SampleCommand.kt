@@ -1,13 +1,13 @@
 package com.dongtronic.diabot.platforms.discord.commands
 
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import org.slf4j.LoggerFactory
 
 class SampleCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
-    private val logger = LoggerFactory.getLogger(SampleCommand::class.java)
+    private val logger = logger()
 
     init {
         this.name = "test"
