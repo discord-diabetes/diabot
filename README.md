@@ -17,6 +17,35 @@ To run Diabot, you need access to the following:
 2. A MongoDB database
 3. A test server on Discord
 
+Diabot primarily uses environment variables for core configuration. A list of them can be found below.
+
+<details>
+  <summary>Environment variables</summary>
+  
+  | Environment variable            | Default        | Required | Description                                                                                                                                                                  |
+  |---------------------------------|----------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  | DIABOTTOKEN                     | N/A            | Yes      | Discord bot token.                                                                                                                                                           |
+  | MONGO_URI                       | N/A            | Yes      | [MongoDB connection string](https://docs.mongodb.com/manual/reference/connection-string/).                                                                                   |
+  | MONGO_DATABASE                  | diabot         | No       | The MongoDB database name used by Diabot.                                                                                                                                    |
+  | MONGO_CHANNELS_COLLECTION       | channels       | No       | The MongoDB collection name for channel attribute storage.                                                                                                                   |
+  | MONGO_NAME_RULES_COLLECTION     | name-rules     | No       | The MongoDB collection name for guild username rules.                                                                                                                        |
+  | MONGO_NIGHTSCOUT_COLLECTION     | nightscout     | No       | The MongoDB collection name for nightscout data.                                                                                                                             |
+  | MONGO_PROJECTS_COLLECTION       | projects       | No       | The MongoDB collection name for project/information storage.                                                                                                                 |
+  | MONGO_QUOTE_INDEX_COLLECTION    | quote-index    | No       | The MongoDB collection name for guilds' quote indexes.                                                                                                                       |
+  | MONGO_QUOTES_COLLECTION         | quotes         | No       | The MongoDB collection name for quotes.                                                                                                                                      |
+  | MONGO_REWARDS_COLLECTION        | rewards        | No       | The MongoDB collection name for guild reward storage.                                                                                                                        |
+  | MONGO_REWARDS_OPTOUT_COLLECTION | rewards-optout | No       | The MongoDB collection name for users who have opted-out of a guild's rewards.                                                                                               |
+  | REDIS_MONGO_MIGRATE             | N/A            | No       | Controls whether the Redis migration system is enabled. If this is enabled (set to `true`), you must also set `REDIS_URL` to a Redis server.                                 |
+  | QUOTE_ENABLE_GUILDS             | N/A            | No       | Comma-separated list of Discord guild IDs which is used to grant permission to the quote system on guilds. By default, all guilds are forbidden from using the quote system. |
+  | QUOTE_MAX                       | 5000           | No       | Sets the maximum amount of quotes each guild can store.                                                                                                                      |
+  | HOME_GUILD_ID                   | N/A            | No       | Grants a guild, provided by its ID, permission to run certain commands (`info set`, `info delete`, `na delete`, `na set`).                                                   |
+  | HOME_GUILD_MESSAGE              | N/A            | No       | If users attempt to run the above commands, this message will be sent in response.                                                                                           |
+  | DIABOT_DEBUG                    | N/A            | No       | If this is set, the bot's command prefix will be changed to `dl` from `diabot`. This is to help with running a test instance alongside the main Diabot.                      |
+  | superusers                      | N/A            | No       | Comma-separated list of Discord user IDs which are permitted to use `diabot shutdown`.                                                                                       |
+  | nutritionixappid                | N/A            | No       | Sets the Nutritionix app ID for `diabot nutrition`.                                                                                                                          |
+  | nutritionixsecret               | N/A            | No       | Sets the Nutritionix secret for `diabot nutrition`.                                                                                                                          |
+</details>
+
 ### Creating a Discord bot account
 1. Visit https://discordapp.com/developers/applications/
 2. Create a new application ![](/docs/create_application.png)
