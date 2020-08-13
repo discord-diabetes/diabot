@@ -14,7 +14,7 @@ Any support received will be used to pay for the hosting and improvement of Diab
 ## Running Diabot
 To run Diabot, you need access to the following: 
 1. A Discord bot account
-2. A Redis database
+2. A MongoDB database
 3. A test server on Discord
 
 ### Creating a Discord bot account
@@ -24,10 +24,10 @@ To run Diabot, you need access to the following:
 4. On the bot page, click the "create bot account" button ![](/docs/build_a_bot.png)
 5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/copy_token.png)
 
-### Setting up a Redis database
-TODO.
+### Setting up a MongoDB database
+Instructions for installing a MongoDB community edition server [can be found here](https://docs.mongodb.com/manual/administration/install-community/).
 
-In the end, you will need a connection URL like this: `redis://<username>:<password>@<host>:<port>`. Store this connection string in an environment variable named `REDIS_URL`
+In the end, you will need a [connection URL](https://docs.mongodb.com/manual/reference/connection-string/#connections-standard-connection-string-format) like this: `mongodb://<username>:<password>@<host>:<port>/`. Store this connection string in an environment variable named `MONGO_URI`
 
 ### Inviting Diabot to your server
 To invite Diabot to your test server, create an invitation URL by replacing `<client_id>` in the following URL with the client ID 
