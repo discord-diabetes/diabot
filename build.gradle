@@ -32,6 +32,10 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.8.1'
     compile 'commons-configuration:commons-configuration:1.6'
 
+    // Networking
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.13.0'
+
     // Database
     compile 'redis.clients:jedis:3.3.0'
     compile 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
