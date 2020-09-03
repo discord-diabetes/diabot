@@ -23,13 +23,3 @@ data class QuoteDTO(
         val messageId: String,
         val time: Long = System.currentTimeMillis() / 1000
 )
-
-/**
- * @property guildId the guild ID
- * @property quoteIndex this guild's current quote index
- */
-@JsonAutoDetect
-data class QuoteIndexDTO(
-        val guildId: String,
-        val quoteIndex: Long = 1
-)

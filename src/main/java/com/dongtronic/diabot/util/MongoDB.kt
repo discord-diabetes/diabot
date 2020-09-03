@@ -22,6 +22,7 @@ class MongoDB {
             .applyToConnectionPoolSettings {
                 // close connections after 1 hour of inactivity
                 it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
+                it.maxSize(mongoEnv("CONNECTIONS", "30").toInt())
             }
             .applyConnectionString(ConnectionString(mongoEnv("URI")))
             .build()
