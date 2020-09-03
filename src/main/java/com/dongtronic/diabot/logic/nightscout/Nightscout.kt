@@ -28,8 +28,8 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     init {
         val client = OkHttpClient.Builder()
         if (token != null) {
-            // creates an interceptor which adds the auth token to the parameters
             client.interceptors().add(Interceptor {
+            // adds the auth token to the parameters
                 val newUrl = it.request()
                         .url
                         .newBuilder()
@@ -46,7 +46,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
         }
 
         client.interceptors().add(Interceptor { chain ->
-            // intercept requests and provide cached responses / cache network responses
+            // provide cached responses / cache network responses
             val request = chain.request()
 
             return@Interceptor responseCache[request.toString()].let { cached ->
