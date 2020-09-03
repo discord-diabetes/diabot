@@ -34,7 +34,7 @@ dependencies {
 
     // Networking
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.13.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
 
     // Database
     compile 'redis.clients:jedis:3.3.0'

@@ -254,9 +254,9 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
                     .build()
 
             client.newCall(request).execute().use { response ->
-                val body = response.body()
+                val body = response.body
                 if (!response.isSuccessful || body == null) {
-                    throw RequestStatusException(response.code())
+                    throw RequestStatusException(response.code)
                 }
 
                 body.string()
