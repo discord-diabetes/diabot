@@ -7,7 +7,7 @@ import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
-import com.google.gson.stream.MalformedJsonException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.ChannelType
@@ -120,7 +120,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 event.reactError()
                 logger.info("No nightscout data from ${userDTO.url}")
             }
-            is MalformedJsonException -> {
+            is JsonProcessingException -> {
                 event.reactError()
                 logger.warn("Malformed JSON from ${userDTO.url}")
             }
@@ -272,7 +272,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             NightscoutStatusException(it.code())
         }.onErrorResume({ error ->
             error is NightscoutStatusException
-                    || error is MalformedJsonException
+                    || error is JsonProcessingException
                     || error is NoNightscoutDataException
         }, {
             // fallback to `handleGrabError` if the error is any of the above
