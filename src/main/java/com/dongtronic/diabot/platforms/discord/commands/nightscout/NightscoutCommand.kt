@@ -33,7 +33,6 @@ import java.time.temporal.ChronoUnit
 class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = logger()
-    private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
 
     init {
         this.name = "nightscout"
@@ -315,7 +314,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
 
-        val trendString = trendArrows[nsDTO.trend]
+        val trendString = nsDTO.trend.unicode
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
@@ -335,9 +334,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         builder.setTimestamp(nsDTO.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (nsDTO.dateTime!!
-                        .plus(15, ChronoUnit.MINUTES)
-                        .isBefore(Instant.now())) {
+        if (nsDTO.dateTime!!.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 
