@@ -168,13 +168,13 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val jsonObject = json.get(0)
             val sgv = jsonObject.path("sgv").asText()
             val timestamp = jsonObject.path("date").asLong()
-            var trend = TrendArrows.NONE
+            var trend = TrendArrow.NONE
             val direction: String
             if (jsonObject.has("trend")) {
-                trend = TrendArrows.getTrend(jsonObject.path("trend").asInt())
+                trend = TrendArrow.getTrend(jsonObject.path("trend").asInt())
             } else if (jsonObject.has("direction")) {
                 direction = jsonObject.path("direction").asText()
-                trend = TrendArrows.getTrend(direction)
+                trend = TrendArrow.getTrend(direction)
             }
 
             var delta = ""

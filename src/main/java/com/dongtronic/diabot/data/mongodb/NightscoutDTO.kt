@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.data.ConversionDTO
-import com.dongtronic.diabot.logic.nightscout.TrendArrows
+import com.dongtronic.diabot.logic.nightscout.TrendArrow
 import java.time.Instant
 
 data class NightscoutDTO (
@@ -13,7 +13,7 @@ data class NightscoutDTO (
         var bottom: Int = 0,
         var top: Int = 0,
         var high: Int = 0,
-        var trend: TrendArrows = TrendArrows.NONE,
+        var trend: TrendArrow = TrendArrow.NONE,
         var iob: Float = 0.0F,
         var cob: Int = 0,
         var units: String = "",

@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.logic.nightscout
 
-enum class TrendArrows(val unicode: String = "") {
+enum class TrendArrow(val unicode: String = "") {
     NONE,
     DOUBLEUP("↟"),
     SINGLEUP("↑"),
@@ -13,14 +13,14 @@ enum class TrendArrows(val unicode: String = "") {
     RATE_OUT_OF_RANGE("↺");
 
     companion object {
-        fun getTrend(name: String): TrendArrows {
+        fun getTrend(name: String): TrendArrow {
             val sanitised = name.toUpperCase().replace(' ', '_')
 
             return values().firstOrNull { it.name == sanitised }
                     ?: throw IllegalArgumentException("Unknown direction $name")
         }
 
-        fun getTrend(trend: Int): TrendArrows {
+        fun getTrend(trend: Int): TrendArrow {
             return values().firstOrNull { it.ordinal == trend }
                     ?: throw IllegalArgumentException("Unknown trend $trend")
         }
