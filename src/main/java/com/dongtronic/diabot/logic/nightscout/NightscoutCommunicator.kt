@@ -19,8 +19,6 @@ import org.apache.http.message.BasicNameValuePair
 import org.apache.http.util.EntityUtils
 import java.io.IOException
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 
 object NightscoutCommunicator {
     private val logger = logger()
@@ -224,7 +222,6 @@ object NightscoutCommunicator {
         if (jsonObject.has("delta")) {
             delta = jsonObject.get("delta").asString
         }
-        val dateTime = getTimestamp(timestamp)
 
         val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
 
@@ -235,7 +232,7 @@ object NightscoutCommunicator {
 
         dto.glucose = convertedBg
         dto.deltaIsNegative = delta.contains("-")
-        dto.dateTime = dateTime
+        dto.dateTime = Instant.ofEpochMilli(timestamp)
         dto.trend = trend
     }
 
@@ -267,16 +264,5 @@ object NightscoutCommunicator {
         dto.top = top
         dto.high = high
         dto.units = units
-    }
-
-    /**
-     * Converts a unix epoch in milliseconds to a [ZonedDateTime] instance
-     *
-     * @param epoch Unix epoch (in milliseconds)
-     * @return [ZonedDateTime]
-     */
-    fun getTimestamp(epoch: Long?): ZonedDateTime {
-        val i = Instant.ofEpochSecond(epoch!! / 1000)
-        return ZonedDateTime.ofInstant(i, ZoneOffset.UTC)
     }
 }

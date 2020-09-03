@@ -2,9 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.*
 import com.dongtronic.diabot.exceptions.*
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getEntries
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getSettings
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.processPebble
+import com.dongtronic.diabot.logic.nightscout.Nightscout
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
@@ -28,7 +26,8 @@ import reactor.kotlin.core.publisher.toMono
 import reactor.util.function.Tuple2
 import java.awt.Color
 import java.net.UnknownHostException
-import java.time.ZonedDateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
@@ -336,7 +335,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         builder.setTimestamp(nsDTO.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (nsDTO.dateTime!!.plusMinutes(15).isBefore(ZonedDateTime.now())) {
+        if (nsDTO.dateTime!!
+                        .plus(15, ChronoUnit.MINUTES)
+                        .isBefore(Instant.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 

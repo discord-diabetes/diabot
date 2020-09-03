@@ -1,12 +1,12 @@
 package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.data.ConversionDTO
-import java.time.ZonedDateTime
+import java.time.Instant
 
 data class NightscoutDTO (
     var glucose: ConversionDTO? = null,
     var delta: ConversionDTO? = null,
-    var dateTime: ZonedDateTime? = null,
+    var dateTime: Instant? = null,
     var deltaIsNegative: Boolean = false,
     var low: Int = 0,
     var bottom: Int = 0,
