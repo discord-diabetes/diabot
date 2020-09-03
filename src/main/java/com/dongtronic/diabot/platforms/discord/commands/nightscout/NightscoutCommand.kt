@@ -24,6 +24,7 @@ import reactor.kotlin.core.publisher.onErrorResume
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import reactor.util.function.Tuple2
+import retrofit2.HttpException
 import java.awt.Color
 import java.net.UnknownHostException
 import java.time.Instant
@@ -231,7 +232,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         return userDtos
                 .flatMap { userDTO ->
-                    val member =  event.guild.getMemberById(userDTO.userId)
+                    val member = event.guild.getMemberById(userDTO.userId)
                     val user: User
                     val publicInThisGuild = userDTO.isNightscoutPublic(event.guild.id)
 
@@ -262,14 +263,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A nightscout DTO and an embed based on it
      */
     private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
-        return Mono.fromCallable {
-            val nsDto = NightscoutDTO()
-
-            getSettings(userDTO.apiEndpoint, userDTO.token, nsDto)
-            getEntries(userDTO.apiEndpoint, userDTO.token, nsDto)
-            processPebble(userDTO.apiEndpoint, userDTO.token, nsDto)
-
-            nsDto
+        val api = Nightscout(userDTO.apiEndpoint, userDTO.token)
+        return api.getSettings().flatMap {
+            api.getRecentSgv(it)
+        }.flatMap {
+            api.getPebble(it)
+        }.onErrorMap(HttpException::class) {
+            NightscoutStatusException(it.code())
         }.onErrorResume({ error ->
             error is NightscoutStatusException
                     || error is MalformedJsonException
