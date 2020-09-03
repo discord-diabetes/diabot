@@ -1,9 +1,8 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.redis
 
 import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.User
 import redis.clients.jedis.Jedis
 import java.util.*
 
@@ -16,32 +15,32 @@ class NightscoutDAO private constructor() {
         jedis = Jedis(System.getenv("REDIS_URL"))
     }
 
-    fun getNightscoutUrl(user: User): String? {
-        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", user.id)
+    fun getNightscoutUrl(userId: String): String? {
+        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", userId)
 
         return jedis!!.get(redisKey)
     }
 
-    fun setNightscoutUrl(user: User, url: String) {
-        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", user.id)
+    fun setNightscoutUrl(userId: String, url: String) {
+        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", userId)
 
         jedis!!.set(redisKey, url)
     }
 
-    fun removeNIghtscoutUrl(user: User) {
-        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", user.id)
+    fun removeNIghtscoutUrl(userId: String) {
+        val redisKey = RedisKeyFormats.nightscoutUrlFormat.replace("{{userid}}", userId)
 
         jedis!!.del(redisKey)
     }
 
-    fun isNightscoutPublic(user: User, guildId: String): Boolean {
-        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guildId)
+    fun isNightscoutPublic(userId: String, guildId: String): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", userId).replace("{{guildid}}", guildId)
 
         return !jedis!!.get(redisKey).isNullOrEmpty()
     }
 
-    fun setNightscoutPublic(user: User, guild: Guild, public: Boolean) {
-        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", user.id).replace("{{guildid}}", guild.id)
+    fun setNightscoutPublic(userId: String, guild: Guild, public: Boolean) {
+        val redisKey = RedisKeyFormats.nightscoutPublicFormat.replace("{{userid}}", userId).replace("{{guildid}}", guild.id)
 
         if (public) {
             jedis!!.set(redisKey, guild.name)
@@ -50,44 +49,38 @@ class NightscoutDAO private constructor() {
         }
     }
 
-    fun isNightscoutDisplay(user: User): Boolean {
-        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+    fun isNightscoutDisplay(userId: String): Boolean {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", userId)
 
         return !jedis!!.get(redisKey).isNullOrEmpty()
     }
 
-    fun getNightscoutDisplay(user: User): String {
-        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+    fun getNightscoutDisplay(userId: String): String {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", userId)
 
-        return jedis!!.get(redisKey).toString()
+        return jedis!!.get(redisKey)?.toString() ?: ""
     }
 
-    fun setNightscoutDisplay(user: User, display: String) {
-        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+    fun setNightscoutDisplay(userId: String, display: String) {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", userId)
 
         jedis!!.set(redisKey, display)
     }
 
-    fun removeNightscoutDisplay(user: User) {
-        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", user.id)
+    fun removeNightscoutDisplay(userId: String) {
+        val redisKey = RedisKeyFormats.nightscoutDisplayFormat.replace("{{userid}}", userId)
 
         jedis!!.del(redisKey)
     }
 
-    fun isNightscoutToken(user: User): Boolean {
-        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+    fun getNightscoutToken(userId: String): String? {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", userId)
 
-        return !jedis!!.get(redisKey).isNullOrEmpty()
+        return jedis!!.get(redisKey)?.toString()
     }
 
-    fun getNightscoutToken(user: User): String {
-        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
-
-        return jedis!!.get(redisKey).toString()
-    }
-
-    fun setNightscoutToken(user: User, token: String) {
-        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+    fun setNightscoutToken(userId: String, token: String) {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", userId)
 
         if (token.isNotEmpty()) {
             jedis!!.set(redisKey, token)
@@ -96,8 +89,8 @@ class NightscoutDAO private constructor() {
         }
     }
 
-    fun removeNightscoutToken(user: User) {
-        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", user.id)
+    fun removeNightscoutToken(userId: String) {
+        val redisKey = RedisKeyFormats.nightscoutTokenFormat.replace("{{userid}}", userId)
 
         jedis!!.del(redisKey)
     }

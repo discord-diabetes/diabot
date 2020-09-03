@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.channels
 
-import com.dongtronic.diabot.data.AdminDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
@@ -35,9 +36,14 @@ class AdminChannelDeleteCommand(category: Category, parent: Command?) : DiscordC
             val channel = event.jda.getTextChannelById(channelId)
                     ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
-            AdminDAO.getInstance().removeAdminChannel(event.guild.id, channelId)
-
-            event.reply("Removed admin channel ${channel.name} (`$channelId`)")
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN, false)
+                    .subscribe({
+                        event.replySuccess("Removed admin channel ${channel.name} (`${channel.id}`)")
+                    }, {
+                        val msg = "Could not remove admin channel ${channel.name} (${channel.id})"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
+                    })
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)
         }

@@ -99,27 +99,28 @@ class ConversionDTO {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other!!.javaClass != this.javaClass) {
-            return false
-        }
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-        val otherAsDto = other as ConversionDTO?
+        other as ConversionDTO
 
-        if (otherAsDto!!.original != this.original) {
-            return false
-        }
+        if (original != other.original) return false
+        if (mmol != other.mmol) return false
+        if (mgdl != other.mgdl) return false
+        if (inputUnit != other.inputUnit) return false
 
-        if (otherAsDto.mgdl != this.mgdl) {
-            return false
-        }
+        return true
+    }
 
-        if (otherAsDto.mmol != this.mmol) {
-            return false
-        }
+    override fun hashCode(): Int {
+        var result = original.hashCode()
+        result = 31 * result + mmol.hashCode()
+        result = 31 * result + mgdl
+        result = 31 * result + (inputUnit?.hashCode() ?: 0)
+        return result
+    }
 
-        return if (otherAsDto.inputUnit != this.inputUnit) {
-            false
-        } else true
-
+    override fun toString(): String {
+        return "ConversionDTO(original=$original, mmol=$mmol, mgdl=$mgdl, inputUnit=$inputUnit)"
     }
 }

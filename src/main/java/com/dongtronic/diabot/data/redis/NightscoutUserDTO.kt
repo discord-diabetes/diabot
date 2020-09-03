@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.redis
 
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSetDisplayCommand
 

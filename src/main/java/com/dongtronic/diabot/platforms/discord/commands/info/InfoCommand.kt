@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.dongtronic.diabot.data.InfoDAO
+import com.dongtronic.diabot.data.mongodb.ProjectDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -31,19 +31,20 @@ class InfoCommand(category: Category) : DiscordCommand(category, null) {
             return
         }
 
-        try {
-            val project = args[0]
-
-            val text = InfoDAO.getInstance().getProjectText(project)
-
+        ProjectDAO.instance.getProject(args[0]).subscribe({
             val builder = EmbedBuilder()
 
-            builder.setTitle(InfoDAO.getInstance().formatProject(project))
-            builder.setDescription(text)
+            builder.setTitle(it.name)
+            builder.setDescription(it.text)
 
             event.reply(builder.build())
-        } catch (ex: Exception) {
-            event.replyError(ex.message)
-        }
+        }, {
+            if (it is NoSuchElementException) {
+                 event.replyError("Could not find project info for ${args[0]}")
+            } else {
+                logger.warn("Could not retrieve project info", it)
+                event.replyError(it.message)
+            }
+        })
     }
 }

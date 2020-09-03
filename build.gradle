@@ -37,6 +37,9 @@ dependencies {
     compile 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
     compile 'org.litote.kmongo:kmongo-async:4.0.3'
 
+    // Cache
+    compile 'com.github.ben-manes.caffeine:caffeine:2.8.5'
+
     // Testing
     testCompile group: 'junit', name: 'junit', version: '4.12'
 

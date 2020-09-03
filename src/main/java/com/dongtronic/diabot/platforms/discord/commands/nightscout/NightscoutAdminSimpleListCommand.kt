@@ -1,6 +1,8 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
+import com.dongtronic.diabot.mapNotNull
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.dongtronic.diabot.util.logger
@@ -20,29 +22,36 @@ class NightscoutAdminSimpleListCommand(category: Command.Category, parent: Comma
         this.aliases = arrayOf("l")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " list")
-        this.userPermissions = this.parent!!.userPermissions
+        this.userPermissions = this.parent.userPermissions
     }
 
     override fun execute(event: CommandEvent) {
-        if(!CommandUtils.requireAdminChannel(event)) {
-            return
-        }
+        CommandUtils.requireAdminChannel(event).subscribe { runCommand(event) }
+    }
 
-        val channels = NightscoutDAO.getInstance().listShortChannels(event.guild.id)
+    private fun runCommand(event: CommandEvent) {
+        ChannelDAO.instance.getChannels(event.guild.id)
+                .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT) }
+                .mapNotNull { event.guild.getTextChannelById(it.channelId) }
+                .collectList()
+                .subscribe({ channels ->
+                    val builder = EmbedBuilder()
 
-        val builder = EmbedBuilder()
+                    builder.setTitle("Short Nightscout channels")
 
-        builder.setTitle("Short Nightscout channels")
+                    if (channels.isEmpty()) {
+                        builder.setDescription("No short channels are configured")
+                    } else {
+                        channels.forEach {
+                            builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
+                        }
+                    }
 
-        if (channels.isEmpty()) {
-            builder.setDescription("No short channels are configured")
-        } else {
-            channels.forEach {
-                val channel = event.guild.getTextChannelById(it)
-                builder.appendDescription("**${channel!!.name}**  (`${channel.id}`)\n")
-            }
-        }
-
-        event.reply(builder.build())
+                    event.reply(builder.build())
+                }, {
+                    val msg = "Could not access list of short Nightscout channels"
+                    logger.warn(msg + " for ${event.guild.id}", it)
+                    event.replyError(msg)
+                })
     }
 }

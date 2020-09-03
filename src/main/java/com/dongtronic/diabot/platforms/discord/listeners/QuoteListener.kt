@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
-import com.dongtronic.diabot.data.QuoteDAO
-import com.dongtronic.diabot.data.QuoteDTO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
@@ -47,12 +47,12 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
 
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
-                    guildId = guild.idLong,
-                    channelId = event.channel.idLong,
+                    guildId = guild.id,
+                    channelId = event.channel.id,
                     author = message.author.name,
-                    authorId = message.author.idLong,
+                    authorId = message.author.id,
                     message = message.contentRaw,
-                    messageId = message.idLong
+                    messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
                 reply("New quote added by ${author.effectiveName} as #${it.quoteId}")
@@ -63,7 +63,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
 
         QuoteDAO.getInstance()
                 // search for any quotes with this message ID
-                .getQuotes(guild.idLong, QuoteDTO::messageId eq event.messageIdLong)
+                .getQuotes(guild.id, QuoteDTO::messageId eq event.messageId)
                 .toMono()
                 .subscribe({/*ignored*/}, { error ->
                     // if there are no quotes then proceed

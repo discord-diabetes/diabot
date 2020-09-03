@@ -23,10 +23,10 @@ class MongoDB {
                 // close connections after 1 hour of inactivity
                 it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
             }
-            .applyConnectionString(ConnectionString(System.getenv("MONGO_URI")))
+            .applyConnectionString(ConnectionString(mongoEnv("URI")))
             .build()
     val client = KMongo.createClient(clientSettings)
-    val database: MongoDatabase = client.getDatabase("diabot")
+    val database: MongoDatabase = client.getDatabase(mongoEnv("DATABASE", "diabot"))
 
     companion object {
         private var instance: MongoDB? = null
@@ -41,6 +41,22 @@ class MongoDB {
 }
 
 /**
+ * Gets the value of an environment variable, with a `MONGO_` prefix.
+ *
+ * @param key The key to grab
+ * @param default The default value to fallback to, if any.
+ * @return The value of the key or the default value.
+ */
+fun mongoEnv(key: String, default: String? = null): String {
+    val mongoKey = "MONGO_" + key.toUpperCase()
+
+    if (default == null)
+        return System.getenv(mongoKey)
+
+    return System.getenv().getOrDefault(mongoKey, default)
+}
+
+/**
  * Collation for case-insensitive queries
  */
 val caseCollation: Collation = Collation.builder()
@@ -49,7 +65,7 @@ val caseCollation: Collation = Collation.builder()
         .build()
 
 fun <T> MongoCollection<T>.findOne(vararg filter: Bson): Mono<T> {
-    return Mono.from(find(*filter).collation(caseCollation)).errorOnEmpty()
+    return Mono.from(find(*filter).collation(caseCollation).limit(1)).errorOnEmpty()
 }
 
 inline fun <reified T : Any> MongoCollection<T>.findOneRandom(vararg filter: Bson): Mono<T> {
@@ -62,10 +78,10 @@ fun <T> MongoCollection<T>.findMany(vararg filter: Bson): Flux<T> {
     return Flux.from(find(*filter).collation(caseCollation)).errorOnEmpty()
 }
 
-fun <T> Mono<T>.errorOnEmpty(): Mono<T> {
-    return switchIfEmpty(Mono.error(NoSuchElementException()))
+fun <T> Mono<T>.errorOnEmpty(throwable: Throwable = NoSuchElementException()): Mono<T> {
+    return switchIfEmpty(Mono.error(throwable))
 }
 
-fun <T> Flux<T>.errorOnEmpty(): Flux<T> {
-    return switchIfEmpty(Flux.error(NoSuchElementException()))
+fun <T> Flux<T>.errorOnEmpty(throwable: Throwable = NoSuchElementException()): Flux<T> {
+    return switchIfEmpty(Flux.error(throwable))
 }

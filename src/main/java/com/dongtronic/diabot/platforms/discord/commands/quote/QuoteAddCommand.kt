@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.quote
 
-import com.dongtronic.diabot.data.QuoteDAO
-import com.dongtronic.diabot.data.QuoteDTO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -42,12 +42,12 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
             }
         }
 
-        val quoteDto = QuoteDTO(guildId = event.guild.idLong,
-                channelId = event.channel.idLong,
+        val quoteDto = QuoteDTO(guildId = event.guild.id,
+                channelId = event.channel.id,
                 author = author,
-                authorId = authorId,
+                authorId = authorId.toString(),
                 message = message,
-                messageId = event.message.idLong)
+                messageId = event.message.id)
 
         QuoteDAO.getInstance().addQuote(quoteDto).subscribe(
                 {

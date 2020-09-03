@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.admin.username
 
-import com.dongtronic.diabot.data.AdminDAO
+import com.dongtronic.diabot.data.mongodb.NameRuleDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
@@ -36,14 +36,24 @@ class AdminUsernameHintCommand(category: Command.Category, parent: Command?) : D
 
         val helpString = args.joinToString(" ")
 
-        AdminDAO.getInstance().setUsernameHint(event.guild.id, helpString)
-
-        event.reply("Set username enforcement hint to `$helpString`")
+        NameRuleDAO.instance.setHint(event.guild.id, helpString).subscribe({
+            event.reply("Set username enforcement hint to `$helpString`")
+        }, {
+            logger.warn("Could not set username enforcement hint for guild ${event.guild.id}", it)
+            event.replyError("Could not set username enforcement hint for ${event.guild.name}")
+        })
     }
 
     private fun getHint(event: CommandEvent) {
-        val pattern = AdminDAO.getInstance().getUsernameHint(event.guild.id)
-
-        event.reply("Current username hint: `$pattern`")
+        NameRuleDAO.instance.getGuild(event.guild.id).subscribe({
+            event.reply("Current username hint: `${it.hintMessage}`")
+        }, {
+            if (it is NoSuchElementException) {
+                event.reply("There is no username enforcement hint set")
+            } else {
+                logger.warn("Could not get username enforcement hint for guild ${event.guild.id}", it)
+                event.replyError("Could not get username enforcement hint for ${event.guild.name}")
+            }
+        })
     }
 }

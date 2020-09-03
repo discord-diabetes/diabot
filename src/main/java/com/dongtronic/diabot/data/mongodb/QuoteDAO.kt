@@ -1,5 +1,6 @@
-package com.dongtronic.diabot.data
+package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.data.migration.MongoQuoteConversion
 import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -21,9 +22,9 @@ import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
     val collection: MongoCollection<QuoteDTO>
-            = MongoDB.getInstance().database.getCollection("quotes", QuoteDTO::class.java)
+            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTES.getEnv(), QuoteDTO::class.java)
     val quoteIndexes: MongoCollection<QuoteIndexDTO>
-            = MongoDB.getInstance().database.getCollection("quote-index", QuoteIndexDTO::class.java)
+            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTE_INDEX.getEnv(), QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
@@ -36,6 +37,19 @@ class QuoteDAO private constructor() {
         quoteIndexes.createIndex(descending(QuoteDTO::guildId), options).toMono()
                 .subscribeOn(scheduler)
                 .subscribe()
+
+        // Convert IDs stored in the collection from `Long` to `String`
+        MongoQuoteConversion(collection, quoteIndexes).checkAndConvert()
+                .errorOnEmpty()
+                .subscribe({
+                    logger.info("Converted ${it.t1} quote(s) and ${it.t2} quote index(es)!")
+                }, {
+                    if (it is NoSuchElementException) {
+                        logger.info("No quotes needed to be converted")
+                    } else {
+                        logger.warn("Could not convert quotes", it)
+                    }
+                })
     }
 
     /**
@@ -45,7 +59,7 @@ class QuoteDAO private constructor() {
      * @param quoteId quote ID
      * @return [QuoteDTO] instance matching the quote ID
      */
-    fun getQuote(guildId: Long, quoteId: Long): Mono<QuoteDTO> {
+    fun getQuote(guildId: String, quoteId: String): Mono<QuoteDTO> {
         return collection.findOne(filter(guildId, quoteId)).subscribeOn(scheduler)
     }
 
@@ -56,7 +70,7 @@ class QuoteDAO private constructor() {
      * @param filter the mongo filter to match against, if any
      * @return all quotes matching the filter for the specified guild
      */
-    fun getQuotes(guildId: Long, filter: Bson? = null): Flux<QuoteDTO> {
+    fun getQuotes(guildId: String, filter: Bson? = null): Flux<QuoteDTO> {
         val joinedFilter = if (filter != null)
             and(filter(guildId), filter)
         else
@@ -72,7 +86,7 @@ class QuoteDAO private constructor() {
      * @param filter the mongo filter to match against, if any
      * @return a random quote matching the filter for the specified guild
      */
-    fun getRandomQuote(guildId: Long, filter: Bson? = null): Mono<QuoteDTO> {
+    fun getRandomQuote(guildId: String, filter: Bson? = null): Mono<QuoteDTO> {
         val joinedFilter = if (filter != null)
             and(filter(guildId), filter)
         else
@@ -96,7 +110,7 @@ class QuoteDAO private constructor() {
                     .onErrorMap { IllegalStateException("Could not find guild's quote index") }
                     .map {
                         if (quote.quoteId == null)
-                            quote.copy(quoteId = it)
+                            quote.copy(quoteId = it.toString())
                         else
                             quote
                     }
@@ -132,7 +146,7 @@ class QuoteDAO private constructor() {
      * @param quoteId quote ID
      * @return the result of the delete command
      */
-    fun deleteQuote(guildId: Long, quoteId: Long): Mono<DeleteResult> {
+    fun deleteQuote(guildId: String, quoteId: String): Mono<DeleteResult> {
         return collection.deleteOne(filter(guildId, quoteId))
                 .toMono().subscribeOn(scheduler)
     }
@@ -143,7 +157,7 @@ class QuoteDAO private constructor() {
      * @param guildId guild ID
      * @return number of quotes for the specified guild
      */
-    fun quoteAmount(guildId: Long): Mono<Long> {
+    fun quoteAmount(guildId: String): Mono<Long> {
         return collection.countDocuments(filter(guildId))
                 .toMono().subscribeOn(scheduler)
     }
@@ -154,7 +168,7 @@ class QuoteDAO private constructor() {
      * @param guildId guild ID
      * @return the ID index of the specified guild after incrementing
      */
-    fun incrementId(guildId: Long): Mono<Long> {
+    fun incrementId(guildId: String): Mono<Long> {
         // insert if not existing and return the document after incrementing
         val options = FindOneAndUpdateOptions()
                 .upsert(true)
@@ -196,7 +210,7 @@ class QuoteDAO private constructor() {
                 return false
             }
 
-            val numOfQuotes = getInstance().quoteAmount(channel.guild.idLong).block() ?: -1
+            val numOfQuotes = getInstance().quoteAmount(channel.guild.id).block() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
                 channel.sendMessage("Could not create quote as your guild has reached " +
                         "the max of ${getInstance().maxQuotes} quotes").queue()
@@ -213,7 +227,7 @@ class QuoteDAO private constructor() {
          * @param quoteId quote ID, optional
          * @return MongoDB query filter for the provided guild ID and quote ID, if any
          */
-        fun filter(guildId: Long, quoteId: Long? = null): Bson {
+        fun filter(guildId: String, quoteId: String? = null): Bson {
             val guildFilter = QuoteDTO::guildId.eq(guildId)
 
             if (quoteId != null) {

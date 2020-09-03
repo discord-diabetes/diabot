@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.quote
 
-import com.dongtronic.diabot.data.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
@@ -37,14 +37,14 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
 
         val author = match.groups["author"]!!.value.trim()
         val message = match.groups["message"]!!.value.trim()
-        val oldQuote = QuoteDAO.getInstance().getQuote(event.guild.idLong, id)
+        val oldQuote = QuoteDAO.getInstance().getQuote(event.guild.id, id.toString())
 
         oldQuote.flatMap {
             val dto = it.copy(
                     author = author,
                     message = message,
-                    messageId = event.message.idLong,
-                    channelId = event.channel.idLong)
+                    messageId = event.message.id,
+                    channelId = event.channel.id)
             QuoteDAO.getInstance().updateQuote(dto)
         }.subscribe({
             if (it.wasAcknowledged()) {

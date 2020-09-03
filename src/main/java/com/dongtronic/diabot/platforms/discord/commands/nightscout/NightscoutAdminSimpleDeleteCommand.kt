@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.dongtronic.diabot.util.logger
@@ -20,15 +21,15 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
         this.aliases = arrayOf("d", "r", "remove", "del", "rem")
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " delete")
-        this.userPermissions = this.parent!!.userPermissions
+        this.userPermissions = this.parent.userPermissions
     }
 
     override fun execute(event: CommandEvent) {
-        try {
-            if (!CommandUtils.requireAdminChannel(event)) {
-                return
-            }
+        CommandUtils.requireAdminChannel(event).subscribe { runCommand(event) }
+    }
 
+    private fun runCommand(event: CommandEvent) {
+        try {
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
             if (args.size != 1) {
@@ -50,9 +51,14 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
 
             logger.info("Removing channel ${channel.id} as short channel for ${event.guild.id}")
 
-            NightscoutDAO.getInstance().removeShortChannel(event.guild.id, channel.id)
-
-            event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
+            ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, false)
+                    .subscribe({
+                        event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                    }, {
+                        val msg = "Could not remove channel ${channel.name} (${channel.id}) as short reply channel"
+                        logger.warn(msg, it)
+                        event.replyError(msg)
+                    })
         } catch (ex: Exception) {
             event.replyError(ex.message)
             return

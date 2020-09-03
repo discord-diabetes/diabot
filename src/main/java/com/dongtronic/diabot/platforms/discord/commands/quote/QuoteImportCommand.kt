@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.quote
 
-import com.dongtronic.diabot.data.QuoteDAO
-import com.dongtronic.diabot.data.QuoteDTO
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
+import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
@@ -294,28 +294,23 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
          * Converts this UB3R-B0T quote into a Diabot [QuoteDTO]
          *
          * @param guild The guild which this quote belongs to. This is used for looking up channel and guild IDs.
-         * May be null, however the `server` parameter *must* be convertable to [Long].
+         * May be null, however the channel IDs will be blank
          * @return Converted quote object
          */
         fun toDiabotQuote(guild: Guild? = null): QuoteDTO {
-            val quoteId = id.toLongOrNull()
-            val guildId = server.toLongOrNull() ?: guild!!.idLong
             // looks up the channel name and tries to get its id
             // the channel key can be missing, which is why we need a null check
-            val channelId = if (channel != null)
-                guild?.textChannels?.firstOrNull { it.name == channel }?.idLong ?: 0
-            else
-                0
-            val messageIdLong = messageId.toLongOrNull() ?: 0
-            val authorId = userId.toLongOrNull() ?: 0
+            val channelId = if (channel != null) {
+                guild?.textChannels?.firstOrNull { it.name == channel }?.id ?: ""
+            } else ""
 
-            return QuoteDTO(quoteId = quoteId,
-                    guildId = guildId,
+            return QuoteDTO(quoteId = id,
+                    guildId = server,
                     channelId = channelId,
                     author = nick,
-                    authorId = authorId,
+                    authorId = userId,
                     message = text,
-                    messageId = messageIdLong,
+                    messageId = messageId,
                     time = time)
         }
     }
