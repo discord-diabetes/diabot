@@ -263,10 +263,12 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         val api = Nightscout(userDTO.apiEndpoint, userDTO.token)
-        return api.getSettings().flatMap {
-            api.getRecentSgv(it)
-        }.flatMap {
-            api.getPebble(it)
+        return Mono.from(
+                api.getSettings()
+                        .flatMap { api.getRecentSgv(it) }
+                        .flatMap { api.getPebble(it) }
+        ).doFinally {
+            api.close()
         }.onErrorMap(HttpException::class) {
             NightscoutStatusException(it.code())
         }.onErrorResume({ error ->
