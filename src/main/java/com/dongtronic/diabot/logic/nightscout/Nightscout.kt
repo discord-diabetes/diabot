@@ -4,6 +4,7 @@ import com.dongtronic.diabot.data.mongodb.NightscoutDTO
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
+import com.dongtronic.diabot.logic.nightscout.NightscoutService.Companion.find
 import com.dongtronic.diabot.util.logger
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jakewharton.retrofit2.adapter.reactor.ReactorCallAdapterFactory

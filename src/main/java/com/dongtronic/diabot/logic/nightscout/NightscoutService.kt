@@ -37,23 +37,28 @@ interface NightscoutService {
             @QueryMap
             extraParams: Map<String, String>
     ): Mono<JsonNode>
-}
 
-/**
- * Generates a `find` query parameter for Nightscout
- *
- * @param keyName The name of the key to search under
- * @param value The value to search for
- * @param operator An optional MongoDB operator to fine-tune the search.
- * @return A pair containing the query parameter name and value
- */
-fun find(keyName: String, value: String = "", operator: MongoOperator? = null): Pair<String, String> {
-    val keyBuilder = StringBuilder("find")
-    keyBuilder.append("[").append(keyName).append("]")
+    companion object {
+        /**
+         * Generates a `find` query parameter for Nightscout
+         *
+         * @param keyName The name of the key to search under
+         * @param value The value to search for
+         * @param operator An optional MongoDB operator to fine-tune the search.
+         * @return A pair containing the query parameter name and value
+         */
+        // this can't be included directly in NightscoutService due to an incompatibility between Retrofit and Kotlin
+        // https://github.com/square/retrofit/issues/2734#issuecomment-381741519
+        fun find(keyName: String, value: String = "", operator: MongoOperator? = null): Pair<String, String> {
+            val keyBuilder = StringBuilder("find")
+            keyBuilder.append("[").append(keyName).append("]")
 
-    if (operator != null) {
-        keyBuilder.append("[$").append(operator.name).append("]")
+            if (operator != null) {
+                keyBuilder.append("[$").append(operator.name).append("]")
+            }
+
+            return keyBuilder.toString() to value
+        }
     }
-
-    return keyBuilder.toString() to value
 }
+
