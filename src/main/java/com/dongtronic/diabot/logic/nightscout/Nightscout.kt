@@ -2,9 +2,7 @@ package com.dongtronic.diabot.logic.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDTO
 import com.dongtronic.diabot.exceptions.NoNightscoutDataException
-import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
-import com.dongtronic.diabot.logic.nightscout.NightscoutService.Companion.find
 import com.dongtronic.diabot.util.logger
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jakewharton.retrofit2.adapter.reactor.ReactorCallAdapterFactory
@@ -16,7 +14,6 @@ import reactor.core.publisher.Mono
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.io.Closeable
-import java.io.IOException
 import java.time.Instant
 
 class Nightscout(baseUrl: String, token: String? = null) : Closeable {
@@ -79,7 +76,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      * @return true if the instance exists, false if not
      */
     fun isNightscoutInstance(): Mono<Boolean> {
-        return service.getStatus().map { it.code() != 404 }
+        return service.getStatusResponse().map { it.code() != 404 }
     }
 
     /**
@@ -90,13 +87,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      * @return true if a token is required, false if not
      */
     fun needsNightscoutToken(): Mono<Boolean> {
-        return service.getStatus().map { it.code() == 401 }
+        return service.getStatusResponse().map { it.code() == 401 }
     }
 
     /**
      * Fetches a Nightscout's settings and puts the data in a [NightscoutDTO] instance
      *
      * @param dto NS data
+     * @return The [NightscoutDTO] instance with the Nightscout's settings (target ranges, title, bg units)
      */
     fun getSettings(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getStatusJson().map { json ->
@@ -122,9 +120,10 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     }
 
     /**
-     * Fetches the `pebble` endpoint for a Nightscout instance and puts the data in a [NightscoutDTO] instance
+     * Fetches the `pebble` endpoint for a Nightscout instance and puts the data in a [NightscoutDTO] instance.
      *
      * @param dto NS DTO
+     * @return The [NightscoutDTO] instance with COB and IOB data
      */
     fun getPebble(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getPebbleJson().map { json ->
@@ -154,12 +153,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      * Fetches a Nightscout's most recent SGV and puts the data in a [NightscoutDTO] instance
      *
      * @param dto NS data
-     * @throws IOException
-     * @throws UnknownUnitException
+     * @return The [NightscoutDTO] instance with the most recent glucose data (sgv, timestamp, trend, delta)
      */
     fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
-        val findParam = mapOf(find("sgv", operator = MongoOperator.exists))
-        return service.getEntriesJson(extraParams = findParam).map { json ->
+        val findParam = EntriesParameters()
+                .find("sgv", operator = MongoOperator.exists)
+                .count(1)
+                .toMap()
+        return service.getEntriesJson(findParam).map { json ->
             if (json.isEmpty) {
                 throw NoNightscoutDataException()
             }
@@ -199,7 +200,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     }
 
     override fun close() {
-        logger.debug("Closing Nightscout API")
+        logger.debug("Closing Nightscout API: ${responseCache.size} responses")
         responseCache.forEach { (_, response) ->
             // clear the cache bodies
             response.body(null)
