@@ -229,8 +229,12 @@ object NightscoutCommunicator {
         val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
 
         if (delta.isNotEmpty()) {
-            val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
-            dto.delta = convertedDelta
+            try {
+                val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
+                dto.delta = convertedDelta
+            } catch (ex: IllegalArgumentException) {
+                logger.debug("got illegal delta from nightscout: $delta")
+            }
         }
 
         dto.glucose = convertedBg
