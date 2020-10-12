@@ -79,7 +79,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot || !event.isFromGuild) return
 
-        val msg = event.message.contentStripped
+        val msg = event.message.contentRaw
         if (msg.startsWith(".")) {
             val fullCommand = msg.substringAfter('.')
             // split the command name from the arguments (if any)
