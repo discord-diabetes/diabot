@@ -2,7 +2,6 @@ package com.dongtronic.diabot.logic.diabetes
 
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
-import org.apache.commons.lang3.math.NumberUtils
 
 /**
  * BG conversion logic
@@ -11,12 +10,8 @@ object BloodGlucoseConverter {
 
     @Throws(UnknownUnitException::class)
     fun convert(value: String, unit: String?): ConversionDTO? {
-
-        if (!NumberUtils.isCreatable(value)) {
-            throw IllegalArgumentException("value must be numeric")
-        }
-
-        val input = java.lang.Double.valueOf(value)
+        val input = value.toDoubleOrNull()
+                ?: throw IllegalArgumentException("value must be numeric")
 
         if (input < 0 || input > 999) {
             throw IllegalArgumentException("value must be between 0 and 999")
