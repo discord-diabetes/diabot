@@ -22,4 +22,32 @@ data class QuoteDTO(
         val message: String,
         val messageId: String,
         val time: Long = System.currentTimeMillis() / 1000
-)
+) {
+    /**
+     * Checks whether a quote has a message link associated with it.
+     * This is done by checking for the guild ID, channel ID, and message ID properties to have proper values.
+     *
+     * @return if the quote can have a link pointing to its original message
+     */
+    fun hasMessageLink(): Boolean {
+        return guildId != "0" && channelId != "0" && messageId != "0"
+    }
+
+    /**
+     * Creates a message link for a quote.
+     *
+     * @return a message link pointing to the quote, otherwise `null` if a link cannot be created
+     */
+    fun getMessageLink(): String? {
+        if (!hasMessageLink())
+            return null
+
+        return DISCORD_MESSAGE_LINK.replace("{guild}", guildId)
+                .replace("{channel}", channelId)
+                .replace("{message}", messageId)
+    }
+
+    companion object {
+        const val DISCORD_MESSAGE_LINK = "https://discordapp.com/channels/{guild}/{channel}/{message}"
+    }
+}
