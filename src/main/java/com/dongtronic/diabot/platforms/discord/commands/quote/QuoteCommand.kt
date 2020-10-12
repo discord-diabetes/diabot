@@ -14,7 +14,6 @@ import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
-    private val discordMessageLink = "https://discordapp.com/channels/{{guild}}/{{channel}}/{{message}}"
     private val logger = logger()
 
     init {
@@ -74,24 +73,41 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         val builder = EmbedBuilder()
         builder.setAuthor("#" + quoteDTO.quoteId)
 
-        val descriptionBuilder = StringBuilder(quoteDTO.message)
-        descriptionBuilder.append("\n")
-        descriptionBuilder.append("- ").append(quoteDTO.author)
+        builder.setDescription(quoteDTO.message)
 
-        if (quoteDTO.guildId != "0"
-                && quoteDTO.channelId != "0"
-                && quoteDTO.messageId != "0") {
-            val jumpLink = discordMessageLink.replace("{{guild}}", quoteDTO.guildId)
-                    .replace("{{channel}}", quoteDTO.channelId)
-                    .replace("{{message}}", quoteDTO.messageId)
-            val jumpText = "[(Jump)]($jumpLink)"
-            descriptionBuilder.append(" ").append(jumpText)
-        }
-
-        builder.setDescription(descriptionBuilder.toString())
+        addEmbedFooter(quoteDTO, builder)
 
         builder.setTimestamp(Instant.ofEpochSecond(quoteDTO.time))
         return builder.build()
+    }
+
+    /**
+     * Adds the author name and message jump link to the end of a quote.
+     * This function will also work around the 2048 char limit of embed descriptions if the new length is too long
+     * by using embed fields instead of appending to the embed description.
+     *
+     * @param quoteDTO the quote to generate an embed from
+     * @param builder the embed builder to add a quote footer to
+     * @return the embed builder with a quote footer on it
+     */
+    private fun addEmbedFooter(quoteDTO: QuoteDTO, builder: EmbedBuilder): EmbedBuilder {
+        val footer = StringBuilder("\n")
+        footer.append("- ").append(quoteDTO.author)
+
+        quoteDTO.getMessageLink()?.let { jumpLink ->
+            val jumpText = "[(Jump)]($jumpLink)"
+            footer.append(" ").append(jumpText)
+        }
+
+        if (footer.length + quoteDTO.message.length > MessageEmbed.TEXT_MAX_LENGTH) {
+            // delete the newline char, it's not necessary when using a field
+            footer.deleteCharAt(0)
+            builder.addField("", footer.toString(), false)
+        } else {
+            builder.appendDescription(footer.toString())
+        }
+
+        return builder
     }
 
     /**
