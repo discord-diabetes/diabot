@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.internal.requests.Requester
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.litote.kmongo.eq
 import reactor.core.Exceptions
 import reactor.core.publisher.DirectProcessor
 import reactor.core.publisher.Mono
@@ -150,7 +149,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
                             .doOnNext { successful.getAndIncrement() }
                             .onErrorContinue { throwable, quote ->
                                 failed.getAndIncrement()
-                                logger.warn("Could not import $quote - $throwable")
+                                logger.warn("Could not import $quote", throwable)
                             }
                 }
                 // Unwrap throwables from `ReactiveException`
@@ -198,7 +197,8 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
      */
     private fun upsertQuote(quoteDTO: QuoteDTO): Mono<QuoteDTO> {
         val quoteDAO = QuoteDAO.getInstance()
-        var query = quoteDAO.collection.countDocuments(QuoteDTO::quoteId eq quoteDTO.quoteId).toMono()
+        val filter = QuoteDAO.filter(quoteDTO.guildId, quoteDTO.quoteId)
+        var query = quoteDAO.collection.countDocuments(filter).toMono()
 
         if (quoteDTO.quoteId == null) {
             // skip getting count as there will be no matches
