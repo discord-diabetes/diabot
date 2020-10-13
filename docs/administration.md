@@ -60,7 +60,7 @@ Disable username pattern enforcement:
 ## Rewards
 Rewards are a system of giving users in the server a role if they have the required role, and were active while the reward was active.  
 This is useful for events where you want all members who were active during the event to gain and eventually retain a role from that event.  
-Users can opt-out of the reward (and back in) at will, and admins can force users to opt-out.
+Users can opt-out of the reward (and back in) at will, and admins can force users to opt in and out.
 
 
 ### Commands
