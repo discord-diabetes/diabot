@@ -38,14 +38,24 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
                 throw IllegalArgumentException("Please provide the <userId> and <url> parameters")
             }
 
-            if (!StringUtils.isNumeric(args[0])) {
-                throw IllegalArgumentException("User ID must be numeric")
+            val user = if (event.message.mentionedUsers.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("User ID must be valid")
+                }
+
+                val userId = args[0]
+                event.jda.getUserById(userId)
+                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+            } else {
+                event.message.mentionedUsers[0]
             }
 
-            val url = validateNightscoutUrl(args[1])
+//            val userId = user.id
 
-            val user = event.jda.getUserById(args[0])
-                    ?: throw IllegalArgumentException("User `${args[0]}` does not exist in this server")
+            val url = validateNightscoutUrl(args[1])
+//
+//            val user = event.jda.getUserById(args[0])
+//                    ?: throw IllegalArgumentException("User `${args[0]}` does not exist in this server")
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
