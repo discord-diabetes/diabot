@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.logic.nightscout
+package com.dongtronic.nightscout
 
 object NightscoutEndpoints {
     // i would have used an enum but retrofit requires compile-time constants

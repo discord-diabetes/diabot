@@ -1,7 +1,7 @@
-package com.dongtronic.diabot.data.mongodb
+package com.dongtronic.nightscout.data
 
 import com.dongtronic.diabot.data.ConversionDTO
-import com.dongtronic.diabot.logic.nightscout.TrendArrow
+import com.dongtronic.nightscout.TrendArrow
 import java.time.Instant
 
 data class NightscoutDTO (

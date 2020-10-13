@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.logic.nightscout
+package com.dongtronic.nightscout
 
 import com.fasterxml.jackson.databind.JsonNode
 import okhttp3.ResponseBody
@@ -48,4 +48,3 @@ interface NightscoutService {
             count: Int = 1
     ): Mono<JsonNode>
 }
-

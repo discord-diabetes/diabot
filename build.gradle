@@ -49,6 +49,7 @@ dependencies {
 
     // Misc
     compile project(':utilities')
+    compile project(':nightscout-api')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile 'io.projectreactor:reactor-core:3.3.8.RELEASE'
     compile 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'

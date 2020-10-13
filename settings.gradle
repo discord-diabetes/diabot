@@ -1,2 +1,3 @@
 rootProject.name = 'diabot'
 include 'utilities'
+include 'nightscout-api'

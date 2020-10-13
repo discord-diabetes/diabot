@@ -1,9 +1,9 @@
-package com.dongtronic.diabot.logic.nightscout
+package com.dongtronic.nightscout
 
-import com.dongtronic.diabot.data.mongodb.NightscoutDTO
-import com.dongtronic.diabot.exceptions.NoNightscoutDataException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.util.logger
+import com.dongtronic.nightscout.data.NightscoutDTO
+import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jakewharton.retrofit2.adapter.reactor.ReactorCallAdapterFactory
 import okhttp3.Interceptor
@@ -26,7 +26,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
         val client = OkHttpClient.Builder()
         if (token != null) {
             client.interceptors().add(Interceptor {
-            // adds the auth token to the parameters
+                // adds the auth token to the parameters
                 val newUrl = it.request()
                         .url
                         .newBuilder()
@@ -50,7 +50,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 if (cached == null) {
                     logger.debug("Performing network request for endpoint ${request.url.encodedPath}")
                     val networkResponse = chain.proceed(request)
-                    val body = networkResponse.peekBody(1024*1024)
+                    val body = networkResponse.peekBody(1024 * 1024)
                     responseCache[request.toString()] = networkResponse.newBuilder().body(body)
                     networkResponse
                 } else {

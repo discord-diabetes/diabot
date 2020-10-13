@@ -1,12 +1,20 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.mongodb.*
-import com.dongtronic.diabot.exceptions.*
-import com.dongtronic.diabot.logic.nightscout.Nightscout
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
+import com.dongtronic.diabot.exceptions.NightscoutDataException
+import com.dongtronic.diabot.exceptions.NightscoutPrivateException
+import com.dongtronic.diabot.exceptions.NightscoutStatusException
+import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
+import com.dongtronic.nightscout.Nightscout
+import com.dongtronic.nightscout.data.NightscoutDTO
+import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder

@@ -1,5 +1,9 @@
-package com.dongtronic.diabot.logic.nightscout
+package com.dongtronic.nightscout
 
+/**
+ * Nightscout BG trend arrows
+ */
+@Suppress("unused")
 enum class TrendArrow(val unicode: String = "") {
     NONE,
     DOUBLEUP("↟"),

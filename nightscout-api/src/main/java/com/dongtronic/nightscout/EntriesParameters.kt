@@ -1,9 +1,14 @@
-package com.dongtronic.diabot.logic.nightscout
+package com.dongtronic.nightscout
 
 import org.litote.kmongo.MongoOperator
 import java.net.URLEncoder
 import kotlin.math.absoluteValue
 
+/**
+ * A builder/helper for finding specific entries via the Nightscout API.
+ *
+ * @param inputParameters parameters to add to the builder once initialised
+ */
 class EntriesParameters(inputParameters: Map<String, String> = emptyMap()) {
     private val parameters = mutableListOf<Pair<String, String>>()
 
