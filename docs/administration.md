@@ -1,5 +1,5 @@
 
-[To return to the README, press here.](../README.md)
+[Return to README](../README.md)
 
 Diabot has several features for admins to manage the server and configure other commands diabot offers.
 
