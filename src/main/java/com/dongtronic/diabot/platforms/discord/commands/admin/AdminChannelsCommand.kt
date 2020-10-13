@@ -20,7 +20,7 @@ class AdminChannelsCommand(category: Command.Category, parent: Command?) : Disco
         this.ownerCommand = false
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.aliases = arrayOf("c")
-        this.examples = arrayOf("diabot admin channels add <channelId or channel mention>", "diabot admin channels delete <channelId  or channel mention>", "diabot admin channels list")
+        this.examples = arrayOf("diabot admin channels add <channelId or #mention>", "diabot admin channels delete <channelId  or #mention>", "diabot admin channels list")
         this.children = arrayOf(
                 AdminChannelAddCommand(category, this),
                 AdminChannelDeleteCommand(category, this),

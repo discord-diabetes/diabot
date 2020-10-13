@@ -13,7 +13,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
 
     init {
         this.name = "add"
-        this.help = "Adds a channel as an admin"
+        this.help = "Adds a channel as an admin channel"
         this.guildOnly = false
         this.aliases = arrayOf("a")
         this.userPermissions = this.parent!!.userPermissions
