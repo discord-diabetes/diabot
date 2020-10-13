@@ -26,17 +26,33 @@ class AdminRewardAddCommand(category: Command.Category, parent: Command?) : Disc
                 throw IllegalArgumentException("Required and reward role IDs are required")
             }
 
-            if (!StringUtils.isNumeric(args[0]) || !StringUtils.isNumeric(args[1])) {
-                throw IllegalArgumentException("Role IDs must be numeric")
+            val requiredRole = if (event.message.mentionedRoles.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("Role ID must be numeric")
+                }
+
+                val roleId = args[0]
+                event.jda.getRoleById(roleId)
+                        ?: throw IllegalArgumentException("Role `$roleId` does not exist")
+            } else {
+                event.message.mentionedRoles[0]
             }
 
-            val requiredId = args[0]
-            val rewardId = args[1]
+            val requiredId = requiredRole.id
 
-            val requiredRole = event.jda.getRoleById(requiredId)
-                    ?: throw IllegalArgumentException("Role $requiredId does not exist")
-            val rewardRole = event.jda.getRoleById(rewardId)
-                    ?: throw IllegalArgumentException("Role $rewardId does not exist")
+            val rewardRole = if (event.message.mentionedRoles.size == 0) {
+                if (!StringUtils.isNumeric(args[1])) {
+                    throw IllegalArgumentException("Role ID must be numeric")
+                }
+
+                val roleId = args[1]
+                event.jda.getRoleById(roleId)
+                        ?: throw IllegalArgumentException("Role `$roleId` does not exist")
+            } else {
+                event.message.mentionedRoles[1]
+            }
+
+            val rewardId = rewardRole.id
 
             RewardsDAO.instance.changeRewardRole(event.guild.id, requiredId, rewardId, true).subscribe({
                 event.reply("Added reward **${rewardRole.name}** for **${requiredRole.name}**")
