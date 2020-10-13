@@ -74,11 +74,11 @@ Users can opt-out of the reward (and back in) at will, and admins can force user
 
 #### Add reward
 To create a new reward, specify the required role ID and the rewarded role ID:  
-`diabot admin rewards add <required role ID> <reward role ID>`
+`diabot admin rewards add <role> <role>`
 
 #### Delete reward
 To delete an existing reward, specify both the required role ID and the rewarded role ID:  
-`diabot admin rewards delete <requirement role ID> <reward role ID>`
+`diabot admin rewards delete <role> <role>`
 
 #### List rewards
 To list all currently configured rewards:  
@@ -86,11 +86,11 @@ To list all currently configured rewards:
 
 #### Opt user in to rewards
 Admins can force a user to opt-in to rewards by specifying the user ID:  
-`diabot admin rewards optin <user ID or @mention>`
+`diabot admin rewards optin <user>`
 
 #### Opt user out of rewards
 Likewise, admins can force a user to opt-out of rewards:  
-`diabot admin rewards optout <user ID or @mention>`
+`diabot admin rewards optout <user>`
 
 #### List all opt-outs
 To list all users who are opted out of receiving rewards:  
@@ -110,11 +110,11 @@ Admin channels are a way of limiting certain commands which may expose sensitive
 
 #### Add an admin channel
 To add an admin channel, specify the channel ID:  
-`diabot admin channels add <channel ID or #mention>`
+`diabot admin channels add <channel>`
 
 #### Remove an admin channel
 Likewise, to remove an admin channel:  
-`diabot admin channels delete <channel ID or #mention>`
+`diabot admin channels delete <channel>`
 
 #### List admin channels
 To list all admin channels in the server:  
@@ -132,7 +132,7 @@ Admins can write messages as diabot in public channels.
 
 #### Announce a message
 To announce a message in a channel, specify the channel ID and message you'd like to send:  
-`diabot admin announce <channel ID or #mention> <message>`  
+`diabot admin announce <channel> <message>`  
   
 For example, to send `foo` to the channel who's ID is `257554742371155998` :  
 `diabot admin announce 257554742371155998 foo`
@@ -155,22 +155,22 @@ The `simple` subcommand can force certain channels to only show single-line nigh
 
 #### Set someone else's URL
 Admins can set someone else's nightscout URL by specifying their user ID and a new URL:  
-`diabot nightscoutadmin set <user ID or @mention> <url>`
+`diabot nightscoutadmin set <user> <url>`
 
 #### Delete someone else's URL
 Admins can also remove someone's URL entirely, by specifying their user ID:  
-`diabot nightscoutadmin delete <user ID or @mention>`
+`diabot nightscoutadmin delete <user>`
 
 #### Simple mode
 Simple mode forces all calls to diabot's `nightscout` command to show a simpler, less cluttered version.
 
 #### Enable simple mode for a channel
 To enable simple mode for a channel, specify the channel ID:  
-`diabot nightscoutadmin simple add <channel ID or #mention>`
+`diabot nightscoutadmin simple add <channel>`
 
 #### Disable simple mode for a channel
 Likewise, to disable simple mode for a channel, specify the channel ID:  
-`diabot nightscoutadmin simple delete <channel ID or #mention>`
+`diabot nightscoutadmin simple delete <channel>`
 
 #### List all simple mode channels
 To list all simple mode-enabled channels:  
