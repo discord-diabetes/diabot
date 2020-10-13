@@ -17,7 +17,7 @@ class AdminRewardsCommand(category: Command.Category, parent: Command?) : Discor
         this.guildOnly = true
         this.ownerCommand = false
         this.aliases = arrayOf("r", "roles")
-        this.examples = arrayOf("diabot admin rewards list", "diabot admin rewards add <required role ID> <reward role ID>")
+        this.examples = arrayOf("diabot admin rewards list", "diabot admin rewards add <required role> <reward role>")
         this.userPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.children = arrayOf(
                 AdminRewardAddCommand(category, this),

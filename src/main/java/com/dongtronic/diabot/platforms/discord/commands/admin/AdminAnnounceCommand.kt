@@ -13,7 +13,7 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
     init {
         this.name = "announce"
         this.help = "Announce a message in a channel"
-        this.arguments = "<channel ID or #mention> <message>"
+        this.arguments = "<channel> <message>"
         this.guildOnly = true
         this.ownerCommand = false
     }
