@@ -14,7 +14,7 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
 
     init {
         this.name = "listoptouts"
-        this.help = "Add role reward"
+        this.help = "List opted-out users"
         this.guildOnly = true
         this.aliases = arrayOf("lo")
     }
