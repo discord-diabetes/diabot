@@ -49,10 +49,10 @@ Diabot primarily uses environment variables for core configuration. A list of th
 
 ### Creating a Discord bot account
 1. Visit https://discordapp.com/developers/applications/
-2. Create a new application ![](/docs/create_application.png)
+2. Create a new application ![](/docs/images/create_application.png)
 3. In the menu to the side, click the "bot button"
-4. On the bot page, click the "create bot account" button ![](/docs/build_a_bot.png)
-5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/copy_token.png)
+4. On the bot page, click the "create bot account" button ![](/docs/images/build_a_bot.png)
+5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/images/copy_token.png)
 
 ### Setting up a MongoDB database
 Instructions for installing a MongoDB community edition server [can be found here](https://docs.mongodb.com/manual/administration/install-community/).
@@ -64,7 +64,7 @@ To invite Diabot to your test server, create an invitation URL by replacing `<cl
 
 `https://discordapp.com/oauth2/authorize?&client_id=<client_id>&scope=bot&permissions=0`
 
-![](/docs/copy_id.png)
+![](/docs/images/copy_id.png)
 
 ## Logging
 
