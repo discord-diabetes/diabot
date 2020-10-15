@@ -50,12 +50,7 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
                 event.message.mentionedUsers[0]
             }
 
-//            val userId = user.id
-
             val url = validateNightscoutUrl(args[1])
-//
-//            val user = event.jda.getUserById(args[0])
-//                    ?: throw IllegalArgumentException("User `${args[0]}` does not exist in this server")
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
