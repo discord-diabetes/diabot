@@ -74,11 +74,11 @@ Users can opt-out of the reward (and back in) at will, and admins can force user
 
 #### Add reward
 To create a new reward, specify the required role ID and the rewarded role ID:  
-`diabot admin rewards add <role> <role>`
+`diabot admin rewards add <required role> <reward role>`
 
 #### Delete reward
 To delete an existing reward, specify both the required role ID and the rewarded role ID:  
-`diabot admin rewards delete <role> <role>`
+`diabot admin rewards delete <required role> <reward role>`
 
 #### List rewards
 To list all currently configured rewards:  
