@@ -50,10 +50,14 @@ class BloodGlucoseConverterTest {
         Assert.assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     @Throws(Exception::class)
     fun negative() {
-        BloodGlucoseConverter.convert("-5.5", "mmol")
+        val actual = BloodGlucoseConverter.convert("-5.5", "mmol")
+
+        val expected = ConversionDTO(-5.5, -99.0, GlucoseUnit.MMOL)
+
+        Assert.assertEquals(expected, actual)
     }
 
     @Test(expected = IllegalArgumentException::class)
