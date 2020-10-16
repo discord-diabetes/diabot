@@ -363,11 +363,11 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         val mmolString: String
         val mgdlString: String
         if (newest.delta != null) {
-            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), newest.delta!!.mmol.toString(), newest.deltaIsNegative!!)
-            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), newest.delta!!.mgdl.toString(), newest.deltaIsNegative!!)
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), newest.delta!!.mmol.toString())
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), newest.delta!!.mgdl.toString())
         } else {
-            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), "999.0", false)
-            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), "999.0", false)
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), "999.0")
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), "999.0")
         }
         return Pair(mmolString, mgdlString)
     }
@@ -377,10 +377,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      *
      * @param glucose The glucose value.
      * @param delta The current delta.
-     * @param negative Whether the delta is falling.
      * @return Formatted glucose and delta
      */
-    private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
+    private fun buildGlucoseString(glucose: String, delta: String): String {
         val builder = StringBuilder()
 
         builder.append(glucose)
@@ -389,9 +388,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             // 999L is placeholder for absent delta
             builder.append(" (")
 
-            if (negative) {
-                builder.append("-")
-            } else {
+            if (!delta.startsWith("-")) {
                 builder.append("+")
             }
 

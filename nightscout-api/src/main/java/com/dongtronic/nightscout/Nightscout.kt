@@ -145,8 +145,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val newestBg = dto.getNewestEntryOrNull()
             if (newestBg != null && newestBg.delta == null) {
                 val builder = newestBg.newBuilder()
-                builder.deltaIsNegative(bgDelta.contains("-"))
-                BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)?.let {
+                BloodGlucoseConverter.convert(bgDelta, dto.units)?.let {
                     builder.delta(it)
                 }
                 dto.replaceBgEntry(builder.build())
@@ -193,8 +192,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
 
             if (delta.isNotEmpty()) {
-                bgBuilder.delta(BloodGlucoseConverter.convert(delta.replace("-", ""), "mg")!!)
-                bgBuilder.deltaIsNegative(delta.contains("-"))
+                bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
             }
 
             bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))

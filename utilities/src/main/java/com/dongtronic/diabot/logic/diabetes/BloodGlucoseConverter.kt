@@ -13,8 +13,8 @@ object BloodGlucoseConverter {
         val input = value.toDoubleOrNull()
                 ?: throw IllegalArgumentException("value must be numeric")
 
-        if (input < 0 || input > 999) {
-            throw IllegalArgumentException("value must be between 0 and 999")
+        if (input < -999 || input > 999) {
+            throw IllegalArgumentException("value must be between -999 and 999")
         }
 
         return if (unit != null && unit.length > 1) {

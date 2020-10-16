@@ -7,7 +7,6 @@ import java.time.Instant
 data class BgEntry(
         val glucose: ConversionDTO,
         val delta: ConversionDTO? = null,
-        val deltaIsNegative: Boolean? = null,
         val dateTime: Instant,
         val trend: TrendArrow = TrendArrow.NONE
 ) {
@@ -34,7 +33,6 @@ data class BgEntry(
     open class Builder {
         private var glucose: ConversionDTO? = null
         private var delta: ConversionDTO? = null
-        private var deltaIsNegative: Boolean? = null
         private var dateTime: Instant? = null
         private var trend: TrendArrow = TrendArrow.NONE
 
@@ -43,7 +41,6 @@ data class BgEntry(
         constructor(bgEntry: BgEntry) {
             this.glucose = bgEntry.glucose
             this.delta = bgEntry.delta
-            this.deltaIsNegative = bgEntry.deltaIsNegative
             this.dateTime = bgEntry.dateTime
             this.trend = bgEntry.trend
         }
@@ -54,10 +51,6 @@ data class BgEntry(
 
         open fun delta(delta: ConversionDTO) = apply {
             this.delta = delta
-        }
-
-        open fun deltaIsNegative(deltaIsNegative: Boolean) = apply {
-            this.deltaIsNegative = deltaIsNegative
         }
 
         open fun dateTime(dateTime: Instant) = apply {
@@ -72,7 +65,6 @@ data class BgEntry(
             return BgEntry(
                     glucose = checkNotNull(glucose) { "glucose == null" },
                     delta = delta,
-                    deltaIsNegative = deltaIsNegative,
                     dateTime = checkNotNull(dateTime) { "dateTime == null" },
                     trend = trend
             )
