@@ -30,7 +30,7 @@ data class BgEntry(
         return result
     }
 
-    open class Builder {
+    class Builder {
         private var glucose: ConversionDTO? = null
         private var delta: ConversionDTO? = null
         private var dateTime: Instant? = null
@@ -45,29 +45,19 @@ data class BgEntry(
             this.trend = bgEntry.trend
         }
 
-        open fun glucose(glucose: ConversionDTO) = apply {
-            this.glucose = glucose
-        }
+        fun glucose(glucose: ConversionDTO) = apply { this.glucose = glucose }
 
-        open fun delta(delta: ConversionDTO) = apply {
-            this.delta = delta
-        }
+        fun delta(delta: ConversionDTO) = apply { this.delta = delta }
 
-        open fun dateTime(dateTime: Instant) = apply {
-            this.dateTime = dateTime
-        }
+        fun dateTime(dateTime: Instant) = apply { this.dateTime = dateTime }
 
-        open fun trend(trend: TrendArrow) = apply {
-            this.trend = trend
-        }
+        fun trend(trend: TrendArrow) = apply { this.trend = trend }
 
-        open fun build(): BgEntry {
-            return BgEntry(
-                    glucose = checkNotNull(glucose) { "glucose == null" },
-                    delta = delta,
-                    dateTime = checkNotNull(dateTime) { "dateTime == null" },
-                    trend = trend
-            )
-        }
+        fun build() = BgEntry(
+                glucose = checkNotNull(glucose) { "glucose == null" },
+                delta = delta,
+                dateTime = checkNotNull(dateTime) { "dateTime == null" },
+                trend = trend
+        )
     }
 }
