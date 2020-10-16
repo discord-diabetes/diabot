@@ -100,7 +100,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     fun getSettings(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getStatusJson().map { json ->
             val settings = json.path("settings")
-            val ranges = json.path("thresholds")
+            val ranges = settings.path("thresholds")
 
             val title = settings.path("customTitle").asText()
             val units = settings.path("units").asText()
