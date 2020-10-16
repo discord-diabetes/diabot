@@ -62,13 +62,13 @@ class EntriesParameters(inputParameters: Map<String, String> = emptyMap()) {
     }
 
     /**
-     * Builds the parameters into a key-value map, while squashing duplicate parameter names.
+     * Builds the parameters into a key-value map, while optionally keeping duplicate parameters.
      *
-     * @param squash Whether to squash duplicate parameters or to overwrite duplicates with the last-added duplicate parameter
+     * @param keepDuplicate Whether to keep duplicate parameters or to overwrite duplicates with the last-added duplicate parameter
      * @return Parameter key-value map
      */
-    fun toMap(squash: Boolean = true): Map<String, String> {
-        if (!squash) {
+    fun toMap(keepDuplicate: Boolean = true): Map<String, String> {
+        if (!keepDuplicate) {
             return parameters.toMap()
         }
 
