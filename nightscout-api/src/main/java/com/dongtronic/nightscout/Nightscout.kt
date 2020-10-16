@@ -109,14 +109,16 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val top = ranges.path("bgTargetTop").asInt()
             val high = ranges.path("bgHigh").asInt()
 
-            dto.title = title
-            dto.low = low
-            dto.bottom = bottom
-            dto.top = top
-            dto.high = high
-            dto.units = units
+            val builder = dto.newBuilder()
 
-            return@map dto
+            builder.title(title)
+            builder.low(low)
+            builder.bottom(bottom)
+            builder.top(top)
+            builder.high(high)
+            builder.units(units)
+
+            return@map builder.build()
         }
     }
 
@@ -129,6 +131,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     fun getPebble(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getPebbleJson().map { json ->
             val bgsJson = json.get("bgs")?.get(0)
+            val builder = dto.newBuilder()
 
             if (bgsJson == null) {
                 logger.warn("Failed to get bgs object from pebble Endpoint JSON:\n${json.toPrettyString()}")
@@ -136,21 +139,21 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             }
 
             if (bgsJson.has("cob")) {
-                dto.cob = bgsJson.get("cob").asInt()
+                builder.cob(bgsJson.get("cob").asInt())
             }
             if (bgsJson.has("iob")) {
-                dto.iob = bgsJson.get("iob").textValue().toFloat()
+                builder.iob(bgsJson.get("iob").textValue().toFloat())
             }
             val bgDelta = bgsJson.get("bgdelta").asText()
             val newestBg = dto.getNewestEntryOrNull()
             if (newestBg != null && newestBg.delta == null) {
-                val builder = newestBg.newBuilder()
+                val bgBuilder = newestBg.newBuilder()
                 BloodGlucoseConverter.convert(bgDelta, dto.units)?.let {
-                    builder.delta(it)
+                    bgBuilder.delta(it)
                 }
-                dto.replaceBgEntry(builder.build())
+                builder.replaceEntry(bgBuilder.build())
             }
-            return@map dto
+            return@map builder.build()
         }
     }
 
@@ -198,9 +201,9 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
             bgBuilder.trend(trend)
 
-            dto.replaceBgEntry(bgBuilder.build())
-
-            return@map dto
+            return@map dto.newBuilder()
+                    .replaceEntry(bgBuilder.build())
+                    .build()
         }
     }
 
