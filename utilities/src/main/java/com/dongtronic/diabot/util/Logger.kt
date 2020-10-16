@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
  *
  * @return A SLF4J [Logger] instance named with the calling class.
  */
+@Suppress("unused")
 inline fun <reified T> T.logger(): Logger {
     if (T::class.isCompanion) {
         // grab the parent class if this class is a companion object
