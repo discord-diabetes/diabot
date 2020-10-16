@@ -2,6 +2,7 @@ package com.dongtronic.nightscout
 
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.util.logger
+import com.dongtronic.nightscout.data.BgEntry
 import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -141,9 +142,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 dto.iob = bgsJson.get("iob").textValue().toFloat()
             }
             val bgDelta = bgsJson.get("bgdelta").asText()
-            if (dto.delta == null) {
-                dto.deltaIsNegative = bgDelta.contains("-")
-                dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
+            val newestBg = dto.getNewestEntryOrNull()
+            if (newestBg != null && newestBg.delta == null) {
+                val builder = newestBg.newBuilder()
+                builder.deltaIsNegative(bgDelta.contains("-"))
+                BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)?.let {
+                    builder.delta(it)
+                }
+                dto.replaceBgEntry(builder.build())
             }
             return@map dto
         }
@@ -183,17 +189,18 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 delta = jsonObject.path("delta").asText()
             }
 
-            val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
+            val bgBuilder = BgEntry.Builder()
+            bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
 
             if (delta.isNotEmpty()) {
-                val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
-                dto.delta = convertedDelta
+                bgBuilder.delta(BloodGlucoseConverter.convert(delta.replace("-", ""), "mg")!!)
+                bgBuilder.deltaIsNegative(delta.contains("-"))
             }
 
-            dto.glucose = convertedBg
-            dto.deltaIsNegative = delta.contains("-")
-            dto.dateTime = Instant.ofEpochMilli(timestamp)
-            dto.trend = trend
+            bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
+            bgBuilder.trend(trend)
+
+            dto.replaceBgEntry(bgBuilder.build())
 
             return@map dto
         }

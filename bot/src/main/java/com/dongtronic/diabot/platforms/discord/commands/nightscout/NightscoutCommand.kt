@@ -318,13 +318,14 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             short: Boolean,
             builder: EmbedBuilder = EmbedBuilder()
     ): EmbedBuilder {
+        val newest = nsDTO.getNewestEntry()
         val displayOptions = userDTO.displayOptions
 
         if (displayOptions.contains("title")) builder.setTitle(nsDTO.title)
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
 
-        val trendString = nsDTO.trend.unicode
+        val trendString = newest.trend.unicode
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
@@ -341,10 +342,10 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             builder.setThumbnail(userDTO.jdaUser.avatarUrl)
         }
 
-        builder.setTimestamp(nsDTO.dateTime)
+        builder.setTimestamp(newest.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (nsDTO.dateTime!!.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
+        if (newest.dateTime.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 
@@ -358,14 +359,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A pair consisting of mmol/L in the first value and mg/dL in the second value
      */
     private fun buildGlucoseStrings(dto: NightscoutDTO): Pair<String, String> {
+        val newest = dto.getNewestEntry()
         val mmolString: String
         val mgdlString: String
-        if (dto.delta != null) {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
+        if (newest.delta != null) {
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), newest.delta!!.mmol.toString(), newest.deltaIsNegative!!)
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), newest.delta!!.mgdl.toString(), newest.deltaIsNegative!!)
         } else {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), "999.0", false)
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), "999.0", false)
         }
         return Pair(mmolString, mgdlString)
     }
@@ -407,14 +409,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param response The message to react to.
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
+        val newest = dto.getNewestEntry()
         // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-        if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
+        if (newest.glucose.mgdl == 69 || newest.glucose.mmol == 6.9) {
             response.addReaction("\uD83D\uDE0F").queue()
         }
         // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-        if (dto.glucose!!.mgdl == 100
-                || dto.glucose!!.mmol == 5.5
-                || dto.glucose!!.mmol == 10.0) {
+        if (newest.glucose.mgdl == 100
+                || newest.glucose.mmol == 5.5
+                || newest.glucose.mmol == 10.0) {
             response.addReaction("\uD83D\uDCAF").queue()
         }
     }
@@ -426,7 +429,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param builder Optional: the embed to set colors on.
      */
     private fun setResponseColor(dto: NightscoutDTO, builder: EmbedBuilder = EmbedBuilder()): EmbedBuilder {
-        val glucose = dto.glucose!!.mgdl.toDouble()
+        val glucose = dto.getNewestEntry().glucose.mgdl.toDouble()
 
         if (glucose >= dto.high || glucose <= dto.low) {
             builder.setColor(Color.red)

@@ -1,0 +1,81 @@
+package com.dongtronic.nightscout.data
+
+import com.dongtronic.diabot.data.ConversionDTO
+import com.dongtronic.nightscout.TrendArrow
+import java.time.Instant
+
+data class BgEntry(
+        val glucose: ConversionDTO,
+        val delta: ConversionDTO? = null,
+        val deltaIsNegative: Boolean? = null,
+        val dateTime: Instant,
+        val trend: TrendArrow = TrendArrow.NONE
+) {
+    fun newBuilder(): Builder = Builder(this)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BgEntry
+
+        if (glucose != other.glucose) return false
+        if (dateTime != other.dateTime) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = glucose.hashCode()
+        result = 31 * result + dateTime.hashCode()
+        return result
+    }
+
+    open class Builder {
+        private var glucose: ConversionDTO? = null
+        private var delta: ConversionDTO? = null
+        private var deltaIsNegative: Boolean? = null
+        private var dateTime: Instant? = null
+        private var trend: TrendArrow = TrendArrow.NONE
+
+        constructor()
+
+        constructor(bgEntry: BgEntry) {
+            this.glucose = bgEntry.glucose
+            this.delta = bgEntry.delta
+            this.deltaIsNegative = bgEntry.deltaIsNegative
+            this.dateTime = bgEntry.dateTime
+            this.trend = bgEntry.trend
+        }
+
+        open fun glucose(glucose: ConversionDTO) = apply {
+            this.glucose = glucose
+        }
+
+        open fun delta(delta: ConversionDTO) = apply {
+            this.delta = delta
+        }
+
+        open fun deltaIsNegative(deltaIsNegative: Boolean) = apply {
+            this.deltaIsNegative = deltaIsNegative
+        }
+
+        open fun dateTime(dateTime: Instant) = apply {
+            this.dateTime = dateTime
+        }
+
+        open fun trend(trend: TrendArrow) = apply {
+            this.trend = trend
+        }
+
+        open fun build(): BgEntry {
+            return BgEntry(
+                    glucose = checkNotNull(glucose) { "glucose == null" },
+                    delta = delta,
+                    deltaIsNegative = deltaIsNegative,
+                    dateTime = checkNotNull(dateTime) { "dateTime == null" },
+                    trend = trend
+            )
+        }
+    }
+}
