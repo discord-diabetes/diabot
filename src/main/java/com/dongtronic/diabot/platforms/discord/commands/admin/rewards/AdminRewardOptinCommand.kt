@@ -26,15 +26,20 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
                 throw IllegalArgumentException("UserID is required")
             }
 
-            if (!StringUtils.isNumeric(args[0])) {
-                throw IllegalArgumentException("UserID must be numeric")
+            val user = if (event.message.mentionedMembers.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("User ID must be valid")
+                }
+
+                val userId = args[0]
+                event.guild.getMemberById(userId)
+                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+            } else {
+                event.message.mentionedMembers[0]
             }
 
-            val userId = args[0]
             val guildId = event.guild.id
 
-            val user = event.guild.getMemberById(userId)
-                    ?: throw IllegalArgumentException("User `$userId` does not exist")
 
             RewardsDAO.instance.changeOpt(guildId, user.id, false).subscribe({
                 logger.info("User ${user.effectiveName} (${user.id}) opted in to rewards, $it")

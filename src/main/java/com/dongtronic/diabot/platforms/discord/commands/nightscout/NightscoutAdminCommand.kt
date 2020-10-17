@@ -15,7 +15,7 @@ class NightscoutAdminCommand(category: Command.Category) : DiscordCommand(catego
         this.help = "Administrator commands for Nightscout"
         this.guildOnly = true
         this.aliases = arrayOf("nsadmin", "na")
-        this.examples = arrayOf("diabot nsadmin list", "diabot nsadmin set <userId> <url>", "diabot nsadmin delete <userId>")
+        this.examples = arrayOf("diabot nsadmin list", "diabot nsadmin set <user> <url>", "diabot nsadmin delete <user>")
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.children = arrayOf(
                 NightscoutAdminSetCommand(category, this),
