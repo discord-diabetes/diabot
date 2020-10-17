@@ -158,52 +158,55 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     }
 
     /**
-     * Fetches a Nightscout's most recent SGV and puts the data in a [NightscoutDTO] instance
+     * Fetches a Nightscout's most recent SGV(s) and puts the data in a [NightscoutDTO] instance
      *
      * @param dto NS data
-     * @return The [NightscoutDTO] instance with the most recent glucose data (sgv, timestamp, trend, delta)
+     * @param count The amount of SGV entries to retrieve
+     * @return The [NightscoutDTO] instance with recent glucose data (sgv, timestamp, trend, delta)
      */
-    fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
+    fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO(), count: Int = 1): Mono<NightscoutDTO> {
         val findParam = EntriesParameters()
                 .find("sgv", operator = MongoOperator.exists)
-                .count(1)
+                .count(count)
                 .toMap()
         return service.getEntriesJson(findParam).map { json ->
             if (json.isEmpty) {
                 throw NoNightscoutDataException()
             }
 
+            val dtoBuilder = dto.newBuilder()
+
             // Parse JSON and construct response
-            val jsonObject = json.get(0)
-            val sgv = jsonObject.path("sgv").asText()
-            val timestamp = jsonObject.path("date").asLong()
-            var trend = TrendArrow.NONE
-            val direction: String
-            if (jsonObject.has("trend")) {
-                trend = TrendArrow.getTrend(jsonObject.path("trend").asInt())
-            } else if (jsonObject.has("direction")) {
-                direction = jsonObject.path("direction").asText()
-                trend = TrendArrow.getTrend(direction)
+            json.forEach { entryJson ->
+                val sgv = entryJson.path("sgv").asText()
+                val timestamp = entryJson.path("date").asLong()
+                var trend = TrendArrow.NONE
+                val direction: String
+                if (entryJson.has("trend")) {
+                    trend = TrendArrow.getTrend(entryJson.path("trend").asInt())
+                } else if (entryJson.has("direction")) {
+                    direction = entryJson.path("direction").asText()
+                    trend = TrendArrow.getTrend(direction)
+                }
+
+                var delta = ""
+                if (entryJson.has("delta")) {
+                    delta = entryJson.path("delta").asText()
+                }
+
+                val bgBuilder = BgEntry.Builder()
+                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
+
+                if (delta.isNotEmpty()) {
+                    bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
+                }
+
+                bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
+                bgBuilder.trend(trend)
+                dtoBuilder.replaceEntry(bgBuilder.build())
             }
 
-            var delta = ""
-            if (jsonObject.has("delta")) {
-                delta = jsonObject.path("delta").asText()
-            }
-
-            val bgBuilder = BgEntry.Builder()
-            bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
-
-            if (delta.isNotEmpty()) {
-                bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
-            }
-
-            bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
-            bgBuilder.trend(trend)
-
-            return@map dto.newBuilder()
-                    .replaceEntry(bgBuilder.build())
-                    .build()
+            return@map dtoBuilder.build()
         }
     }
 
