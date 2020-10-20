@@ -10,6 +10,8 @@ import org.knowm.xchart.style.Styler
 import org.knowm.xchart.style.markers.Circle
 import java.awt.BasicStroke
 import java.awt.Color
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 // todo:
@@ -41,23 +43,21 @@ object BgGraph {
         setupChartAxes(nightscout, chart)
         val readings = nightscout.entries.toList()
 
-        val ranges = mutableMapOf<BgEntry, Color>()
+        val ranges = mutableMapOf<Color, List<BgEntry>>()
 
-        if (settings.plotMode != PlottingStyle.SCATTER) {
-            readings.forEach {
-                ranges[it] = settings.inRangeColour
+        readings.forEach {
+            val mgdl = it.glucose.mgdl
+            val color = when {
+                // custom colours are not supported in line mode
+                settings.plotMode != PlottingStyle.SCATTER -> settings.inRangeColour
+
+                mgdl > nightscout.top -> settings.highColour
+                mgdl < nightscout.bottom -> settings.lowColour
+                else -> settings.inRangeColour
             }
-        } else {
-            // split into high/in-range/low readings
-            readings.forEach {
-                val mgdl = it.glucose.mgdl
-                val color = when {
-                    mgdl > nightscout.top -> settings.highColour
-                    mgdl < nightscout.bottom -> settings.lowColour
-                    else -> settings.inRangeColour
-                }
 
-                ranges[it] = color
+            ranges.merge(color, listOf(it)) { oldList: List<BgEntry>, newList: List<BgEntry> ->
+                oldList.plus(newList)
             }
         }
 
@@ -72,39 +72,25 @@ object BgGraph {
             val preferredUnits = isSameUnit(nightscout.units, unit)
                     ?: chart.seriesMap.isEmpty()
 
-            // hide mmol/l readings since they're less precise compared to mg/dl
+            // don't display mmol/l series on the graph since they're less precise compared to mg/dl
             val hidden = unit == GlucoseUnit.MMOL
 
-            val series: MutableList<XYSeries> = mutableListOf()
-
-            ranges.values.toSet().forEach { colour: Color ->
-                val entries = ranges.mapNotNull {
-                    return@mapNotNull if (it.value == colour) {
-                        it.key
-                    } else {
-                        null
-                    }
-                }
-
-                series.add(addSeries(colour, getSeriesData(entries, unit), chart))
+            val series = ranges.map {
+                val data = getSeriesData(it.value, unit)
+                addSeries(it.key, data, chart)
             }
 
             series.forEach { xySeries ->
                 if (hidden) {
-                    // hide this series
                     xySeries.markerColor = Color(0, 0, 0, 0)
                     xySeries.lineColor = Color(0, 0, 0, 0)
                 }
 
                 // axis group 0 will be used for creating lines on the graph.
                 // the series which use the preferred glucose unit will then base line creation off the tick labels for this unit
-                if (preferredUnits) {
-                    xySeries.yAxisGroup = 0
-                } else {
-                    xySeries.yAxisGroup = 1
-                }
-
+                xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
+
                 when (settings.plotMode) {
                     PlottingStyle.SCATTER -> {
 
@@ -127,26 +113,15 @@ object BgGraph {
     }
 
     fun setupChartAxes(nightscout: NightscoutDTO, chart: XYChart) {
-        val preferredUnit = GlucoseUnit.values().firstOrNull { unit ->
-            if (unit == GlucoseUnit.AMBIGUOUS) {
-                false
-            } else {
-                unit.units.any {
-                    it.equals(nightscout.units, ignoreCase = true)
-                }
-            }
-        } ?: GlucoseUnit.MMOL
+        val preferredUnit = GlucoseUnit.byName(nightscout.units) ?: GlucoseUnit.MMOL
 
-        if (preferredUnit == GlucoseUnit.MMOL) {
-            chart.setYAxisGroupTitle(1, "MG/DL")
-            chart.setYAxisGroupTitle(0, "MMOL/L")
-            chart.styler.setYAxisGroupPosition(0, Styler.YAxisPosition.Right)
-        } else {
-            chart.setYAxisGroupTitle(0, "MG/DL")
-            chart.setYAxisGroupTitle(1, "MMOL/L")
-            chart.styler.setYAxisGroupPosition(1, Styler.YAxisPosition.Right)
-        }
+        // axis group 0 will be used for creating lines on the graph.
+        val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
+        val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
 
+        chart.setYAxisGroupTitle(mgdlGroup, "MG/DL")
+        chart.setYAxisGroupTitle(mmolGroup, "MMOL/L")
+        chart.styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
     }
 
     fun getSeriesData(readings: List<BgEntry>, unit: GlucoseUnit): Map<Double, Number> {
@@ -160,7 +135,7 @@ object BgGraph {
                 else -> 0
             }
 
-            val relativeSeconds = (System.currentTimeMillis()-bgEntry.dateTime.toEpochMilli())/1000
+            val relativeSeconds = bgEntry.dateTime.until(Instant.now(), ChronoUnit.SECONDS)
             // hours are used (instead of seconds) because of the decimal formatter.
             // this allows for only the whole number of the hour to be displayed on the chart, while also sorting each reading:
             // 2.47 hours (with a decimal format pattern of "0") -> 2h
