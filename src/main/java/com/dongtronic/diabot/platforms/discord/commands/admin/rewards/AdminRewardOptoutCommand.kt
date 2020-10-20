@@ -27,15 +27,20 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
                 throw IllegalArgumentException("UserID is required")
             }
 
-            if (!StringUtils.isNumeric(args[0])) {
-                throw IllegalArgumentException("UserID must be numeric")
+            val user = if (event.message.mentionedUsers.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("User ID must be valid")
+                }
+
+                val userId = args[0]
+                event.jda.getUserById(userId)
+                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+            } else {
+                event.message.mentionedUsers[0]
             }
 
-            val userId = args[0]
             val guildId = event.guild.id
 
-            val user = event.guild.getMemberById(userId)?.user
-                    ?: throw IllegalArgumentException("User `$userId` does not exist")
 
             RewardsDAO.instance.changeOpt(guildId, user.id, true).subscribe({
                 logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards, $it")

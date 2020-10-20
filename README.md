@@ -5,6 +5,9 @@ A diabetes bot for Discord
 ## Adding Diabot to your server
 Use [this invite link](https://discordapp.com/oauth2/authorize?client_id=260721031038238720&scope=bot&permissions=403008576&guild_id=0)
 
+## Administration documentation
+See documentation for admin commands [here](docs/administration.md).
+
 ## Sponsors
 Since making Diabot public, we have set higher quality goals for the bot. Ensuring we meet this quality requires us to run a separate testing version of the bot. Furthermore, since the bot was made public it costs more to host.
 If you want to support the development efforts and cover the hosting fees, you can choose to [sponsor me](https://github.com/sponsors/cascer1) (@cascer1) on github, or [send crypto.](https://reddit-diabetes.github.io/diabot/crypto).
@@ -49,10 +52,10 @@ Diabot primarily uses environment variables for core configuration. A list of th
 
 ### Creating a Discord bot account
 1. Visit https://discordapp.com/developers/applications/
-2. Create a new application ![](/docs/create_application.png)
+2. Create a new application ![](/docs/images/create_application.png)
 3. In the menu to the side, click the "bot button"
-4. On the bot page, click the "create bot account" button ![](/docs/build_a_bot.png)
-5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/copy_token.png)
+4. On the bot page, click the "create bot account" button ![](/docs/images/build_a_bot.png)
+5. Copy the newly created token into an environment variable called `DIABOTTOKEN` ![](/docs/images/copy_token.png)
 
 ### Setting up a MongoDB database
 Instructions for installing a MongoDB community edition server [can be found here](https://docs.mongodb.com/manual/administration/install-community/).
@@ -64,7 +67,7 @@ To invite Diabot to your test server, create an invitation URL by replacing `<cl
 
 `https://discordapp.com/oauth2/authorize?&client_id=<client_id>&scope=bot&permissions=0`
 
-![](/docs/copy_id.png)
+![](/docs/images/copy_id.png)
 
 ## Logging
 
