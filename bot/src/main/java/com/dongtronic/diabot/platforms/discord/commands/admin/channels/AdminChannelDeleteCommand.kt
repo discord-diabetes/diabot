@@ -27,14 +27,17 @@ class AdminChannelDeleteCommand(category: Category, parent: Command?) : DiscordC
                 throw IllegalArgumentException("Channel ID is required")
             }
 
-            if (!StringUtils.isNumeric(args[0])) {
-                throw IllegalArgumentException("Channel ID must be numeric")
+            val channel = if (event.message.mentionedChannels.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("Channel ID must be numeric")
+                }
+
+                val channelId = args[0]
+                event.jda.getTextChannelById(channelId)
+                        ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
+            } else {
+                event.message.mentionedChannels[0]
             }
-
-            val channelId = args[0]
-
-            val channel = event.jda.getTextChannelById(channelId)
-                    ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
             ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN, false)
                     .subscribe({
