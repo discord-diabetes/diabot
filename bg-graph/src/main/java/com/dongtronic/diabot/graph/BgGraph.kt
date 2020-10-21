@@ -69,7 +69,7 @@ object BgGraph {
             //
             // if the nightscout instance does not have default units (either the settings for this instance have not
             // been fetched or something went horribly wrong): default to preferred if there's no data in the chart.
-            val preferredUnits = isSameUnit(nightscout.units, unit)
+            val preferredUnits = GlucoseUnit.byName(nightscout.units)?.let { it == unit }
                     ?: chart.seriesMap.isEmpty()
 
             // don't display mmol/l series on the graph since they're less precise compared to mg/dl
@@ -143,12 +143,5 @@ object BgGraph {
 //            logger().info("$relativeHours - $glucose")
             -relativeHours to glucose
         }
-    }
-
-    private fun isSameUnit(mainUnit: String, entryUnit: GlucoseUnit): Boolean? {
-        if (mainUnit.isBlank())
-            return null
-
-        return entryUnit.units.any { it.equals(mainUnit, ignoreCase = true) }
     }
 }
