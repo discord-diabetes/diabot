@@ -16,7 +16,6 @@ import java.util.*
 
 // todo:
 // - documentation
-// - fix scaling (graphs with nearly flat bgs get zoomed in too much, the graph min/max should be locked to a certain range based on the highest and lowest bg values in the graph)
 // - implement customisation options for graph settings
 // - light theme
 // - handle errors with fetching data/generating graph
@@ -90,6 +89,9 @@ object BgGraph {
                 // the series which use the preferred glucose unit will then base line creation off the tick labels for this unit
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
+                val scale = ScalingUtil.findMinMax(nightscout.entries.toList(), unit)
+                chart.styler.setYAxisMin(xySeries.yAxisGroup, scale.first)
+                chart.styler.setYAxisMax(xySeries.yAxisGroup, scale.second)
 
                 when (settings.plotMode) {
                     PlottingStyle.SCATTER -> {
