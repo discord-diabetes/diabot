@@ -47,7 +47,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                     val ns = Nightscout(userDTO.url, userDTO.token)
                     ns.getRecentSgv(count = 12*4).flatMap { ns.getSettings(it) }
                 }.map {
-                    BgGraph.addEntries(it, GraphSettings(PlottingStyle.LINE), chart)
+                    BgGraph.addEntries(it, GraphSettings(PlottingStyle.SCATTER), chart)
                     chart
                 }
     }
