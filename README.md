@@ -40,4 +40,4 @@ Pull Requests are welcome. When you submit a pull request, please make sure that
 On top of that, please describe your changes in the pull request. When your pull request is related to an issue, please mention this in the description. 
 The description doesn't have to be anything fancy, so long as it helps the maintainers understand what the changes do.
 
-If you have found a security issue, please report them immediately. See [SECURITY.md](/security.md) for more information
+If you have found a security issue, please report them immediately. See [SECURITY.md](SECURITY.md) for more information
