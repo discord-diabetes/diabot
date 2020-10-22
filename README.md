@@ -25,8 +25,8 @@ Development for Diabot is aimed at a Java 11 environment. Diabot may not functio
 If you have Gradle installed, you can run the following two commands to quickly start Diabot:
 
 ```
-    gradle stage
-    java -jar build/libs/diabot.jar
+gradle stage
+java -jar build/libs/diabot.jar
 ```
 
 For detailed instructions, see [Running Diabot](docs/running.md)
@@ -40,4 +40,4 @@ Pull Requests are welcome. When you submit a pull request, please make sure that
 On top of that, please describe your changes in the pull request. When your pull request is related to an issue, please mention this in the description. 
 The description doesn't have to be anything fancy, so long as it helps the maintainers understand what the changes do.
 
-If you have found a security issue, please report them immediately. See [SECURITY.md](security.md) for more information
+If you have found a security issue, please report them immediately. See [SECURITY.md](/security.md) for more information
