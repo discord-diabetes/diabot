@@ -2,14 +2,12 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.*
 import com.dongtronic.diabot.exceptions.*
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getEntries
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.getSettings
-import com.dongtronic.diabot.logic.nightscout.NightscoutCommunicator.processPebble
+import com.dongtronic.diabot.logic.nightscout.Nightscout
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
-import com.google.gson.stream.MalformedJsonException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.ChannelType
@@ -26,14 +24,15 @@ import reactor.kotlin.core.publisher.onErrorResume
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.toMono
 import reactor.util.function.Tuple2
+import retrofit2.HttpException
 import java.awt.Color
 import java.net.UnknownHostException
-import java.time.ZonedDateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = logger()
-    private val trendArrows: Array<String> = arrayOf("", "↟", "↑", "↗", "→", "↘", "↓", "↡", "↮", "↺")
 
     init {
         this.name = "nightscout"
@@ -120,7 +119,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 event.reactError()
                 logger.info("No nightscout data from ${userDTO.url}")
             }
-            is MalformedJsonException -> {
+            is JsonProcessingException -> {
                 event.reactError()
                 logger.warn("Malformed JSON from ${userDTO.url}")
             }
@@ -232,7 +231,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         return userDtos
                 .flatMap { userDTO ->
-                    val member =  event.guild.getMemberById(userDTO.userId)
+                    val member = event.guild.getMemberById(userDTO.userId)
                     val user: User
                     val publicInThisGuild = userDTO.isNightscoutPublic(event.guild.id)
 
@@ -263,17 +262,18 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A nightscout DTO and an embed based on it
      */
     private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
-        return Mono.fromCallable {
-            val nsDto = NightscoutDTO()
-
-            getSettings(userDTO.apiEndpoint, userDTO.token, nsDto)
-            getEntries(userDTO.apiEndpoint, userDTO.token, nsDto)
-            processPebble(userDTO.apiEndpoint, userDTO.token, nsDto)
-
-            nsDto
+        val api = Nightscout(userDTO.apiEndpoint, userDTO.token)
+        return Mono.from(
+                api.getSettings()
+                        .flatMap { api.getRecentSgv(it) }
+                        .flatMap { api.getPebble(it) }
+        ).doFinally {
+            api.close()
+        }.onErrorMap(HttpException::class) {
+            NightscoutStatusException(it.code())
         }.onErrorResume({ error ->
             error is NightscoutStatusException
-                    || error is MalformedJsonException
+                    || error is JsonProcessingException
                     || error is NoNightscoutDataException
         }, {
             // fallback to `handleGrabError` if the error is any of the above
@@ -316,7 +316,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
 
-        val trendString = trendArrows[nsDTO.trend]
+        val trendString = nsDTO.trend.unicode
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
@@ -336,7 +336,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         builder.setTimestamp(nsDTO.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (nsDTO.dateTime!!.plusMinutes(15).isBefore(ZonedDateTime.now())) {
+        if (nsDTO.dateTime!!.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 

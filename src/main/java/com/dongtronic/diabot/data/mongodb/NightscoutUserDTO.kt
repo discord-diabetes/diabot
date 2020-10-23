@@ -20,7 +20,7 @@ data class NightscoutUserDTO(
         @JsonIgnore
         get() {
             val trimmed = url!!.removeSuffix("/")
-            return trimmed.plus("/api/v1")
+            return trimmed.plus("/api/v1/")
         }
 
     /**

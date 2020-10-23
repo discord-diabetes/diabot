@@ -4,46 +4,49 @@ import com.dongtronic.diabot.data.nutrition.NutritionRequestDTO
 import com.dongtronic.diabot.data.nutrition.NutritionResponseDTO
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.util.logger
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.http.client.methods.RequestBuilder
-import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.util.EntityUtils
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import reactor.core.publisher.Mono
 
 object NutritionixCommunicator {
     private val appid = System.getenv("nutritionixappid")
     private val secret = System.getenv("nutritionixsecret")
     private const val baseUrl = "https://trackapi.nutritionix.com/v2"
-    private val mapper = ObjectMapper()
+    private val mapper = jacksonObjectMapper()
+    private val client = OkHttpClient()
     private val logger = logger()
 
-    public fun getNutritionInfo(input: String): NutritionResponseDTO {
+    fun getNutritionInfo(input: String): Mono<NutritionResponseDTO> {
         val url = "$baseUrl/natural/nutrients"
 
-        val requestObject = NutritionRequestDTO(input)
+        return Mono.fromCallable {
+            val requestObject = NutritionRequestDTO(input)
 
-        val jsonRequest = mapper.writeValueAsString(requestObject)
+            val jsonRequest = mapper.writeValueAsString(requestObject)
 
-        val client = HttpClients.createDefault()
-        val request = RequestBuilder.post()
+            val mediaType = "application/json".toMediaType()
 
-        request.entity = StringEntity(jsonRequest)
+            val request = Request.Builder()
+            request.url(url)
+            request.post(jsonRequest.toRequestBody(mediaType))
+            request.addHeader("x-app-id", appid)
+            request.addHeader("x-app-key", secret)
+            request.addHeader("Accept", mediaType.toString())
 
-        //Add any parameter if u want to send it with Post req.
-        request.setUri(url)
+            client.newCall(request.build()).execute()
+        }.map {
+            it.use { response ->
+                val bodyString = response.body!!.string()
+                if (response.code != 200) {
+                    logger.warn("Nutritionix communication error. Status ${response.message}\n${bodyString}")
+                    throw RequestStatusException(response.code)
+                }
 
-        request.addHeader("x-app-id", appid)
-        request.addHeader("x-app-key", secret)
-        request.addHeader("Accept", "application/json")
-        request.addHeader("Content-Type", "application/json")
-
-        val response = client.execute(request.build())
-
-        if (response.statusLine.statusCode != 200) {
-            logger.warn("Nutritionix communication error. Status ${response.statusLine}\n${EntityUtils.toString(response.entity)}")
-            throw RequestStatusException(response.statusLine.statusCode)
+                mapper.readValue<NutritionResponseDTO>(bodyString, NutritionResponseDTO::class.java)
+            }
         }
-
-        return mapper.readValue<NutritionResponseDTO>(EntityUtils.toString(response.entity), NutritionResponseDTO::class.java)
     }
 }
