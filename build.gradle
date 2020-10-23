@@ -6,7 +6,7 @@ plugins {
 group 'com.dongtronic'
 version '1.14.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     jcenter()
@@ -80,8 +80,8 @@ build.mustRunAfter clean
 fatJar.mustRunAfter build
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }

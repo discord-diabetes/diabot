@@ -1,3 +1,4 @@
+# Diabot administration guide
 
 [Return to README](../README.md)
 
