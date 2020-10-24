@@ -99,7 +99,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     fun getSettings(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getStatusJson().map { json ->
             val settings = json.path("settings")
-            val ranges = json.path("thresholds")
+            val ranges = settings.path("thresholds")
 
             val title = settings.path("customTitle").asText()
             val units = settings.path("units").asText()
@@ -133,14 +133,16 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 logger.warn("Failed to get bgs object from pebble Endpoint JSON:\n${json.toPrettyString()}")
                 return@map dto
             }
-
-            if (bgsJson.has("cob")) {
+            var bgDelta = "0"
+            if (bgsJson.hasNonNull("cob")) {
                 dto.cob = bgsJson.get("cob").asInt()
             }
-            if (bgsJson.has("iob")) {
-                dto.iob = bgsJson.get("iob").textValue().toFloat()
+            if (bgsJson.hasNonNull("iob")) {
+                dto.iob = bgsJson.get("iob").asText().toFloat()
             }
-            val bgDelta = bgsJson.get("bgdelta").asText()
+            if (bgsJson.hasNonNull("bgdelta")) {
+                bgDelta = bgsJson.get("bgdelta").asText()
+            }
             if (dto.delta == null) {
                 dto.deltaIsNegative = bgDelta.contains("-")
                 dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
@@ -171,15 +173,15 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val timestamp = jsonObject.path("date").asLong()
             var trend = TrendArrow.NONE
             val direction: String
-            if (jsonObject.has("trend")) {
+            if (jsonObject.hasNonNull("trend")) {
                 trend = TrendArrow.getTrend(jsonObject.path("trend").asInt())
-            } else if (jsonObject.has("direction")) {
+            } else if (jsonObject.hasNonNull("direction")) {
                 direction = jsonObject.path("direction").asText()
                 trend = TrendArrow.getTrend(direction)
             }
 
             var delta = ""
-            if (jsonObject.has("delta")) {
+            if (jsonObject.hasNonNull("delta")) {
                 delta = jsonObject.path("delta").asText()
             }
 

@@ -13,7 +13,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
 
     init {
         this.name = "add"
-        this.help = "Adds a channel as an admin"
+        this.help = "Adds a channel as an admin channel"
         this.guildOnly = false
         this.aliases = arrayOf("a")
         this.userPermissions = this.parent!!.userPermissions
@@ -27,14 +27,17 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
                 throw IllegalArgumentException("Channel ID is required")
             }
 
-            if (!StringUtils.isNumeric(args[0])) {
-                throw IllegalArgumentException("Channel ID must be numeric")
+            val channel = if (event.message.mentionedChannels.size == 0) {
+                if (!StringUtils.isNumeric(args[0])) {
+                    throw IllegalArgumentException("Channel ID must be numeric")
+                }
+
+                val channelId = args[0]
+                event.jda.getTextChannelById(channelId)
+                        ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
+            } else {
+                event.message.mentionedChannels[0]
             }
-
-            val channelId = args[0]
-
-            val channel = event.jda.getTextChannelById(channelId)
-                    ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
 
             ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN)
                     .subscribe({

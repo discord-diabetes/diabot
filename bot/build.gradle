@@ -6,7 +6,7 @@ plugins {
 group 'com.dongtronic.diabot'
 version '1.14.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     jcenter()
@@ -31,10 +31,10 @@ dependencies {
     compile 'commons-configuration:commons-configuration:1.6'
 
     // Networking
-    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
+    compile 'com.squareup.okhttp3:okhttp:4.8.1'
+    compile 'com.squareup.retrofit2:retrofit:2.9.0'
+    compile 'com.squareup.retrofit2:converter-jackson:2.9.0'
+    compile 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
 
     // Database
     compile 'redis.clients:jedis:3.3.0'
@@ -82,8 +82,8 @@ build.mustRunAfter clean
 fatJar.mustRunAfter build
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
