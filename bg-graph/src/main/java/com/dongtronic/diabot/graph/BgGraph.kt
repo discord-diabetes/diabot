@@ -13,6 +13,7 @@ import java.awt.Color
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.reflect.full.createInstance
 
 // todo:
 // - documentation
@@ -22,24 +23,55 @@ import java.util.*
 object BgGraph {
     fun buildInitialChart(graphSettings: GraphSettings): XYChart {
         val chart = XYChartBuilder()
-                .xAxisTitle("Time")
                 .height(500)
                 .width(833)
                 .build()
-        chart.styler.theme = DiabotTheme()
-        chart.styler.defaultSeriesRenderStyle = XYSeries.XYSeriesRenderStyle.Scatter
-        chart.styler.isXAxisTitleVisible = false
-        chart.styler.xAxisMaxLabelCount = 4
-        chart.styler.xAxisDecimalPattern = "0.#h"
-        chart.styler.xAxisTickLabelsColor = Color(88, 88, 88)
+        chart.styler.theme = graphSettings.theme.clazz.createInstance()
+//        chart.styler.defaultSeriesRenderStyle = XYSeries.XYSeriesRenderStyle.Scatter
+
+//        chart.styler.xAxisMaxLabelCount = 4
+//        chart.styler.xAxisDecimalPattern = "0.#h"
+//        chart.styler.xAxisTickLabelsColor = Color(88, 88, 88)
         chart.styler.isLegendVisible = false
-        chart.styler.isPlotGridVerticalLinesVisible = false
-        chart.styler.plotGridLinesStroke = BasicStroke()
+//        chart.styler.isPlotGridVerticalLinesVisible = false
+//        chart.styler.plotGridLinesStroke = BasicStroke()
         return chart
     }
 
+    fun setupChartAxes(units: String, chart: XYChart) {
+        val preferredUnit = GlucoseUnit.byName(units) ?: GlucoseUnit.MMOL
+        setupChartAxes(preferredUnit, chart)
+    }
+
+    /**
+     * Sets up the chart's axes for BG data.
+     *
+     * @param preferredUnit The glucose units which are preferred
+     * @param chart The chart to set axes on
+     */
+    fun setupChartAxes(preferredUnit: GlucoseUnit, chart: XYChart) {
+        requireNonAmbiguous(preferredUnit)
+        // use the preferred unit's axis as y axis group 0.
+        // axis group 0 will be used for creating tick marks on the y-axis for the graph.
+        val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
+        val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
+
+//        chart.xAxisTitle = "Time"
+//        chart.styler.isXAxisTitleVisible = false
+        chart.styler.xAxisDecimalPattern = "0.#h"
+        chart.styler.xAxisTickLabelsColor = Color(88, 88, 88)
+
+        chart.styler.isPlotGridVerticalLinesVisible = false
+        chart.styler.plotGridLinesStroke = BasicStroke()
+
+        chart.setYAxisGroupTitle(mgdlGroup, "MG/DL")
+        chart.setYAxisGroupTitle(mmolGroup, "MMOL/L")
+        // always put mmol on the right axis
+        chart.styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
+    }
+
     fun addEntries(nightscout: NightscoutDTO, settings: GraphSettings, chart: XYChart) {
-        setupChartAxes(nightscout, chart)
+        setupChartAxes(nightscout.units, chart)
         val readings = nightscout.entries.toList()
 
         val ranges = mutableMapOf<Color, List<BgEntry>>()
@@ -106,7 +138,7 @@ object BgGraph {
         }
     }
 
-    fun addSeries(color: Color, readings: Map<Double, Number>, chart: XYChart): XYSeries {
+    private fun addSeries(color: Color, readings: Map<Double, Number>, chart: XYChart): XYSeries {
         val series = chart.addSeries(UUID.randomUUID().toString(), readings.keys.toList(), readings.values.toList())
 
         series.marker = Circle()
@@ -114,21 +146,8 @@ object BgGraph {
         return series
     }
 
-    fun setupChartAxes(nightscout: NightscoutDTO, chart: XYChart) {
-        val preferredUnit = GlucoseUnit.byName(nightscout.units) ?: GlucoseUnit.MMOL
-
-        // axis group 0 will be used for creating lines on the graph.
-        val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
-        val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
-
-        chart.setYAxisGroupTitle(mgdlGroup, "MG/DL")
-        chart.setYAxisGroupTitle(mmolGroup, "MMOL/L")
-        chart.styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
-    }
-
-    fun getSeriesData(readings: List<BgEntry>, unit: GlucoseUnit): Map<Double, Number> {
-        if (unit == GlucoseUnit.AMBIGUOUS)
-            throw IllegalArgumentException("Glucose unit cannot be ambiguous")
+    private fun getSeriesData(readings: List<BgEntry>, unit: GlucoseUnit): Map<Double, Number> {
+        requireNonAmbiguous(unit)
 
         return readings.associate { bgEntry ->
             val glucose: Number = when(unit) {
@@ -146,4 +165,12 @@ object BgGraph {
             -relativeHours to glucose
         }
     }
+
+    /**
+     * Helper function for requiring a [GlucoseUnit] object to not be [GlucoseUnit.AMBIGUOUS]
+     *
+     * @param glucoseUnit [GlucoseUnit] to ensure is not ambiguous
+     */
+    private fun requireNonAmbiguous(glucoseUnit: GlucoseUnit) =
+            require(glucoseUnit != GlucoseUnit.AMBIGUOUS) { "Glucose unit cannot be ambiguous" }
 }
