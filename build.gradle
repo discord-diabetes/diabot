@@ -5,9 +5,15 @@ plugins {
 }
 
 allprojects {
+    apply plugin: "kotlin"
+
     repositories {
         jcenter()
         mavenCentral()
+    }
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     }
 
     group = 'com.dongtronic.diabot'
