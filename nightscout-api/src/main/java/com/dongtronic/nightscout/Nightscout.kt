@@ -137,14 +137,16 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 logger.warn("Failed to get bgs object from pebble Endpoint JSON:\n${json.toPrettyString()}")
                 return@map dto
             }
-
-            if (bgsJson.has("cob")) {
+            var bgDelta = "0"
+            if (bgsJson.hasNonNull("cob")) {
                 builder.cob(bgsJson.get("cob").asInt())
             }
-            if (bgsJson.has("iob")) {
-                builder.iob(bgsJson.get("iob").textValue().toFloat())
+            if (bgsJson.hasNonNull("iob")) {
+                builder.iob(bgsJson.get("iob").asText().toFloat())
             }
-            val bgDelta = bgsJson.get("bgdelta").asText()
+            if (bgsJson.hasNonNull("bgdelta")) {
+                bgDelta = bgsJson.get("bgdelta").asText()
+            }
             val newestBg = dto.getNewestEntryOrNull()
             if (newestBg != null && newestBg.delta == null) {
                 val bgBuilder = newestBg.newBuilder()
@@ -182,15 +184,15 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 val timestamp = entryJson.path("date").asLong()
                 var trend = TrendArrow.NONE
                 val direction: String
-                if (entryJson.has("trend")) {
+                if (entryJson.hasNonNull("trend")) {
                     trend = TrendArrow.getTrend(entryJson.path("trend").asInt())
-                } else if (entryJson.has("direction")) {
+                } else if (entryJson.hasNonNull("direction")) {
                     direction = entryJson.path("direction").asText()
                     trend = TrendArrow.getTrend(direction)
                 }
 
                 var delta = ""
-                if (entryJson.has("delta")) {
+                if (entryJson.hasNonNull("delta")) {
                     delta = entryJson.path("delta").asText()
                 }
 

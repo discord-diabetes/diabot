@@ -1,34 +1,20 @@
-plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
-}
-
-group 'com.dongtronic.diabot'
-version '1.14.0'
-
-sourceCompatibility = 1.8
-
-repositories {
-    jcenter()
-}
-
 dependencies {
     // JDA
-    compile 'com.jagrosh:jda-utilities:3.0.2'
-    compile('net.dv8tion:JDA:4.0.0_39') {
+    implementation 'com.jagrosh:jda-utilities:3.0.2'
+    implementation('net.dv8tion:JDA:4.0.0_39') {
         exclude module: 'opus-java'
     }
 
     // Logging
-    compile 'ch.qos.logback:logback-classic:1.0.13'
+    implementation 'ch.qos.logback:logback-classic:1.0.13'
 
     // Parsing
-    compile 'com.rometools:rome:1.11.1'
-    compile 'org.jsoup:jsoup:1.11.3'
+    implementation 'com.rometools:rome:1.11.1'
+    implementation 'org.jsoup:jsoup:1.11.3'
 
     // Apache Commons
-    compile 'org.apache.commons:commons-lang3:3.8.1'
-    compile 'commons-configuration:commons-configuration:1.6'
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'commons-configuration:commons-configuration:1.6'
 
     // Networking
     implementation 'com.squareup.okhttp3:okhttp:4.8.1'
@@ -37,54 +23,17 @@ dependencies {
     implementation 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
 
     // Database
-    compile 'redis.clients:jedis:3.3.0'
-    compile 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
-    compile 'org.litote.kmongo:kmongo-async:4.0.3'
+    implementation 'redis.clients:jedis:3.3.0'
+    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
+    implementation 'org.litote.kmongo:kmongo-async:4.0.3'
 
     // Cache
-    compile 'com.github.ben-manes.caffeine:caffeine:2.8.5'
-
-    // Testing
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'com.github.ben-manes.caffeine:caffeine:2.8.5'
 
     // Misc
-    compile project(':utilities')
-    compile project(':nightscout-api')
-    compile project(':bg-graph')
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile 'io.projectreactor:reactor-core:3.3.8.RELEASE'
-    compile 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
-}
-
-
-jar {
-    manifest {
-        attributes(
-                'Main-Class': 'com.dongtronic.diabot.Main'
-        )
-    }
-}
-
-task fatJar(type: Jar) {
-    clean
-    manifest {
-        attributes 'Implementation-Title': 'Diabot - a diabetes Discord bot',
-                'Implementation-Version': version,
-                'Main-Class': 'com.dongtronic.diabot.Main'
-    }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    exclude('logback-test.xml')
-    archiveName('diabot.jar')
-    with jar
-}
-
-task stage(dependsOn: ['build', 'clean', 'fatJar'])
-build.mustRunAfter clean
-fatJar.mustRunAfter build
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    implementation project(':utilities')
+    implementation project(':nightscout-api')
+    implementation project(':bg-graph')
+    implementation 'io.projectreactor:reactor-core:3.3.8.RELEASE'
+    implementation 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
 }
