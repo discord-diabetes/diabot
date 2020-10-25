@@ -55,5 +55,5 @@ shadowJar {
 }
 
 dependencies {
-    compile project(path: ':bot')
+    implementation project(path: ':bot')
 }
