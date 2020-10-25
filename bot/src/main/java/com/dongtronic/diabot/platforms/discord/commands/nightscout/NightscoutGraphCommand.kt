@@ -28,7 +28,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
     }
 
     override fun execute(event: CommandEvent) {
-        val chart = BgGraph.buildInitialChart(GraphSettings(PlottingStyle.SCATTER))
+        val chart = BgGraph(GraphSettings(PlottingStyle.SCATTER))
 
         getDataSet(event.author.id, chart).subscribe({
             event.channel.sendFile(BitmapEncoder.getBitmapBytes(it, BitmapEncoder.BitmapFormat.PNG), "graph.png").complete()
@@ -38,7 +38,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
         })
     }
 
-    fun getDataSet(sender: String, chart: XYChart): Mono<XYChart> {
+    fun getDataSet(sender: String, chart: BgGraph): Mono<XYChart> {
         return NightscoutDAO.instance.getUser(sender)
                 .flatMap { userDTO ->
                     if (userDTO.url == null) {
@@ -47,8 +47,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                     val ns = Nightscout(userDTO.url, userDTO.token)
                     ns.getRecentSgv(count = 12*4).flatMap { ns.getSettings(it) }
                 }.map {
-                    BgGraph.addEntries(it, GraphSettings(PlottingStyle.SCATTER), chart)
-                    chart
+                    chart.apply { addEntries(it) }
                 }
     }
 }

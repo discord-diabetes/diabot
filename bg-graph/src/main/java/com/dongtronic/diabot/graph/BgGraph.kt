@@ -4,7 +4,6 @@ import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.nightscout.data.BgEntry
 import com.dongtronic.nightscout.data.NightscoutDTO
 import org.knowm.xchart.XYChart
-import org.knowm.xchart.XYChartBuilder
 import org.knowm.xchart.XYSeries
 import org.knowm.xchart.style.Styler
 import org.knowm.xchart.style.markers.Circle
@@ -20,58 +19,54 @@ import kotlin.reflect.full.createInstance
 // - implement customisation options for graph settings
 // - light theme
 // - handle errors with fetching data/generating graph
-object BgGraph {
-    fun buildInitialChart(graphSettings: GraphSettings): XYChart {
-        val chart = XYChartBuilder()
-                .height(500)
-                .width(833)
-                .build()
-        chart.styler.theme = graphSettings.theme.clazz.createInstance()
-//        chart.styler.defaultSeriesRenderStyle = XYSeries.XYSeriesRenderStyle.Scatter
-
-//        chart.styler.xAxisMaxLabelCount = 4
-//        chart.styler.xAxisDecimalPattern = "0.#h"
-//        chart.styler.xAxisTickLabelsColor = Color(88, 88, 88)
-        chart.styler.isLegendVisible = false
-//        chart.styler.isPlotGridVerticalLinesVisible = false
-//        chart.styler.plotGridLinesStroke = BasicStroke()
-        return chart
+class BgGraph(
+        private val settings: GraphSettings,
+        width: Int = 833,
+        height: Int = 500
+) : XYChart(width, height) {
+    init {
+        styler.theme = settings.theme.clazz.createInstance()
+        styler.isLegendVisible = false
     }
 
-    fun setupChartAxes(units: String, chart: XYChart) {
+    /**
+     * Sets up the chart's axes for BG data.
+     *
+     * @param units The glucose units which are preferred
+     */
+    fun setupChartAxes(units: String) {
         val preferredUnit = GlucoseUnit.byName(units) ?: GlucoseUnit.MMOL
-        setupChartAxes(preferredUnit, chart)
+        setupChartAxes(preferredUnit)
     }
 
     /**
      * Sets up the chart's axes for BG data.
      *
      * @param preferredUnit The glucose units which are preferred
-     * @param chart The chart to set axes on
      */
-    fun setupChartAxes(preferredUnit: GlucoseUnit, chart: XYChart) {
+    fun setupChartAxes(preferredUnit: GlucoseUnit) {
         requireNonAmbiguous(preferredUnit)
         // use the preferred unit's axis as y axis group 0.
         // axis group 0 will be used for creating tick marks on the y-axis for the graph.
         val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
         val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
 
-//        chart.xAxisTitle = "Time"
-//        chart.styler.isXAxisTitleVisible = false
-        chart.styler.xAxisDecimalPattern = "0.#h"
-        chart.styler.xAxisTickLabelsColor = Color(88, 88, 88)
+//      xAxisTitle = "Time"
+//      styler.isXAxisTitleVisible = false
+        styler.xAxisDecimalPattern = "0.#h"
+        styler.xAxisTickLabelsColor = Color(88, 88, 88)
 
-        chart.styler.isPlotGridVerticalLinesVisible = false
-        chart.styler.plotGridLinesStroke = BasicStroke()
+        styler.isPlotGridVerticalLinesVisible = false
+        styler.plotGridLinesStroke = BasicStroke()
 
-        chart.setYAxisGroupTitle(mgdlGroup, "MG/DL")
-        chart.setYAxisGroupTitle(mmolGroup, "MMOL/L")
+        setYAxisGroupTitle(mgdlGroup, "MG/DL")
+        setYAxisGroupTitle(mmolGroup, "MMOL/L")
         // always put mmol on the right axis
-        chart.styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
+        styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
     }
 
-    fun addEntries(nightscout: NightscoutDTO, settings: GraphSettings, chart: XYChart) {
-        setupChartAxes(nightscout.units, chart)
+    fun addEntries(nightscout: NightscoutDTO) {
+        setupChartAxes(nightscout.units)
         val readings = nightscout.entries.toList()
 
         val ranges = mutableMapOf<Color, List<BgEntry>>()
@@ -101,14 +96,14 @@ object BgGraph {
             // if the nightscout instance does not have default units (either the settings for this instance have not
             // been fetched or something went horribly wrong): default to preferred if there's no data in the chart.
             val preferredUnits = GlucoseUnit.byName(nightscout.units)?.let { it == unit }
-                    ?: chart.seriesMap.isEmpty()
+                    ?: seriesMap.isEmpty()
 
             // don't display mmol/l series on the graph since they're less precise compared to mg/dl
             val hidden = unit == GlucoseUnit.MMOL
 
             val series = ranges.map {
                 val data = getSeriesData(it.value, unit)
-                addSeries(it.key, data, chart)
+                addSeries(it.key, data)
             }
 
             series.forEach { xySeries ->
@@ -122,8 +117,8 @@ object BgGraph {
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
                 val scale = ScalingUtil.findMinMax(nightscout.entries.toList(), unit)
-                chart.styler.setYAxisMin(xySeries.yAxisGroup, scale.first)
-                chart.styler.setYAxisMax(xySeries.yAxisGroup, scale.second)
+                styler.setYAxisMin(xySeries.yAxisGroup, scale.first)
+                styler.setYAxisMax(xySeries.yAxisGroup, scale.second)
 
                 when (settings.plotMode) {
                     PlottingStyle.SCATTER -> {
@@ -138,8 +133,8 @@ object BgGraph {
         }
     }
 
-    private fun addSeries(color: Color, readings: Map<Double, Number>, chart: XYChart): XYSeries {
-        val series = chart.addSeries(UUID.randomUUID().toString(), readings.keys.toList(), readings.values.toList())
+    private fun addSeries(color: Color, readings: Map<Double, Number>): XYSeries {
+        val series = addSeries(UUID.randomUUID().toString(), readings.keys.toList(), readings.values.toList())
 
         series.marker = Circle()
         series.markerColor = color
