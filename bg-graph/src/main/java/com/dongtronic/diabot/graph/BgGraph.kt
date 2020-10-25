@@ -4,7 +4,6 @@ import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.nightscout.data.BgEntry
 import com.dongtronic.nightscout.data.NightscoutDTO
 import org.knowm.xchart.XYChart
-import org.knowm.xchart.XYSeries
 import org.knowm.xchart.style.Styler
 import org.knowm.xchart.style.markers.Circle
 import java.awt.BasicStroke
@@ -15,7 +14,6 @@ import java.util.*
 import kotlin.reflect.full.createInstance
 
 // todo:
-// - documentation
 // - implement customisation options for graph settings
 // - light theme
 // - handle errors with fetching data/generating graph
@@ -51,8 +49,6 @@ class BgGraph(
         val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
         val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
 
-//      xAxisTitle = "Time"
-//      styler.isXAxisTitleVisible = false
         styler.xAxisDecimalPattern = "0.#h"
         styler.xAxisTickLabelsColor = Color(88, 88, 88)
 
@@ -65,6 +61,11 @@ class BgGraph(
         styler.setYAxisGroupPosition(mmolGroup, Styler.YAxisPosition.Right)
     }
 
+    /**
+     * Adds a [NightscoutDTO]'s BG entries to the chart
+     *
+     * @param nightscout The Nightscout data to add to the chart
+     */
     fun addEntries(nightscout: NightscoutDTO) {
         setupChartAxes(nightscout.units)
         val readings = nightscout.entries.toList()
@@ -101,46 +102,40 @@ class BgGraph(
             // don't display mmol/l series on the graph since they're less precise compared to mg/dl
             val hidden = unit == GlucoseUnit.MMOL
 
-            val series = ranges.map {
-                val data = getSeriesData(it.value, unit)
-                addSeries(it.key, data)
-            }
+            ranges.forEach { (rangeColour, entries) ->
+                val data = getSeriesData(entries, unit)
+                val colour = if (hidden) Color(0, 0, 0, 0) else rangeColour
 
-            series.forEach { xySeries ->
-                if (hidden) {
-                    xySeries.markerColor = Color(0, 0, 0, 0)
-                    xySeries.lineColor = Color(0, 0, 0, 0)
+                val xySeries = addSeries(UUID.randomUUID().toString(), data.keys.toList(), data.values.toList())
+
+                if (settings.plotMode == PlottingStyle.LINE) {
+                    // set the line colour if using line graph
+                    xySeries.lineColor = colour
                 }
+
+                xySeries.marker = Circle()
+                xySeries.markerColor = colour
 
                 // axis group 0 will be used for creating lines on the graph.
                 // the series which use the preferred glucose unit will then base line creation off the tick labels for this unit
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
-                val scale = ScalingUtil.findMinMax(nightscout.entries.toList(), unit)
+
+                val scale = ScalingUtil.findMinMax(readings, unit)
                 styler.setYAxisMin(xySeries.yAxisGroup, scale.first)
                 styler.setYAxisMax(xySeries.yAxisGroup, scale.second)
-
-                when (settings.plotMode) {
-                    PlottingStyle.SCATTER -> {
-
-                    }
-                    PlottingStyle.LINE -> {
-                        // set the line colour if using line graph
-                        xySeries.lineColor = xySeries.markerColor
-                    }
-                }
             }
         }
     }
 
-    private fun addSeries(color: Color, readings: Map<Double, Number>): XYSeries {
-        val series = addSeries(UUID.randomUUID().toString(), readings.keys.toList(), readings.values.toList())
-
-        series.marker = Circle()
-        series.markerColor = color
-        return series
-    }
-
+    /**
+     * Split and convert a list of [BgEntry]s into a [Map] consisting of the relative BG timestamp in hours and
+     * the BG value in the specified units.
+     *
+     * @param readings List of [BgEntry]s to split and convert
+     * @param unit The glucose unit to display the SGVs as. This cannot be [GlucoseUnit.AMBIGUOUS].
+     * @return [Map] of relative timestamp in hours and glucose reading(s)
+     */
     private fun getSeriesData(readings: List<BgEntry>, unit: GlucoseUnit): Map<Double, Number> {
         requireNonAmbiguous(unit)
 
@@ -151,13 +146,12 @@ class BgGraph(
                 else -> 0
             }
 
-            val relativeSeconds = bgEntry.dateTime.until(Instant.now(), ChronoUnit.SECONDS)
+            val relativeSeconds = Instant.now().until(bgEntry.dateTime, ChronoUnit.SECONDS)
             // hours are used (instead of seconds) because of the decimal formatter.
             // this allows for only the whole number of the hour to be displayed on the chart, while also sorting each reading:
             // 2.47 hours (with a decimal format pattern of "0") -> 2h
             val relativeHours = relativeSeconds.toDouble()/3600
-//            logger().info("$relativeHours - $glucose")
-            -relativeHours to glucose
+            relativeHours to glucose
         }
     }
 
