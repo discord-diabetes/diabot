@@ -14,8 +14,6 @@ import java.util.*
 
 // todo:
 // - implement customisation options for graph settings
-// - light theme
-// - handle errors with fetching data/generating graph
 class BgGraph(
         private val settings: GraphSettings,
         width: Int = 833,
@@ -72,15 +70,7 @@ class BgGraph(
         val ranges = mutableMapOf<Color, List<BgEntry>>()
 
         readings.forEach {
-            val mgdl = it.glucose.mgdl
-            val color = when {
-                // custom colours are not supported in line mode
-                settings.plotMode != PlottingStyle.SCATTER -> settings.inRangeColour
-
-                mgdl > nightscout.top -> settings.highColour
-                mgdl < nightscout.bottom -> settings.lowColour
-                else -> settings.inRangeColour
-            }
+            val color = getColour(it.glucose.mgdl, nightscout)
 
             ranges.merge(color, listOf(it)) { oldList: List<BgEntry>, newList: List<BgEntry> ->
                 oldList.plus(newList)
@@ -151,6 +141,40 @@ class BgGraph(
             // 2.47 hours (with a decimal format pattern of "0") -> 2h
             val relativeHours = relativeSeconds.toDouble()/3600
             relativeHours to glucose
+        }
+    }
+
+    /**
+     * Gets a colour for a BG value (in mg/dL)
+     *
+     * @param mgdl Blood glucose value to get a colour for
+     * @param nightscout Nightscout with bg range data
+     * @return [Color] for the given BG value
+     */
+    private fun getColour(mgdl: Int, nightscout: NightscoutDTO): Color {
+        // custom colours are not supported in line mode
+        val lineGraph = settings.plotMode == PlottingStyle.LINE
+
+        return when (settings.theme) {
+            GraphTheme.LIGHT -> {
+                when {
+                    lineGraph -> settings.inRangeLightColour
+
+                    mgdl > nightscout.top -> settings.highLightColour
+                    mgdl < nightscout.bottom -> settings.lowLightColour
+                    else -> settings.inRangeLightColour
+                }
+            }
+
+            GraphTheme.DARK -> {
+                when {
+                    lineGraph -> settings.inRangeDarkColour
+
+                    mgdl > nightscout.top -> settings.highDarkColour
+                    mgdl < nightscout.bottom -> settings.lowDarkColour
+                    else -> settings.inRangeDarkColour
+                }
+            }
         }
     }
 
