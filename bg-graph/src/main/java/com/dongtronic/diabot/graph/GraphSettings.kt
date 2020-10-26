@@ -3,7 +3,7 @@ package com.dongtronic.diabot.graph
 import java.awt.Color
 
 data class GraphSettings (
-        val plotMode: PlottingStyle,
+        val plotMode: PlottingStyle = PlottingStyle.SCATTER,
         val theme: GraphTheme = GraphTheme.DARK,
         // for dark theme
         val highDarkColour: Color = Color(255, 140, 0),
