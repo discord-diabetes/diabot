@@ -1,0 +1,38 @@
+dependencies {
+    // JDA
+    implementation 'com.jagrosh:jda-utilities:3.0.2'
+    implementation('net.dv8tion:JDA:4.0.0_39') {
+        exclude module: 'opus-java'
+    }
+
+    // Logging
+    implementation 'ch.qos.logback:logback-classic:1.0.13'
+
+    // Parsing
+    implementation 'com.rometools:rome:1.11.1'
+    implementation 'org.jsoup:jsoup:1.11.3'
+
+    // Apache Commons
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'commons-configuration:commons-configuration:1.6'
+
+    // Networking
+    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
+    implementation 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
+
+    // Database
+    implementation 'redis.clients:jedis:3.3.0'
+    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
+    implementation 'org.litote.kmongo:kmongo-async:4.0.3'
+
+    // Cache
+    implementation 'com.github.ben-manes.caffeine:caffeine:2.8.5'
+
+    // Misc
+    implementation project(':utilities')
+    implementation project(':nightscout-api')
+    implementation 'io.projectreactor:reactor-core:3.3.8.RELEASE'
+    implementation 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
+}

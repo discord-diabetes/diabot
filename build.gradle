@@ -1,87 +1,59 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
-group 'com.dongtronic'
-version '1.14.0'
+allprojects {
+    apply plugin: "kotlin"
 
-sourceCompatibility = 11
-
-repositories {
-    jcenter()
-}
-
-dependencies {
-    // JDA
-    compile 'com.jagrosh:jda-utilities:3.0.2'
-    compile('net.dv8tion:JDA:4.0.0_39') {
-        exclude module: 'opus-java'
+    repositories {
+        jcenter()
+        mavenCentral()
     }
 
-    // Logging
-    compile 'ch.qos.logback:logback-classic:1.0.13'
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    // Parsing
-    compile 'com.rometools:rome:1.11.1'
-    compile 'org.jsoup:jsoup:1.11.3'
+        testImplementation group: 'junit', name: 'junit', version: '4.12'
 
-    // Apache Commons
-    compile 'org.apache.commons:commons-lang3:3.8.1'
-    compile 'commons-configuration:commons-configuration:1.6'
+        api group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    }
 
-    // Networking
-    compile 'com.squareup.okhttp3:okhttp:4.8.1'
-    compile 'com.squareup.retrofit2:retrofit:2.9.0'
-    compile 'com.squareup.retrofit2:converter-jackson:2.9.0'
-    compile 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
+    group = 'com.dongtronic.diabot'
+    version = '1.14.0'
 
-    // Database
-    compile 'redis.clients:jedis:3.3.0'
-    compile 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
-    compile 'org.litote.kmongo:kmongo-async:4.0.3'
+    sourceCompatibility = 11
+    targetCompatibility = 11
 
-    // Cache
-    compile 'com.github.ben-manes.caffeine:caffeine:2.8.5'
-
-    // Testing
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
-    // Misc
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compile 'io.projectreactor:reactor-core:3.3.8.RELEASE'
-    compile 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
+    // from: https://kotlinlang.org/docs/reference/using-gradle.html
+    //noinspection GroovyAssignabilityCheck,GrUnresolvedAccess
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        //noinspection GrUnresolvedAccess
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
 }
 
+task stage(dependsOn: ['clean', 'shadowJar'])
 
-jar {
+shadowJar {
+    exclude 'logback-test.xml'
+    archiveBaseName.set('diabot')
+    archiveClassifier.set('')
+    archiveVersion.set('')
     manifest {
         attributes(
-                'Main-Class': 'com.dongtronic.diabot.Main'
+                'Implementation-Title': 'Diabot - a diabetes Discord bot',
+                'Implementation-Version': this.version,
+                'Main-Class': 'com.dongtronic.diabot.Main',
+                // fixes retrofit v2.8 reflection warnings
+                'Add-Opens': 'java.base/java.lang.invoke'
         )
     }
 }
 
-task fatJar(type: Jar) {
-    clean
-    manifest {
-        attributes 'Implementation-Title': 'Diabot - a diabetes Discord bot',
-                'Implementation-Version': version,
-                'Main-Class': 'com.dongtronic.diabot.Main'
-    }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    exclude('logback-test.xml')
-    archiveName('diabot.jar')
-    with jar
-}
-
-task stage(dependsOn: ['build', 'clean', 'fatJar'])
-build.mustRunAfter clean
-fatJar.mustRunAfter build
-
-compileKotlin {
-    kotlinOptions.jvmTarget = "11"
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "11"
+dependencies {
+    implementation project(path: ':bot')
 }
