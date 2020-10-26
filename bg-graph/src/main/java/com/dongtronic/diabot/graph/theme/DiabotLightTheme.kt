@@ -1,15 +1,14 @@
-package com.dongtronic.diabot.graph
+package com.dongtronic.diabot.graph.theme
 
-import org.knowm.xchart.style.XChartTheme
 import java.awt.Color
 
-class DiabotTheme : XChartTheme() {
+class DiabotLightTheme : DiabotTheme() {
     override fun getChartBackgroundColor(): Color {
-        return Color(32, 32, 32)
+        return Color(223, 223, 223)
     }
 
     override fun getChartFontColor(): Color {
-        return Color.WHITE
+        return Color.BLACK
     }
 
     override fun getAxisTickLabelsColor(): Color {
@@ -25,7 +24,7 @@ class DiabotTheme : XChartTheme() {
     }
 
     override fun getAxisTickMarksColor(): Color {
-        return Color(255, 0, 255, 0)
+        return Color(0, 0, 0, 0)
     }
 
     override fun getPlotBorderColor(): Color {
@@ -33,6 +32,6 @@ class DiabotTheme : XChartTheme() {
     }
 
     override fun getPlotBackgroundColor(): Color {
-        return Color(25, 25, 25)
+        return Color(230, 230, 230)
     }
 }

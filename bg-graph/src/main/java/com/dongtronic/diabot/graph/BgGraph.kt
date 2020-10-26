@@ -11,7 +11,6 @@ import java.awt.Color
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.reflect.full.createInstance
 
 // todo:
 // - implement customisation options for graph settings
@@ -23,7 +22,7 @@ class BgGraph(
         height: Int = 500
 ) : XYChart(width, height) {
     init {
-        styler.theme = settings.theme.clazz.createInstance()
+        styler.theme = settings.theme.clazz
         styler.isLegendVisible = false
     }
 
