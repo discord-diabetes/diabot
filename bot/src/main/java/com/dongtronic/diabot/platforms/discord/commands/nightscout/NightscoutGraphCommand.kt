@@ -2,9 +2,6 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.graph.BgGraph
-import com.dongtronic.diabot.graph.GraphSettings
-import com.dongtronic.diabot.graph.GraphTheme
-import com.dongtronic.diabot.graph.PlottingStyle
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
@@ -30,9 +27,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
     }
 
     override fun execute(event: CommandEvent) {
-        val chart = BgGraph(GraphSettings(PlottingStyle.SCATTER))
-
-        getDataSet(event.author.id, chart)
+        getDataSet(event.author.id)
                 .map { BitmapEncoder.getBitmapBytes(it, BitmapEncoder.BitmapFormat.PNG) }
                 .flatMap { event.channel.sendFile(it, "graph.png").submit().toMono() }
                 .subscribe({}, {
@@ -41,16 +36,20 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                 })
     }
 
-    fun getDataSet(sender: String, chart: BgGraph): Mono<XYChart> {
+    private fun getDataSet(sender: String): Mono<XYChart> {
         return NightscoutDAO.instance.getUser(sender)
-                .flatMap { userDTO ->
+                .zipWhen { userDTO ->
                     if (userDTO.url == null) {
-                        return@flatMap Mono.error<NightscoutDTO>(Exception("no url found"))
+                        return@zipWhen Mono.error<NightscoutDTO>(Exception("no url found"))
                     }
+
                     val ns = Nightscout(userDTO.url, userDTO.token)
+                    // 12 readings per hour -> 4 hours of readings
                     ns.getRecentSgv(count = 12 * 4).flatMap { ns.getSettings(it) }
-                }.map {
-                    chart.apply { addEntries(it) }
+                }.map { tuple ->
+                    val userDTO = tuple.t1
+                    val ns = tuple.t2
+                    BgGraph(userDTO.graphSettings).apply { addEntries(ns) }
                 }
     }
 }
