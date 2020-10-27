@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.graph.GraphSettings
 import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.ReturnDocument
@@ -186,6 +187,29 @@ class NightscoutDAO private constructor() {
 
         return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
                 .map { it.displayOptions.ifEmpty { listOf("none") } }
+                .subscribeOn(scheduler)
+    }
+
+    /**
+     * Changes a user's NS graph settings.
+     *
+     * @param userId The user ID to change graph settings for.
+     * @param graphSettings The graph settings to set for the user. If this is null, then the graph settings will be deleted.
+     * @return The user's new graph settings.
+     */
+    fun updateGraphSettings(userId: String, graphSettings: GraphSettings? = null): Mono<GraphSettings> {
+        val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
+
+        if (graphSettings == null) {
+            // delete the key
+            return deleteUser(userId, NightscoutUserDTO::graphSettings)
+                    .map { GraphSettings() }
+        }
+
+        val update = setValue(NightscoutUserDTO::graphSettings, graphSettings)
+
+        return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
+                .map { it.graphSettings }
                 .subscribeOn(scheduler)
     }
 

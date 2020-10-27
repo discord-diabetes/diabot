@@ -1,5 +1,8 @@
 package com.dongtronic.diabot.util
 
+import com.dongtronic.diabot.platforms.discord.utils.ColorDeserializer
+import com.dongtronic.diabot.platforms.discord.utils.ColorSerializer
+import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.client.model.Collation
@@ -13,8 +16,10 @@ import org.litote.kmongo.reactivestreams.KMongo
 import org.litote.kmongo.reactivestreams.aggregate
 import org.litote.kmongo.reactivestreams.find
 import org.litote.kmongo.sample
+import org.litote.kmongo.util.KMongoConfiguration
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.awt.Color
 import java.util.concurrent.TimeUnit
 
 class MongoDB {
@@ -28,6 +33,14 @@ class MongoDB {
             .build()
     val client = KMongo.createClient(clientSettings)
     val database: MongoDatabase = client.getDatabase(mongoEnv("DATABASE", "diabot"))
+
+    init {
+        val colorModule = SimpleModule()
+        // serializer/deserializer for java.awt.Color
+        colorModule.addSerializer(Color::class.java, ColorSerializer())
+        colorModule.addDeserializer(Color::class.java, ColorDeserializer())
+        KMongoConfiguration.registerBsonModule(colorModule)
+    }
 
     companion object {
         private var instance: MongoDB? = null

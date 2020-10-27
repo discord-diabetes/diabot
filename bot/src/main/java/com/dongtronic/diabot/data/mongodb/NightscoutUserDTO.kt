@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.data.mongodb
 
+import com.dongtronic.diabot.graph.GraphSettings
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSetDisplayCommand
 import com.fasterxml.jackson.annotation.JsonIgnore
 import net.dv8tion.jda.api.entities.User
@@ -10,6 +11,7 @@ data class NightscoutUserDTO(
         val token: String? = null,
         val displayOptions: List<String> = NightscoutSetDisplayCommand.enabledOptions.toList(),
         val publicGuilds: List<String> = emptyList(),
+        val graphSettings: GraphSettings = GraphSettings(),
         @JsonIgnore
         val jdaUser: User? = null
 ) {
