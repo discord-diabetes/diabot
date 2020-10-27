@@ -18,7 +18,7 @@ class BgGraph(
         height: Int = 500
 ) : XYChart(width, height) {
     init {
-        styler.theme = settings.theme.clazz
+        styler.theme = settings.theme.instance
         styler.isLegendVisible = false
     }
 
