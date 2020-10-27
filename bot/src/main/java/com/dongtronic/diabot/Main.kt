@@ -19,11 +19,14 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.requests.GatewayIntent
+import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
+import net.dv8tion.jda.api.utils.MemberCachePolicy
+import net.dv8tion.jda.api.utils.cache.CacheFlag
+import java.util.*
 import javax.security.auth.login.LoginException
+
 
 object Main {
 
@@ -66,6 +69,8 @@ object Main {
 
         client.setOwnerId("189436077793083392") // Cas
         client.setCoOwnerIds("125616270254014464", "319371513159614464") // Adi, Garlic
+
+        client.setServerInvite("https://discord.gg/diabetes")
 
         // adds commands
         client.addCommands(
@@ -113,13 +118,10 @@ object Main {
 
         val builtClient = client.build()
 
-        // start getting a bot account set up
-        JDABuilder(token)
-                // set the game for when the bot is loading
-                .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.of(Activity.ActivityType.DEFAULT, "Loading..."))
-
-                // add the listeners
+        DefaultShardManagerBuilder.createDefault(token)
+                .setEnabledIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS)
+                .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
+                .setShardsTotal(-1) // Let Discord decide how many shards we need
                 .addEventListeners(
                         waiter,
                         builtClient,
@@ -128,10 +130,7 @@ object Main {
                         UsernameEnforcementListener(),
                         OhNoListener(),
                         QuoteListener(builtClient)
-                )
-                // start it up!
-                .build()
-
+                ).build()
 
     }
 

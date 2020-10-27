@@ -1,7 +1,7 @@
 dependencies {
     // JDA
-    implementation 'com.jagrosh:jda-utilities:3.0.2'
-    implementation('net.dv8tion:JDA:4.0.0_39') {
+    implementation 'com.jagrosh:jda-utilities:3.0.4'
+    implementation('net.dv8tion:JDA:4.2.0_209') {
         exclude module: 'opus-java'
     }
 
