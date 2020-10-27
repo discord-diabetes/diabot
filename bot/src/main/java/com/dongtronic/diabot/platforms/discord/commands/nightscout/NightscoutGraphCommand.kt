@@ -25,6 +25,8 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
         this.category = category
         this.examples = arrayOf("diabot nightscoutgraph")
         this.children = arrayOf(NightscoutGraphModeCommand(category, this))
+        this.cooldown = 5
+        this.cooldownScope = CooldownScope.USER
     }
 
     override fun execute(event: CommandEvent) {
