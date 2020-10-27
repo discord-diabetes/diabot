@@ -26,8 +26,9 @@ class BgGraph(
      * Sets up the chart's axes for BG data.
      *
      * @param units The glucose units which are preferred
+     * @return This [BgGraph] instance
      */
-    fun setupChartAxes(units: String) {
+    fun setupChartAxes(units: String) = apply {
         val preferredUnit = GlucoseUnit.byName(units) ?: GlucoseUnit.MMOL
         setupChartAxes(preferredUnit)
     }
@@ -36,8 +37,9 @@ class BgGraph(
      * Sets up the chart's axes for BG data.
      *
      * @param preferredUnit The glucose units which are preferred
+     * @return This [BgGraph] instance
      */
-    fun setupChartAxes(preferredUnit: GlucoseUnit) {
+    fun setupChartAxes(preferredUnit: GlucoseUnit) = apply {
         requireNonAmbiguous(preferredUnit)
         // use the preferred unit's axis as y axis group 0.
         // axis group 0 will be used for creating tick marks on the y-axis for the graph.
@@ -60,8 +62,9 @@ class BgGraph(
      * Adds a [NightscoutDTO]'s BG entries to the chart
      *
      * @param nightscout The Nightscout data to add to the chart
+     * @return This [BgGraph] instance
      */
-    fun addEntries(nightscout: NightscoutDTO) {
+    fun addEntries(nightscout: NightscoutDTO) = apply {
         setupChartAxes(nightscout.units)
         val readings = nightscout.entries.toList()
 

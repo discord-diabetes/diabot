@@ -50,7 +50,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                 }.map { tuple ->
                     val userDTO = tuple.t1
                     val ns = tuple.t2
-                    BgGraph(userDTO.graphSettings).apply { addEntries(ns) }
+                    BgGraph(userDTO.graphSettings).addEntries(ns)
                 }
     }
 }
