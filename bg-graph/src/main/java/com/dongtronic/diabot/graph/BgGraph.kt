@@ -12,8 +12,6 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-// todo:
-// - implement customisation options for graph settings
 class BgGraph(
         private val settings: GraphSettings,
         width: Int = 833,

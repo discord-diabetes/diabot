@@ -24,6 +24,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
         this.aliases = arrayOf("nsg", "bgg", "bsg", "nsgraph", "bggraph", "bsgraph", "graph")
         this.category = category
         this.examples = arrayOf("diabot nightscoutgraph")
+        this.children = arrayOf(NightscoutGraphModeCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
