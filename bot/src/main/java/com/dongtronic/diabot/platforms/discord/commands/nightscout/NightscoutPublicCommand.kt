@@ -41,13 +41,14 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
     }
 
     fun reply(event: CommandEvent, result: Mono<Boolean>) {
-        val authorNick = NicknameUtils.determineAuthorDisplayName(event)
-        result.subscribe({ public ->
-            val visibility = if (public) "public" else "private"
-            event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
-        }, {
-            event.replyError("Nightscout data for $authorNick could not be changed in **${event.guild.name}**")
-            logger.warn("Could not change Nightscout privacy", it)
-        })
+        NicknameUtils.determineAuthorDisplayName(event).subscribe { authorNick ->
+            result.subscribe({ public ->
+                val visibility = if (public) "public" else "private"
+                event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
+            }, {
+                event.replyError("Nightscout data for $authorNick could not be changed in **${event.guild.name}**")
+                logger.warn("Could not change Nightscout privacy", it)
+            })
+        }
     }
 }
