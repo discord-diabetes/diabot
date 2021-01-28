@@ -3,6 +3,7 @@ package com.dongtronic.diabot
 import com.dongtronic.diabot.platforms.discord.utils.NicknameUtils
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.RestAction
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
@@ -13,6 +14,10 @@ val CommandEvent.authorName: String
     get() = NicknameUtils.determineAuthorDisplayName(this)
 
 fun CommandEvent.nameOf(user: User): String {
+    return NicknameUtils.determineDisplayName(this, user)
+}
+
+fun MessageReceivedEvent.nameOf(user: User): String {
     return NicknameUtils.determineDisplayName(this, user)
 }
 
