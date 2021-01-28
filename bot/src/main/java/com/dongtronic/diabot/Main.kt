@@ -15,6 +15,7 @@ import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGra
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
+import com.github.ygimenez.method.Pages
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
@@ -139,6 +140,8 @@ object Main {
                         QuoteListener(builtClient)
                 ).build()
 
+        // Pagination
+        Pages.activate(jda)
     }
 
 }
