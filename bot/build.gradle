@@ -1,5 +1,6 @@
 repositories {
     mavenLocal()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -9,6 +10,7 @@ dependencies {
     implementation 'cloud.commandframework:cloud-core:1.5.0-SNAPSHOT'
 
     // JDA
+    implementation 'com.github.ygimenez:Pagination-Utils:2.0.0'
     implementation 'com.jagrosh:jda-utilities:3.0.4'
     implementation('net.dv8tion:JDA:4.2.0_225') {
         exclude module: 'opus-java'
