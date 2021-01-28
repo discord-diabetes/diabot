@@ -1,4 +1,13 @@
+repositories {
+    mavenLocal()
+}
+
 dependencies {
+    // Cloud command framework
+    implementation 'cloud.commandframework:cloud-annotations:1.5.0-SNAPSHOT'
+    implementation 'cloud.commandframework:cloud-jda:1.5.0-SNAPSHOT'
+    implementation 'cloud.commandframework:cloud-core:1.5.0-SNAPSHOT'
+
     // JDA
     implementation 'com.jagrosh:jda-utilities:3.0.4'
     implementation('net.dv8tion:JDA:4.2.0_225') {

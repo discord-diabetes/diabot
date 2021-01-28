@@ -32,6 +32,7 @@ allprojects {
         //noinspection GrUnresolvedAccess
         kotlinOptions {
             jvmTarget = "11"
+            freeCompilerArgs += '-java-parameters'
         }
     }
 }
