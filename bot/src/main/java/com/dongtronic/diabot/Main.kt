@@ -19,9 +19,10 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
+import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent
-import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
+import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.util.*
@@ -118,10 +119,16 @@ object Main {
 
         val builtClient = client.build()
 
-        DefaultShardManagerBuilder.createDefault(token)
-                .setEnabledIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS)
-                .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
-                .setShardsTotal(-1) // Let Discord decide how many shards we need
+        val jda = JDABuilder.createLight(token)
+                .setEnabledIntents(
+                        GatewayIntent.DIRECT_MESSAGES,
+                        GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS
+                )
+                .setMemberCachePolicy(MemberCachePolicy.ALL) // Cache all members regardless of their online state
+                .setChunkingFilter(ChunkingFilter.ALL) // Cache all guilds on initialisation
+                .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any JDA cache services
                 .addEventListeners(
                         waiter,
                         builtClient,
