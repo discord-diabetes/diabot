@@ -5,6 +5,7 @@ import cloud.commandframework.annotations.CommandDescription
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.annotations.specifier.Greedy
 import com.dongtronic.diabot.commands.Category
+import com.dongtronic.diabot.commands.ReplyType
 import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.annotations.DisplayName
 import com.dongtronic.diabot.commands.annotations.Example
@@ -50,43 +51,27 @@ class NightscoutCommand {
 
     private val logger = logger()
 
-//    init {
-//        this.name = "nightscout"
-//        this.help = "Get the most recent info from any Nightscout site"
-//        this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
-//        this.guildOnly = false
-//        this.aliases = arrayOf("ns", "bg", "bs")
-//        this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns @SomeUser#1234", "diabot ns public false")
-//        this.children = arrayOf(
-//                NightscoutSetUrlCommand(category, this),
-//                NightscoutDeleteCommand(category, this),
-//                NightscoutPublicCommand(category, this),
-//                NightscoutSetTokenCommand(category, this),
-//                NightscoutSetDisplayCommand(category, this)
-//        )
-//    }
-
     @CommandMethod("nightscout|ns|bg|bs [source]")
     @CommandDescription("Get the most recent info from any Nightscout site")
     @CommandCategory(Category.BG)
     @Example(["[nightscout] casscout", "[ns]", "[ns] set https://casscout.herokuapp.com", "[ns] @SomeUser#1234", "[ns] public false"])
     fun execute(
-            e: JDACommandUser,
+            user: JDACommandUser,
             @Argument("source", description = "The source of BG data")
             @DisplayName("nightscout URL/herokuapp subdomain/discord user/mention")
             @Greedy
             arg: String?
     ) {
-        val event = e.event
+        val event = user.event
         val args = arg?.trim() ?: ""
 
         // grab the necessary data
         val embed = if (args.isBlank()) {
             // read NS data from the author's NS
-            getStoredData(event)
+            getStoredData(user)
         } else {
             // parse the given arguments
-            getUnstoredData(event, args)
+            getUnstoredData(user, args)
         }.flatMap { data ->
             // send the message
             event.channel.sendMessage(data.t2)
@@ -97,7 +82,7 @@ class NightscoutCommand {
         embed.subscribe({
             logger.debug("Sent Nightscout embed: $it")
         }, {
-            handleError(it, event)
+            handleError(it, user)
         })
     }
 
@@ -108,88 +93,96 @@ class NightscoutCommand {
      * - when replying
      *
      * @param ex The error which was thrown
-     * @param event The command event which called this command
+     * @param user The command sender which called this command
      */
-    private fun handleError(ex: Throwable, event: MessageReceivedEvent) {
-        when (ex) {
+    private fun handleError(ex: Throwable, user: JDACommandUser) {
+        val response = when (ex) {
             is NightscoutDataException -> {
                 if (ex.message != null) {
-                    event.sendMessage(ex.message ?: "")
+                    ex.message!!
                 } else {
-                    event.sendMessage("Nightscout data could not be read")
+                    "Nightscout data could not be read"
                 }
             }
-            is UnconfiguredNightscoutException -> event.sendMessage("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
-            is IllegalArgumentException -> event.sendMessage("Error: " + ex.message)
+            is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `diabot nightscout set <hostname>`"
+            is IllegalArgumentException -> "Error: " + ex.message
             is InsufficientPermissionException -> {
                 logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
-                event.sendMessage("Couldn't perform requested action due to missing permission: `${ex.permission}`")
+                "Couldn't perform requested action due to missing permission: `${ex.permission}`"
             }
             is UnknownHostException -> {
-                event.sendMessage("No NS host could be found")
                 logger.info("No host found: ${ex.message}")
+                "No NS host could be found"
             }
             else -> {
-                event.sendMessage("Unexpected error")
                 logger.warn("Unexpected error: " + ex.message, ex)
+                "Unexpected error occurred"
             }
         }
+
+        user.replyErrorS(response, ReplyType.NONE)
     }
 
     /**
      * Handles errors which occur while grabbing Nightscout data.
      *
      * @param ex The [Throwable] which was given
-     * @param event Command event which caused the bot to grab this Nightscout data
+     * @param user The user which requested the bot to grab this Nightscout data
      * @param userDTO The user data which was used for fetching
      */
-    private fun handleGrabError(ex: Throwable, event: MessageReceivedEvent, userDTO: NightscoutUserDTO) {
-        when (ex) {
+    private fun handleGrabError(ex: Throwable, user: JDACommandUser, userDTO: NightscoutUserDTO) {
+        val event = user.event
+        val response = when (ex) {
             is NoNightscoutDataException -> {
-                event.sendMessage("No data could be retrieved from Nightscout")
                 logger.info("No nightscout data from ${userDTO.url}")
+                "No data could be retrieved from Nightscout"
             }
             is JsonProcessingException -> {
-                event.sendMessage("Malformed JSON")
                 logger.warn("Malformed JSON from ${userDTO.url}")
+                "Malformed JSON"
             }
             is NightscoutStatusException -> {
                 if (ex.status == 401) {
                     if (userDTO.jdaUser != null) {
                         if (userDTO.jdaUser == event.author) {
-                            event.sendMessage("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
+                            "Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`"
                         } else {
-                            event.sendMessage("Nightscout data for ${event.nameOf(userDTO.jdaUser)} is unreadable due to missing token.")
+                            val name = event.nameOf(userDTO.jdaUser)
+                            "Nightscout data for $name is unreadable due to missing token."
                         }
                     } else {
-                        event.sendMessage("Nightscout data is unreadable due to missing token.")
+                        "Nightscout data is unreadable due to missing token."
                     }
                 } else {
-                    event.sendMessage("Could not connect to Nightscout instance.")
                     logger.warn("Connection status ${ex.status} from ${userDTO.url}")
+                    "Could not connect to Nightscout instance."
                 }
             }
+            else -> return
         }
+
+        user.replyErrorS(response, ReplyType.NONE)
     }
 
     /**
      * Grabs data for the command sender and builds a Nightscout response.
      *
-     * @param event Command event which called this command
+     * @param sender The user which called this command
      * @return A nightscout DTO and an embed based on it
      */
-    private fun getStoredData(event: MessageReceivedEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
-        return getUserDto(event.author)
-                .flatMap { buildNightscoutResponse(it, event) }
+    private fun getStoredData(sender: JDACommandUser): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
+        return getUserDto(sender.event.author)
+                .flatMap { buildNightscoutResponse(it, sender) }
     }
 
     /**
      * Grabs data for another user/URL (depending on the arguments) and builds a Nightscout response.
      *
-     * @param event Command event which called this command
+     * @param sender The user which called this command
      * @return A nightscout DTO and an embed based on it
      */
-    private fun getUnstoredData(event: MessageReceivedEvent, args: String): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
+    private fun getUnstoredData(sender: JDACommandUser, args: String): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
+        val event = sender.event
         val args1 = args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
         val namedMembers = event.guild.members.filter {
@@ -217,11 +210,13 @@ class NightscoutCommand {
                             }
                         }
             }
+
             args1.isNotEmpty() && args1[0].matches("^https?://.*".toRegex()) -> {
                 // is a URL
                 val url = NightscoutSetUrlCommand.validateNightscoutUrl(args1[0])
                 getDataFromDomain(url, event)
             }
+
             else -> {
                 // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
                 val user = namedMembers.getOrNull(0)?.user
@@ -244,7 +239,7 @@ class NightscoutCommand {
             }
         }
 
-        return endpoint.flatMap { buildNightscoutResponse(it, event) }
+        return endpoint.flatMap { buildNightscoutResponse(it, sender) }
     }
 
     /**
@@ -262,7 +257,6 @@ class NightscoutCommand {
         return userDtos
                 .flatMap { userDTO ->
                     val member = event.guild.getMemberById(userDTO.userId)
-                    val user: User
                     val publicInThisGuild = userDTO.isNightscoutPublic(event.guild.id)
 
                     if (member == null) {
@@ -271,7 +265,7 @@ class NightscoutCommand {
                         return@flatMap fallback
                     }
 
-                    user = member.user
+                    val user = member.user
 
                     if (!publicInThisGuild) {
                         return@flatMap NightscoutPrivateException(event.nameOf(user))
@@ -288,11 +282,13 @@ class NightscoutCommand {
      * Loads all the necessary data from a Nightscout instance and creates an embed of it.
      *
      * @param userDTO Data necessary for loading/rendering
-     * @param event Command event which called this command
+     * @param sender The user which called this command
      * @return A nightscout DTO and an embed based on it
      */
-    private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, event: MessageReceivedEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
+    private fun buildNightscoutResponse(userDTO: NightscoutUserDTO, sender: JDACommandUser): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
+        val event = sender.event
         val api = Nightscout(userDTO.apiEndpoint, userDTO.token)
+
         return Mono.from(
                 api.getSettings()
                         .flatMap { api.getRecentSgv(it) }
@@ -301,18 +297,22 @@ class NightscoutCommand {
             api.close()
         }.onErrorMap(HttpException::class) {
             NightscoutStatusException(it.code())
-        }.onErrorResume({ error ->
-            error is NightscoutStatusException
-                    || error is JsonProcessingException
-                    || error is NoNightscoutDataException
-        }, {
-            // fallback to `handleGrabError` if the error is any of the above
-            handleGrabError(it, event, userDTO)
-            Mono.empty<NightscoutDTO>()
-        }).zipWhen { nsDto ->
+        }.onErrorResume(
+                { error ->
+                    error is NightscoutStatusException
+                            || error is JsonProcessingException
+                            || error is NoNightscoutDataException
+                },
+                {
+                    // fallback to `handleGrabError` if the error is any of the above
+                    handleGrabError(it, sender, userDTO)
+                    Mono.empty<NightscoutDTO>()
+                }
+        ).zipWhen { nsDto ->
             // attach a message embed to the NightscoutDTO
             val channelType = event.channelType
             var isShort = false.toMono()
+
             if (channelType == ChannelType.TEXT) {
                 isShort = if (userDTO.displayOptions.contains("simple")) {
                     true.toMono()
@@ -492,8 +492,4 @@ class NightscoutCommand {
                     }
                 }
     }
-}
-
-private fun MessageReceivedEvent.sendMessage(message: String) {
-    channel.sendMessage(message).queue()
 }
