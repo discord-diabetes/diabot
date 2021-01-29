@@ -1,6 +1,18 @@
 package com.dongtronic.diabot
 
+import cloud.commandframework.annotations.Argument
+import cloud.commandframework.annotations.CommandDescription
+import cloud.commandframework.annotations.CommandMethod
+import cloud.commandframework.annotations.CommandPermission
+import cloud.commandframework.execution.CommandExecutionCoordinator
+import cloud.commandframework.jda.JDA4CommandManager
+import com.dongtronic.diabot.commands.DiabotHelp
+import com.dongtronic.diabot.commands.DiabotParser
+import com.dongtronic.diabot.commands.PermissionRegistry
+import com.dongtronic.diabot.commands.ReplyType
+import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.data.migration.MigrationManager
+import com.dongtronic.diabot.platforms.discord.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
@@ -9,12 +21,11 @@ import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.*
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
+import com.dongtronic.diabot.util.logger
 import com.github.ygimenez.method.Pages
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
@@ -22,15 +33,22 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import reactor.core.scheduler.Schedulers
 import java.util.*
+import java.util.function.BiFunction
+import java.util.function.Function
 import javax.security.auth.login.LoginException
 
 
 object Main {
+    private val logger = logger()
 
     @Throws(LoginException::class)
     @JvmStatic
@@ -87,7 +105,7 @@ object Main {
 
                 // BG
                 ConvertCommand(bgCategory),
-                NightscoutCommand(bgCategory),
+//                NightscoutCommand(bgCategory),
                 NightscoutGraphCommand(bgCategory),
 
                 // Utility
@@ -142,6 +160,80 @@ object Main {
 
         // Pagination
         Pages.activate(jda)
+
+        // this will be changed later once the jda-utilities command framework is removed
+        val prefix = "!"
+        val permissionRegistry = PermissionRegistry()
+        val commandManager: JDA4CommandManager<JDACommandUser> = JDA4CommandManager(
+                jda,
+                Function { prefix },
+                BiFunction { sender: JDACommandUser, permission: String ->
+                    permissionRegistry.hasPermission(sender, permission)
+                },
+                CommandExecutionCoordinator.simpleCoordinator(),
+                Function {
+                    JDACommandUser.of(it)
+                },
+                Function {
+                    it.toJdaCommandSender()
+                }
+        )
+
+        val diabotHelp = DiabotHelp(
+                commandManager,
+                prefix,
+                { sender: JDACommandUser, message: Message ->
+                    sender.reply(message, ReplyType.NONE)
+                            .subscribeOn(Schedulers.boundedElastic())
+                },
+                { sender: JDACommandUser, user: User ->
+                    user.id == sender.getAuthorUniqueId()
+                }
+        )
+
+        DiabotParser(commandManager, JDACommandUser::class.java)
+                .addAutoPermissionSupport()
+                .addCategorySupport()
+                .addExampleSupport()
+                .addGuildOnlySupport {
+                    it.commandContext.sender.replyErrorS("This command can only be executed in a server.")
+                }
+                .addDiscordPermissionSupport()
+                .parse(arrayOf(
+                        TestCommand(),
+                        HelpCommand(diabotHelp),
+                        NightscoutSubcommands(),
+                        NightscoutDisplayCommands(),
+                        NightscoutCommand()
+                ))
+
+        commandManager.commandHelpHandler.allCommands.forEach {
+            // debug code
+            logger.debug("Syntax: ${it.syntaxString}; Desc: ${it.description}")
+        }
     }
 
+    class TestCommand {
+        @CommandPermission("testcommand")
+        @CommandDescription("Test command stuff")
+        @CommandMethod("test|tst|tast <channel> [user]")
+        @CommandCategory(com.dongtronic.diabot.commands.Category.FUN)
+        fun testCommand(
+                sender: JDACommandUser,
+                @Argument("channel") channel: MessageChannel?,
+                @Argument("user") user: User?
+        ) {
+            val b = StringBuilder()
+
+            b.append("hi ${sender.getAuthorDisplayName()}!")
+            if (channel != null) {
+                b.append(" (channel ${channel.name})")
+            }
+            if (user != null) {
+                b.append(" (user ${user.name})")
+            }
+
+            sender.reply(b.toString())
+        }
+    }
 }
