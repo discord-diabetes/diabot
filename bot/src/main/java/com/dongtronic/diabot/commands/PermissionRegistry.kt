@@ -51,7 +51,7 @@ class PermissionRegistry {
             }
         }
 
-        return false
+        return true
     }
 
 }
