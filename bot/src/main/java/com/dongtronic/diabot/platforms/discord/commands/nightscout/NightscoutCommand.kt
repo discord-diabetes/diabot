@@ -26,10 +26,7 @@ import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import reactor.core.publisher.Flux
@@ -183,32 +180,26 @@ class NightscoutCommand {
      */
     private fun getUnstoredData(sender: JDACommandUser, args: String): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
         val event = sender.event
-        val args1 = args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val guild = if (event.isFromGuild) event.guild else null
+        val args1 = args.split(' ')
 
-        val namedMembers = event.guild.members.filter {
-            it.effectiveName.equals(args, true)
-                    || it.user.name.equals(args, true)
-        }
-        val mentionedMembers = event.message.mentionedMembers
+        val namedMembers =
+                guild?.members?.filter {
+                    it.effectiveName.equals(args, true)
+                            || it.user.name.equals(args, true)
+                } ?: emptyList()
+        val mentionedMembers = guild?.let { event.message.getMentionedMembers(it) } ?: emptyList()
 
         val endpoint: Mono<NightscoutUserDTO> = when {
             mentionedMembers.size > 1 ->
                 IllegalArgumentException("Too many mentioned users.").toMono()
+
             event.message.mentionsEveryone() ->
                 IllegalArgumentException("Cannot handle mentioning everyone.").toMono()
 
             mentionedMembers.size == 1 -> {
-                val user = mentionedMembers[0].user
-                val exception = IllegalArgumentException("User does not have a configured Nightscout URL.")
-
-                getUserDto(user, exception)
-                        .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
-                            if (!t.isNightscoutPublic(event.guild.id)) {
-                                u.error(NightscoutPrivateException(event.nameOf(user)))
-                            } else {
-                                u.next(t)
-                            }
-                        }
+                val member = mentionedMembers.first()
+                getUserDtoPublic(member)
             }
 
             args1.isNotEmpty() && args1[0].matches("^https?://.*".toRegex()) -> {
@@ -219,22 +210,14 @@ class NightscoutCommand {
 
             else -> {
                 // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
-                val user = namedMembers.getOrNull(0)?.user
+                val member = namedMembers.firstOrNull()
                 val domain = "https://${args1[0]}.herokuapp.com"
                 val fallbackDto = NightscoutUserDTO(url = domain).toMono()
 
-                if (user == null) {
+                if (member == null) {
                     fallbackDto
                 } else {
-                    getUserDto(user)
-                            .switchIfEmpty { fallbackDto }
-                            .handle { userDTO, sink: SynchronousSink<NightscoutUserDTO> ->
-                                if (!userDTO.isNightscoutPublic(event.guild.id)) {
-                                    sink.error(NightscoutPrivateException(event.nameOf(user)))
-                                } else {
-                                    sink.next(userDTO)
-                                }
-                            }
+                    getUserDtoPublic(member).onErrorResume(IllegalArgumentException::class) { fallbackDto }
                 }
             }
         }
@@ -489,6 +472,28 @@ class NightscoutCommand {
                     } else {
                         // throw an exception if the url is blank
                         throwable.toMono()
+                    }
+                }
+    }
+
+    /**
+     * Gets a [NightscoutUserDTO] for the given member on another user's behalf. This function checks the member's
+     * privacy settings and will throw a [NightscoutPrivateException] if it is private in the guild.
+     *
+     * @param member Member to retrieve Nightscout data from
+     * @param throwable Exception to throw if the member does not have a Nightscout URL configured
+     * @return A [NightscoutUserDTO] instance belonging to the given member
+     */
+    private fun getUserDtoPublic(
+            member: Member,
+            throwable: Throwable = IllegalArgumentException("User does not have a configured Nightscout URL.")
+    ): Mono<NightscoutUserDTO> {
+        return getUserDto(member.user, throwable)
+                .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
+                    if (!t.isNightscoutPublic(member.guild.id)) {
+                        u.error(NightscoutPrivateException(member.effectiveName))
+                    } else {
+                        u.next(t)
                     }
                 }
     }
