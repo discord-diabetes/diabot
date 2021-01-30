@@ -110,16 +110,15 @@ object ParserUtils {
                 )
             }
             var permission = AndPermission.of(permissions)
-
-            // (ALL of the discord permissions) OR (existing permission)
             val existingPermission = builder.commandPermission()
+
             if (existingPermission != Permission.empty()) {
-                permission = OrPermission.of(
-                        listOf(
-                                existingPermission,
-                                permission
-                        )
-                )
+                val newPermissions = listOf(existingPermission, permission)
+                permission = when (annotation.mergeType) {
+                    DiscordPermission.PermissionMerge.AND -> AndPermission.of(newPermissions)
+                    DiscordPermission.PermissionMerge.OR -> OrPermission.of(newPermissions)
+                    DiscordPermission.PermissionMerge.OVERRIDE -> permission
+                }
             }
 
             builder.permission(permission)
