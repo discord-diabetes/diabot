@@ -215,6 +215,9 @@ class DiabotHelp<C>(
 
         val desc = embed.descriptionBuilder
         val syntax = commandManager.commandSyntaxFormatter.apply(helpTopic.command.arguments, null)
+        val literalArg = helpTopic.command.components.mapNotNull { it.argument as? StaticArgument }.last()
+        val aliases = literalArg.aliases
+
         desc.append("```")
 
         desc.append("> ").append(syntax).newSection()
@@ -226,19 +229,21 @@ class DiabotHelp<C>(
         desc.append("Category:").newLine()
         desc.tab().append(category.displayName).newSection()
 
+        desc.append("Aliases:").newLine()
+        desc.tab().append(aliases.joinToString()).newSection()
+
         val examples = helpTopic.command.commandMeta.getOrDefault(ParserUtils.META_EXAMPLE, emptyArray())
         if (examples.isNotEmpty()) {
-            val literalArg = helpTopic.command.components.mapNotNull { it.argument as? StaticArgument }.last()
-            val aliases = literalArg.aliases.shuffled()
+            val aliasesShuffled = aliases.shuffled()
             // pattern for `[alias]`
             val pattern = aliases.joinToString(prefix = "\\[(", separator = "|", postfix = ")\\]").toRegex()
 
             desc.append("Examples:").newLine()
 
             examples.forEachIndexed { index, ex ->
-                val aliasIndex = index % aliases.size
+                val aliasIndex = index % aliasesShuffled.size
                 // replace the alias with a random one
-                val example = ex.replace(pattern, aliases[aliasIndex])
+                val example = ex.replace(pattern, aliasesShuffled[aliasIndex])
                 desc.tab().append("> ").append(example).newLine()
             }
 
