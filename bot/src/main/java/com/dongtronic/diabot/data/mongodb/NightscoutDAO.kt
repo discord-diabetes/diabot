@@ -108,8 +108,12 @@ class NightscoutDAO private constructor() {
      * @return The result of setting their URL
      */
     fun setUrl(userId: String, url: String): Mono<UpdateResult> {
-        return collection.updateOne(NightscoutUserDTO::userId eq userId,
-                setValue(NightscoutUserDTO::url, url), upsert())
+        val updates = combine(
+                setValue(NightscoutUserDTO::url, url),
+                unset(NightscoutUserDTO::token)
+        )
+
+        return collection.updateOne(NightscoutUserDTO::userId eq userId, updates, upsert())
                 .toMono()
                 .subscribeOn(scheduler)
     }
