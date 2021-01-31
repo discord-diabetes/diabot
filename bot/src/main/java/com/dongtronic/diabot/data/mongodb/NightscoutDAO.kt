@@ -1,9 +1,10 @@
 package com.dongtronic.diabot.data.mongodb
 
 import com.dongtronic.diabot.graph.GraphSettings
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.optionsForDisplay
 import com.dongtronic.diabot.util.*
-import com.mongodb.client.model.IndexOptions
-import com.mongodb.client.model.ReturnDocument
+import com.mongodb.client.model.*
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertOneResult
 import com.mongodb.client.result.UpdateResult
@@ -87,6 +88,17 @@ class NightscoutDAO private constructor() {
     }
 
     /**
+     * Updates or inserts a user's document in the database.
+     *
+     * @param dto The [NightscoutUserDTO] instance to update with
+     * @return [UpdateResult]
+     */
+    fun replaceUser(dto: NightscoutUserDTO): Mono<UpdateResult> {
+        return collection.replaceOne(filter(dto.userId), dto, replaceUpsert()).toMono()
+                .subscribeOn(scheduler)
+    }
+
+    /**
      * Sets a user's NS URL.
      *
      * @param userId The user's ID
@@ -162,31 +174,48 @@ class NightscoutDAO private constructor() {
      * @param displaySettings The display settings to update with.
      * @return The user's new display settings.
      */
+    @Deprecated("Use updateDisplay(String, UpdateMode, Set) instead", ReplaceWith("updateDisplay(String, UpdateMode, Set)"))
     fun updateDisplay(userId: String, append: Boolean? = null, vararg displaySettings: String): Mono<List<String>> {
-        val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
-        var settingsList = displaySettings.toList()
-
-        if (displaySettings.isEmpty()) {
-            // delete the key instead of making it blank
-            return deleteUser(userId, NightscoutUserDTO::displayOptions)
-                    .flatMap { Mono.just(listOf("reset")) }
+        val updateMode = when (append) {
+            true -> UpdateMode.ADD
+            false -> UpdateMode.DELETE
+            null -> UpdateMode.SET
         }
+        val settings = displaySettings.map {
+            NightscoutDisplayCommands.DisplayOptions.valueOf(it.toUpperCase())
+        }.toSet()
 
-        if (settingsList.any { it == "none" }) {
-            settingsList = listOf()
-        }
+        return updateDisplay(userId, updateMode, settings)
+    }
 
-        @Suppress("CascadeIf")
-        val update = if (append == true) {
-            addEachToSet(NightscoutUserDTO::displayOptions, settingsList)
-        } else if (append == false) {
-            pullAll(NightscoutUserDTO::displayOptions, settingsList)
-        } else {
-            setValue(NightscoutUserDTO::displayOptions, settingsList)
-        }
+    /**
+     * Changes a user's NS display settings.
+     *
+     * @param userId The user ID to change display settings for.
+     * @param updateMode The modification type for the display settings.
+     * @param displaySettings The display settings to update with. Using `null` will reset the settings to default.
+     * @return The user's new display settings.
+     */
+    fun updateDisplay(userId: String, updateMode: UpdateMode, displaySettings: Set<NightscoutDisplayCommands.DisplayOptions>? = null): Mono<List<String>> {
+        val user = getUser(userId).map {
+            if (displaySettings == null) {
+                return@map it.copy(displayOptions = NightscoutDisplayCommands.DisplayOptions.defaults.optionsForDisplay())
+            }
 
-        return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
-                .map { it.displayOptions.ifEmpty { listOf("none") } }
+            val newOptions = displaySettings.optionsForDisplay()
+            val currentOptions = it.displayOptions.toMutableSet()
+
+            when (updateMode) {
+                UpdateMode.ADD -> currentOptions.addAll(newOptions)
+                UpdateMode.DELETE -> currentOptions.removeAll(newOptions)
+                UpdateMode.SET -> currentOptions.retainAll { newOptions.contains(it) }
+            }
+
+            it.copy(displayOptions = currentOptions.toList())
+        }.zipWhen { replaceUser(it) }
+
+        return user
+                .map { it.t1.displayOptions.ifEmpty { listOf("<none>") } }
                 .subscribeOn(scheduler)
     }
 
@@ -212,6 +241,8 @@ class NightscoutDAO private constructor() {
                 .map { it.graphSettings }
                 .subscribeOn(scheduler)
     }
+
+    enum class UpdateMode { SET, ADD, DELETE }
 
     companion object {
         val instance: NightscoutDAO by lazy { NightscoutDAO() }

@@ -20,36 +20,31 @@ class NightscoutDisplayCommands {
     @CommandDescription("Shows the display options available and the ones you have activated")
     @CommandCategory(Category.BG)
     fun listOptions(e: JDACommandUser) {
-        val options = DisplayOptions.values().joinToString(
-                prefix = "`",
-                separator = "`, `",
-                postfix = "`"
-        ) { it.name.toLowerCase() }
-        val message = "You can add the following options to your display preferences: $options"
         val builder = MessageBuilder()
         val embed = EmbedBuilder()
-        embed.setTitle("Valid Display Options")
-        // todo: clean up
-        embed.addField("__`title`__", "Your Nightscout display title. [This can be changed on your Nightscout instance through the `CUSTOM_TITLE` environment variable](https://github.com/nightscout/cgm-remote-monitor#predefined-values-for-your-browser-settings-optional). You may also add custom emotes to your Nightscout title by embedding the emote's raw value in the `CUSTOM_TITLE` variable. The emote's raw value can be found by typing the emote in Discord and prefixing it with a backslash `\\`, like `\\:youremote:`.", false)
-        embed.addField("__`trend`__", "The current BG trend arrow in Nightscout.", false)
-        embed.addField("__`cob`__", "The amount of carbs on board. This value is reported by either `devicestatus` (OpenAPS / AndroidAPS) or Nightscout's careportal. The `cob` plugin must be enabled on the Nightscout instance for this to be displayed.", false)
-        embed.addField("__`iob`__", "The amount of insulin on board. This value is reported by either `devicestatus` (OpenAPS / AndroidAPS) or Nightscout's careportal. The `iob` plugin must be enabled on the Nightscout instance for this to be displayed.", false)
-        embed.addField("__`avatar`__", "Adds your Discord profile picture to the embed.", false)
-        embed.addField("__`simple`__", "Removes your Discord profile picture from the embed. (idk why this is an option)", false)
+        embed.setTitle("Valid Display Options", "https://github.com/reddit-diabetes/diabot/blob/master/docs/commands/Nightscout.md")
+        embed.setColor(0x007fa7)
+
+        for (option in DisplayOptions.values()) {
+            if (option.description == null) continue
+
+            val name = option.name.toLowerCase()
+            embed.addField("__`$name`__", option.description, false)
+        }
+
         builder.setEmbed(embed.build())
 
         NightscoutDAO.instance.getUser(e.getAuthorUniqueId()).subscribe({
             val usersOptions = it.displayOptions.joinToString()
             builder.append("Your current display preferences are:").appendCodeBlock(usersOptions, "")
-//            builder.append(message)
             e.replyS(builder.build())
         }, {
             if (it !is NoSuchElementException) {
                 logger.warn("Could not retrieve Nightscout user", it)
-                builder.append("Your display preferences were not able to be retrieved, but the list of possible display preferences you can add are: $options")
+                builder.append("Your display preferences were not able to be retrieved.")
                 e.replyS(builder.build())
             } else {
-                builder.append("You currently do not have any display preferences set. The list of possible display preferences you can add are: $options")
+                builder.append("You currently do not have any display preferences set.")
                 e.replyS(builder.build())
             }
         })
@@ -60,25 +55,7 @@ class NightscoutDisplayCommands {
     @CommandDescription("Sets your display preferences")
     @CommandCategory(Category.BG)
     fun setOptions(e: JDACommandUser, @Argument("options") options: Array<String>) {
-        val newOptions = options.map {
-            DisplayOptions.valueOf(it.toUpperCase()).name.toLowerCase()
-        }
-
-        NightscoutDAO.instance.updateDisplay(
-                e.getAuthorUniqueId(),
-                null,
-                *newOptions.toTypedArray()
-        ).subscribe({ updatedOptions ->
-            val formattedOptions = updatedOptions.joinToString(
-                    prefix = "`",
-                    separator = "`, `",
-                    postfix = "`"
-            )
-            e.replySuccessS("Nightscout display options were set to $formattedOptions")
-        }, {
-            logger.warn("Could not change Nightscout display options", it)
-            e.replyErrorS("An error occurred while setting Nightscout display options")
-        })
+        updateOptions(e, options, NightscoutDAO.UpdateMode.SET)
     }
 
     @NoAutoPermission
@@ -86,25 +63,7 @@ class NightscoutDisplayCommands {
     @CommandDescription("Adds display options to your preferences")
     @CommandCategory(Category.BG)
     fun addOptions(e: JDACommandUser, @Argument("options") options: Array<String>) {
-        val newOptions = options.map {
-            DisplayOptions.valueOf(it.toUpperCase()).name.toLowerCase()
-        }
-
-        NightscoutDAO.instance.updateDisplay(
-                e.getAuthorUniqueId(),
-                true,
-                *newOptions.toTypedArray()
-        ).subscribe({ updatedOptions ->
-            val formattedOptions = updatedOptions.joinToString(
-                    prefix = "`",
-                    separator = "`, `",
-                    postfix = "`"
-            )
-            e.replySuccessS("Nightscout display options were updated to $formattedOptions")
-        }, {
-            logger.warn("Could not change Nightscout display options", it)
-            e.replyErrorS("An error occurred while updating Nightscout display options")
-        })
+        updateOptions(e, options, NightscoutDAO.UpdateMode.ADD)
     }
 
     @NoAutoPermission
@@ -112,21 +71,33 @@ class NightscoutDisplayCommands {
     @CommandDescription("Removes display options from your preferences")
     @CommandCategory(Category.BG)
     fun removeOptions(e: JDACommandUser, @Argument("options") options: Array<String>) {
-        val newOptions = options.map {
-            DisplayOptions.valueOf(it.toUpperCase()).name.toLowerCase()
+        updateOptions(e, options, NightscoutDAO.UpdateMode.DELETE)
+    }
+
+    private fun updateOptions(e: JDACommandUser, options: Array<String>, updateMode: NightscoutDAO.UpdateMode) {
+        val errors = mutableListOf<String>()
+        val newOptions = options.mapNotNull {
+            try {
+                DisplayOptions.valueOf(it.toUpperCase())
+            } catch (exc: IllegalArgumentException) {
+                errors.add(it)
+                null
+            }
         }
 
         NightscoutDAO.instance.updateDisplay(
                 e.getAuthorUniqueId(),
-                false,
-                *newOptions.toTypedArray()
+                updateMode,
+                newOptions.toSet()
         ).subscribe({ updatedOptions ->
-            val formattedOptions = updatedOptions.joinToString(
-                    prefix = "`",
-                    separator = "`, `",
-                    postfix = "`"
-            )
-            e.replySuccessS("Nightscout display options were updated to $formattedOptions")
+            val formattedOptions = formatOptions(updatedOptions)
+            val message = "Nightscout display options were updated to $formattedOptions"
+            if (errors.isEmpty()) {
+                e.replySuccessS(message)
+            } else {
+                val formattedErrors = formatOptions(errors)
+                e.replyWarningS("$message. The following options were ignored because they are not valid options: $formattedErrors")
+            }
         }, {
             logger.warn("Could not change Nightscout display options", it)
             e.replyErrorS("An error occurred while updating Nightscout display options")
@@ -140,7 +111,8 @@ class NightscoutDisplayCommands {
     fun resetOptions(e: JDACommandUser) {
         NightscoutDAO.instance.updateDisplay(
                 e.getAuthorUniqueId(),
-                false
+                NightscoutDAO.UpdateMode.SET,
+                null
         ).subscribe({
             e.replySuccessS("Nightscout display options were reset")
         }, {
@@ -149,14 +121,44 @@ class NightscoutDisplayCommands {
         })
     }
 
-    enum class DisplayOptions {
-        // special option
-        ALL,
-        TITLE,
-        TREND,
-        COB,
-        IOB,
-        AVATAR,
-        SIMPLE
+    private fun <T> formatOptions(options: Collection<T>, transform: ((T) -> CharSequence)? = null): String {
+        return options.joinToString(
+                prefix = "`",
+                separator = "`, `",
+                postfix = "`",
+                transform = transform
+        )
+    }
+
+    enum class DisplayOptions(val description: String? = null) {
+        TITLE("Your Nightscout display title."),
+        TREND("The current BG trend arrow in Nightscout."),
+        COB("The amount of carbs on board."),
+        IOB("The amount of insulin on board."),
+        AVATAR("Display your Discord profile picture in the embed."),
+        // this seems pointless. remove in the future? todo
+        SIMPLE("Hide your Discord profile picture from the embed.");
+
+        companion object {
+            /**
+             * The default options to use when a user does not define their settings manually.
+             */
+            val defaults = setOf(TITLE, TREND, COB, IOB, AVATAR)
+
+            /**
+             * All of the valid options in a displayable format (lowercase).
+             */
+            val optionsForDisplay = values().asList().optionsForDisplay()
+
+            /**
+             * Convert display options into a human-readable format.
+             *
+             * @receiver Collection of [DisplayOptions] objects
+             * @return A list of the options in a displayable format (lowercase)
+             */
+            fun <T : Collection<DisplayOptions>> T.optionsForDisplay(): List<String> {
+                return map { it.name.toLowerCase() }
+            }
+        }
     }
 }
