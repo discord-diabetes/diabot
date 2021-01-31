@@ -2,6 +2,7 @@ package com.dongtronic.diabot.util
 
 import com.dongtronic.diabot.platforms.discord.utils.ColorDeserializer
 import com.dongtronic.diabot.platforms.discord.utils.ColorSerializer
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
@@ -40,6 +41,7 @@ class MongoDB {
         colorModule.addSerializer(Color::class.java, ColorSerializer())
         colorModule.addDeserializer(Color::class.java, ColorDeserializer())
         KMongoConfiguration.registerBsonModule(colorModule)
+        KMongoConfiguration.bsonMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
     }
 
     companion object {

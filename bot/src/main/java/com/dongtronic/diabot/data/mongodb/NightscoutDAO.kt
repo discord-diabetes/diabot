@@ -3,8 +3,10 @@ package com.dongtronic.diabot.data.mongodb
 import com.dongtronic.diabot.graph.GraphSettings
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.optionsForDisplay
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.sortOptions
 import com.dongtronic.diabot.util.*
-import com.mongodb.client.model.*
+import com.mongodb.client.model.IndexOptions
+import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.InsertOneResult
 import com.mongodb.client.result.UpdateResult
@@ -185,7 +187,7 @@ class NightscoutDAO private constructor() {
             NightscoutDisplayCommands.DisplayOptions.valueOf(it.toUpperCase())
         }.toSet()
 
-        return updateDisplay(userId, updateMode, settings)
+        return updateDisplay(userId, updateMode, settings).map { it.optionsForDisplay() }
     }
 
     /**
@@ -196,26 +198,41 @@ class NightscoutDAO private constructor() {
      * @param displaySettings The display settings to update with. Using `null` will reset the settings to default.
      * @return The user's new display settings.
      */
-    fun updateDisplay(userId: String, updateMode: UpdateMode, displaySettings: Set<NightscoutDisplayCommands.DisplayOptions>? = null): Mono<List<String>> {
-        val user = getUser(userId).map {
-            if (displaySettings == null) {
-                return@map it.copy(displayOptions = NightscoutDisplayCommands.DisplayOptions.defaults.optionsForDisplay())
-            }
+    fun updateDisplay(
+            userId: String,
+            updateMode: UpdateMode,
+            displaySettings: Set<NightscoutDisplayCommands.DisplayOptions>? = null
+    ): Mono<Set<NightscoutDisplayCommands.DisplayOptions>> {
+        if (displaySettings == null) {
+            return deleteUser(userId, NightscoutUserDTO::displayOptions)
+                    .map { emptySet<NightscoutDisplayCommands.DisplayOptions>() }
+        }
 
-            val newOptions = displaySettings.optionsForDisplay()
+        val settings = displaySettings.sortOptions()
+
+        if (updateMode == UpdateMode.SET) {
+            val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
+            val update = setValue(NightscoutUserDTO::displayOptions, settings)
+
+            return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
+                    .map { it.displayOptions }
+                    .subscribeOn(scheduler)
+        }
+
+        val user = getUser(userId).map {
             val currentOptions = it.displayOptions.toMutableSet()
 
+            @Suppress("NON_EXHAUSTIVE_WHEN")
             when (updateMode) {
-                UpdateMode.ADD -> currentOptions.addAll(newOptions)
-                UpdateMode.DELETE -> currentOptions.removeAll(newOptions)
-                UpdateMode.SET -> currentOptions.retainAll { newOptions.contains(it) }
+                UpdateMode.ADD -> currentOptions.addAll(settings)
+                UpdateMode.DELETE -> currentOptions.removeAll(settings)
             }
 
-            it.copy(displayOptions = currentOptions.toList())
+            it.copy(displayOptions = currentOptions)
         }.zipWhen { replaceUser(it) }
 
         return user
-                .map { it.t1.displayOptions.ifEmpty { listOf("<none>") } }
+                .map { it.t1.displayOptions }
                 .subscribeOn(scheduler)
     }
 

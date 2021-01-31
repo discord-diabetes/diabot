@@ -19,6 +19,8 @@ import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.*
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.sortOptions
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
@@ -297,7 +299,7 @@ class NightscoutCommand {
             var isShort = false.toMono()
 
             if (channelType == ChannelType.TEXT) {
-                isShort = if (userDTO.displayOptions.contains("simple")) {
+                isShort = if (userDTO.displayOptions.contains(SIMPLE)) {
                     true.toMono()
                 } else {
                     ChannelDAO.instance.hasAttribute(event.channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
@@ -324,28 +326,37 @@ class NightscoutCommand {
             builder: EmbedBuilder = EmbedBuilder()
     ): EmbedBuilder {
         val newest = nsDTO.getNewestEntry()
+        val trendString = newest.trend.unicode
         val displayOptions = userDTO.displayOptions
 
-        if (displayOptions.contains("title")) builder.setTitle(nsDTO.title)
-
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
-
-        val trendString = newest.trend.unicode
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
-        if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
-        if (nsDTO.iob != 0.0F && displayOptions.contains("iob")) {
-            builder.addField("iob", nsDTO.iob.toString(), true)
-        }
-        if (nsDTO.cob != 0 && displayOptions.contains("cob")) {
-            builder.addField("cob", nsDTO.cob.toString(), true)
+
+        displayOptions.sortOptions().forEach {
+            @Suppress("NON_EXHAUSTIVE_WHEN")
+            when (it) {
+                TITLE -> builder.setTitle(nsDTO.title)
+                TREND -> builder.addField("trend", trendString, true)
+                COB -> {
+                    if (nsDTO.iob != 0.0F) {
+                        builder.addField("iob", nsDTO.iob.toString(), true)
+                    }
+                }
+                IOB -> {
+                    if (nsDTO.cob != 0) {
+                        builder.addField("cob", nsDTO.cob.toString(), true)
+                    }
+                }
+                AVATAR -> {
+                    if (!short && userDTO.jdaUser?.avatarUrl != null) {
+                        builder.setThumbnail(userDTO.jdaUser.avatarUrl)
+                    }
+                }
+            }
         }
 
         setResponseColor(nsDTO, builder)
-
-        if (userDTO.jdaUser?.avatarUrl != null && displayOptions.contains("avatar") && !short) {
-            builder.setThumbnail(userDTO.jdaUser.avatarUrl)
-        }
 
         builder.setTimestamp(newest.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")

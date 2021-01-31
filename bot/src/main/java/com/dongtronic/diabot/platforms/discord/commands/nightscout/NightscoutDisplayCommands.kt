@@ -8,9 +8,11 @@ import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.annotations.NoAutoPermission
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.sortOptions
 import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.MessageBuilder
+import java.util.*
 
 class NightscoutDisplayCommands {
     private val logger = logger()
@@ -34,8 +36,9 @@ class NightscoutDisplayCommands {
 
         builder.setEmbed(embed.build())
 
-        NightscoutDAO.instance.getUser(e.getAuthorUniqueId()).subscribe({
-            val usersOptions = it.displayOptions.joinToString()
+        NightscoutDAO.instance.getUser(e.getAuthorUniqueId()).subscribe({ dto ->
+            val usersOptions = dto.displayOptions.sortOptions().joinToString { it.name.toLowerCase() }
+
             builder.append("Your current display preferences are:").appendCodeBlock(usersOptions, "")
             e.replyS(builder.build())
         }, {
@@ -76,12 +79,20 @@ class NightscoutDisplayCommands {
 
     private fun updateOptions(e: JDACommandUser, options: Array<String>, updateMode: NightscoutDAO.UpdateMode) {
         val errors = mutableListOf<String>()
-        val newOptions = options.mapNotNull {
+        var newOptions = options.mapNotNull {
             try {
                 DisplayOptions.valueOf(it.toUpperCase())
             } catch (exc: IllegalArgumentException) {
-                errors.add(it)
+                errors.add(it.toUpperCase())
                 null
+            }
+        }
+
+        newOptions.firstOrNull { it.special }?.let {
+            if (it == DisplayOptions.ALL) {
+                newOptions = DisplayOptions.validOptions
+            } else if (it == DisplayOptions.NONE) {
+                newOptions = emptyList()
             }
         }
 
@@ -90,12 +101,14 @@ class NightscoutDisplayCommands {
                 updateMode,
                 newOptions.toSet()
         ).subscribe({ updatedOptions ->
-            val formattedOptions = formatOptions(updatedOptions)
+            val formattedOptions = formatOptions(updatedOptions) { it.name.toLowerCase() }
             val message = "Nightscout display options were updated to $formattedOptions"
+
             if (errors.isEmpty()) {
                 e.replySuccessS(message)
             } else {
-                val formattedErrors = formatOptions(errors)
+                val formattedErrors = formatOptions(errors) { it.toLowerCase() }
+
                 e.replyWarningS("$message. The following options were ignored because they are not valid options: $formattedErrors")
             }
         }, {
@@ -127,10 +140,13 @@ class NightscoutDisplayCommands {
                 separator = "`, `",
                 postfix = "`",
                 transform = transform
-        )
+        ).replace("``", "`<none>`")
     }
 
-    enum class DisplayOptions(val description: String? = null) {
+    enum class DisplayOptions(val description: String? = null, val special: Boolean = false) {
+        ALL(special = true),
+        NONE(special = true),
+
         TITLE("Your Nightscout display title."),
         TREND("The current BG trend arrow in Nightscout."),
         COB("The amount of carbs on board."),
@@ -146,9 +162,14 @@ class NightscoutDisplayCommands {
             val defaults = setOf(TITLE, TREND, COB, IOB, AVATAR)
 
             /**
+             * All valid options that are not special.
+             */
+            val validOptions = values().filter { !it.special }
+
+            /**
              * All of the valid options in a displayable format (lowercase).
              */
-            val optionsForDisplay = values().asList().optionsForDisplay()
+            val optionsForDisplay = values().filter { !it.special }.optionsForDisplay()
 
             /**
              * Convert display options into a human-readable format.
@@ -158,6 +179,18 @@ class NightscoutDisplayCommands {
              */
             fun <T : Collection<DisplayOptions>> T.optionsForDisplay(): List<String> {
                 return map { it.name.toLowerCase() }
+            }
+
+            /**
+             * Sort the collection of [DisplayOptions] objects based on their appearance in the enum.
+             *
+             * @receiver Collection of [DisplayOptions] objects
+             * @return A sorted set of [DisplayOptions] objects
+             */
+            fun <T : Collection<DisplayOptions>> T.sortOptions(): SortedSet<DisplayOptions> {
+                val order = values().withIndex().associate { it.value to it.index }
+
+                return sortedBy { order[it] }.toSortedSet()
             }
         }
     }
