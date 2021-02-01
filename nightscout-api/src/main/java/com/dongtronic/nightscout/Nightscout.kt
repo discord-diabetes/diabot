@@ -188,8 +188,12 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
 
             if (delta.isNotEmpty()) {
-                val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
-                dto.delta = convertedDelta
+                try {
+                    val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
+                    dto.delta = convertedDelta
+                } catch (e: IllegalArgumentException) {
+                    // invalid delta
+                }
             }
 
             dto.glucose = convertedBg
