@@ -200,7 +200,11 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
 
                 if (delta.isNotEmpty()) {
-                    bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
+                    try {
+                        bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
+                    } catch (e: IllegalArgumentException) {
+                        // invalid delta
+                    }
                 }
 
                 bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
