@@ -29,6 +29,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
 
     override fun execute(event: CommandEvent) {
         val args = event.args.split("[\\s,]+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val nickname = NicknameUtils.determineAuthorDisplayName(event)
 
         if (args.isEmpty()) {
             event.reply("Possible display options: ${formatOptions()}")
@@ -57,18 +58,16 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
             setNightscoutDisplay(event.author)
         }
 
-        NicknameUtils.determineAuthorDisplayName(event).subscribe { nickname ->
-            updateDisplay.subscribe({ newOptions ->
-                if (newOptions.any { it == "reset" }) {
-                    event.replySuccess("Reset Nightscout display options for $nickname")
-                } else {
-                    event.replySuccess("Nightscout display options for $nickname set to: ${formatOptions(newOptions)}")
-                }
-            }, {
-                logger.warn("Error while setting NS display options", it)
-                event.replyError("Could not set Nightscout display options for $nickname")
-            })
-        }
+        updateDisplay.subscribe({ newOptions ->
+            if (newOptions.any { it == "reset" }) {
+                event.replySuccess("Reset Nightscout display options for $nickname")
+            } else {
+                event.replySuccess("Nightscout display options for $nickname set to: ${formatOptions(newOptions)}")
+            }
+        }, {
+            logger.warn("Error while setting NS display options", it)
+            event.replyError("Could not set Nightscout display options for $nickname")
+        })
     }
 
     private fun setNightscoutDisplay(user: User, vararg options: String): Mono<List<String>> {
