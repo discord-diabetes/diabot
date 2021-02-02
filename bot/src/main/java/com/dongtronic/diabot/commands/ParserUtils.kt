@@ -14,6 +14,9 @@ import cloud.commandframework.permission.OrPermission
 import cloud.commandframework.permission.Permission
 import cloud.commandframework.services.types.ConsumerService
 import com.dongtronic.diabot.commands.annotations.*
+import com.dongtronic.diabot.commands.cooldown.CooldownIds
+import com.dongtronic.diabot.commands.cooldown.CooldownMeta
+import com.dongtronic.diabot.commands.cooldown.CooldownStorage
 import com.dongtronic.diabot.util.logger
 import io.leangen.geantyref.TypeToken
 import java.util.*
@@ -28,6 +31,7 @@ object ParserUtils {
     val META_CATEGORY = CommandMeta.Key.of(TypeToken.get(Category::class.java), "category")
     val META_EXAMPLE = CommandMeta.Key.of(TypeToken.get(Array<String>::class.java), "example")
     val META_GUILDONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "guildonly")
+    val META_COOLDOWN = CommandMeta.Key.of(TypeToken.get(CooldownMeta::class.java), "cooldown")
 
     /**
      * Registers two builder modifiers:
@@ -127,6 +131,44 @@ object ParserUtils {
 
     /**
      * Registers a:
+     * - builder modifier that adds `META_COOLDOWN` to the command meta with the command's cooldown specifications
+     * - command post processor that checks if the command is on cooldown
+     *
+     * From the command postprocessor, if the command is on cooldown then the command pipeline will be interrupted
+     * and the [notifier] parameter will be called with the milliseconds remaining on the cooldown.
+     *
+     * @param C Command sender type
+     * @param parser The annotation parser to register the builder modifier with
+     * @param cmdManager The command manager to register the command post processor with
+     * @param cooldownStorage Where cooldowns should be stored in
+     * @param idMapper Mapper that converts a command sender to a [CooldownIds] object
+     * @param notifier Notifier that gets called when a command is executed while it is on cooldown
+     */
+    fun <C> registerCooldown(parser: AnnotationParser<C>,
+                             cmdManager: CommandManager<C>,
+                             cooldownStorage: CooldownStorage,
+                             idMapper: (C) -> CooldownIds,
+                             notifier: (millisRemaining: Long, CooldownMeta, CommandPostprocessingContext<C>) -> Unit) {
+        registerCommandLimit(
+                parser,
+                cmdManager,
+                Cooldown::class.java,
+                META_COOLDOWN,
+                { cooldown: Cooldown, builder: Command.Builder<C> ->
+                    builder.meta(META_COOLDOWN, CooldownMeta.fromAnnotation(cooldown))
+                },
+                { cooldownMeta: CooldownMeta, context: CommandPostprocessingContext<C> ->
+                    val id = idMapper(context.commandContext.sender)
+                    val time = cooldownStorage.applyCooldown(id, cooldownMeta, context.command)
+
+                    time
+                },
+                notifier
+        )
+    }
+
+    /**
+     * Registers a:
      * - builder modifier that adds `META_GUILDONLY` to the command meta
      * - command post processor that checks if the command was executed in a guild
      *
@@ -139,7 +181,7 @@ object ParserUtils {
      * @param notifier Notifier that gets called when a command is executed in a non-guild environment
      */
     fun <C> registerGuildOnly(parser: AnnotationParser<C>, cmdManager: CommandManager<C>, notifier: (CommandPostprocessingContext<C>) -> Unit) {
-        registerCommandLimitation(
+        registerBasicCommandLimit(
                 parser,
                 cmdManager,
                 GuildOnly::class.java,
@@ -151,6 +193,10 @@ object ParserUtils {
 
     /**
      * Generic annotation-based command execution limitation.
+     *
+     * This is a simpler version of [registerCommandLimit] that is only meant to limit based on a toggle.
+     * If you need to apply more involved limitations (limiting based on a variety of factors or notifying with specific
+     * data) you should look into using [registerCommandLimit] instead.
      *
      * Behind the scenes, this function registers a:
      * - builder modifier that adds the `key` parameter to the command meta with the value `true`
@@ -172,7 +218,7 @@ object ParserUtils {
      * @param limitation Checks whether a command execution should be blocked
      * @param notifier Notifier that gets called when a command is blocked by this limitation
      */
-    fun <C, A : Annotation> registerCommandLimitation(
+    fun <C, A : Annotation> registerBasicCommandLimit(
             parser: AnnotationParser<C>,
             cmdManager: CommandManager<C>,
             annotationClass: Class<A>,
@@ -184,13 +230,63 @@ object ParserUtils {
             limitation: (CommandPostprocessingContext<C>) -> Boolean,
             notifier: (CommandPostprocessingContext<C>) -> Unit
     ) {
+        registerCommandLimit(
+                parser,
+                cmdManager,
+                annotationClass,
+                key,
+                builderModifier,
+                { _: Boolean, context: CommandPostprocessingContext<C> ->
+                    limitation(context)
+                },
+                { _: Boolean, _: Boolean, context: CommandPostprocessingContext<C> ->
+                    notifier(context)
+                }
+        )
+    }
+
+    /**
+     * Generic annotation-based command execution limitation.
+     *
+     * Behind the scenes, this function registers a command post processor that checks whether the [key] meta is on a
+     * command, and if so then whether the [limitation] function parameter returns a non-null value.
+     *
+     * If the [limitation] function returns a non-null value at the time of calling, then the command execution will be
+     * aborted and the [notifier] function will be called with the result of [limitation] to notify the sender of the limit.
+     *
+     * @param C Command sender type
+     * @param K Command meta type
+     * @param D Limitation data type
+     * @param A Annotation type
+     * @param parser The annotation parser
+     * @param cmdManager The command manager
+     * @param annotationClass The annotation class linked to this limitation
+     * @param key Command meta key used for marking a command with this limitation and possibly storing data about the limitation
+     * @param builderModifier Modifies commands with the specified annotation (provided by `annotationClass`)
+     * @param limitation Checks whether a command execution should be blocked and returns a non-null value if so.
+     * The value returned will be passed to the [notifier] if it is not null
+     * @param notifier Notifier that gets called when a command is blocked by this limitation
+     */
+    fun <C, K, D, A : Annotation> registerCommandLimit(
+            parser: AnnotationParser<C>,
+            cmdManager: CommandManager<C>,
+            annotationClass: Class<A>,
+            key: CommandMeta.Key<K>,
+            builderModifier: (annotation: A, builder: Command.Builder<C>) -> Command.Builder<C>,
+            limitation: (meta: K, context: CommandPostprocessingContext<C>) -> D?,
+            notifier: (data: D, meta: K, context: CommandPostprocessingContext<C>) -> Unit
+    ) {
         parser.registerBuilderModifier(annotationClass, builderModifier)
 
         cmdManager.registerCommandPostProcessor {
-            if (it.command.commandMeta.getOrDefault(key, false)
-                    && limitation(it)) {
-                notifier(it)
-                ConsumerService.interrupt()
+            val meta = it.command.commandMeta[key]
+            if (meta.isPresent) {
+                val data = limitation(meta.get(), it)
+
+                if (data != null) {
+                    notifier(data, meta.get(), it)
+                    ConsumerService.interrupt()
+                }
             }
         }
     }

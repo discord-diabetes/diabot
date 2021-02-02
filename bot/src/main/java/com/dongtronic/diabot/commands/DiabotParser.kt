@@ -5,6 +5,9 @@ import cloud.commandframework.annotations.AnnotationParser
 import cloud.commandframework.arguments.parser.StandardParameters
 import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.meta.CommandMeta
+import com.dongtronic.diabot.commands.cooldown.CooldownIds
+import com.dongtronic.diabot.commands.cooldown.CooldownMeta
+import com.dongtronic.diabot.commands.cooldown.CooldownStorage
 
 /**
  * Wrapper class for [AnnotationParser] which provides features unique to Diabot.
@@ -54,6 +57,22 @@ class DiabotParser<C>(
      */
     fun addGuildOnlySupport(notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
         ParserUtils.registerGuildOnly(parser, cmdManager, notifier)
+    }
+
+    /**
+     * Adds support for Cooldown annotations to this parser.
+     *
+     * @param idMapper Mapper that converts a command sender to a [CooldownIds] object
+     * @param notifier Notifier that gets called when a command is executed while it is on cooldown
+     * @param cooldownStorage Where cooldowns should be stored in
+     * @return this [DiabotParser] instance
+     */
+    fun addCooldownSupport(
+            idMapper: (C) -> CooldownIds,
+            notifier: (millisRemaining: Long, CooldownMeta, CommandPostprocessingContext<C>) -> Unit,
+            cooldownStorage: CooldownStorage = CooldownStorage()
+    ) = apply {
+        ParserUtils.registerCooldown(parser, cmdManager, cooldownStorage, idMapper, notifier)
     }
 
     /**

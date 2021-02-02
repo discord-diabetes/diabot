@@ -5,12 +5,15 @@ import cloud.commandframework.annotations.CommandDescription
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.annotations.CommandPermission
 import cloud.commandframework.execution.CommandExecutionCoordinator
+import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.jda.JDA4CommandManager
 import com.dongtronic.diabot.commands.DiabotHelp
 import com.dongtronic.diabot.commands.DiabotParser
 import com.dongtronic.diabot.commands.PermissionRegistry
 import com.dongtronic.diabot.commands.ReplyType
 import com.dongtronic.diabot.commands.annotations.CommandCategory
+import com.dongtronic.diabot.commands.cooldown.CooldownIds
+import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.platforms.discord.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
@@ -198,6 +201,22 @@ object Main {
                 .addGuildOnlySupport {
                     it.commandContext.sender.replyErrorS("This command can only be executed in a server.")
                 }
+                .addCooldownSupport(
+                        {
+                            val guildId = if (it.event.isFromGuild) it.event.guild.id else ""
+                            CooldownIds(
+                                    userId = it.getAuthorUniqueId(),
+                                    channelId = it.event.channel.id,
+                                    guildId = guildId,
+                                    shardId = it.event.jda.shardInfo.shardId.toString()
+                            )
+                        },
+                        { millisRemaining: Long, _: CooldownMeta, context: CommandPostprocessingContext<JDACommandUser> ->
+                            val secsLeft = (millisRemaining / 1000).toInt()
+                            val s = if (secsLeft == 1) "" else "s"
+                            context.commandContext.sender.replyErrorS("This command is currently in cooldown for $secsLeft more second$s")
+                        }
+                )
                 .addDiscordPermissionSupport()
                 .parse(arrayOf(
                         TestCommand(),
