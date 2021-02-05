@@ -1,29 +1,36 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
+import cloud.commandframework.annotations.Argument
+import cloud.commandframework.annotations.CommandDescription
+import cloud.commandframework.annotations.CommandMethod
+import cloud.commandframework.annotations.specifier.Greedy
+import com.dongtronic.diabot.commands.Category
+import com.dongtronic.diabot.commands.annotations.CommandCategory
+import com.dongtronic.diabot.commands.annotations.DisplayName
+import com.dongtronic.diabot.commands.annotations.Example
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.graph.PlottingStyle
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.platforms.discord.JDACommandUser
 import com.dongtronic.diabot.util.logger
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
 
-class NightscoutGraphModeCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
+class NightscoutGraphModeCommand {
     private val logger = logger()
 
-    init {
-        this.name = "mode"
-        this.help = "Switches the plotting style of the graph between a scatter plot and a line plot"
-        this.guildOnly = true
-        this.aliases = arrayOf("plot", "m")
-        this.examples = arrayOf(this.parent!!.name + " mode [scatter/line]")
-    }
-
-    override fun execute(event: CommandEvent) {
-        val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val mode = NightscoutDAO.instance.getUser(event.author.id)
+    @CommandMethod("nightscoutgraph settings|setting|s mode|plot|m [mode]")
+    @CommandDescription("Switches the plotting style of the graph between a scatter plot and a line plot")
+    @CommandCategory(Category.BG)
+    @Example(["[mode]", "[mode] scatter", "[mode] line"])
+    fun execute(
+            sender: JDACommandUser,
+            @Argument("mode", description = "The plotting style to switch to")
+            @DisplayName("scatter/line")
+            @Greedy
+            args: Array<String>?
+    ) {
+        val mode = NightscoutDAO.instance.getUser(sender.getAuthorUniqueId())
                 .map { it.graphSettings }
                 .map { settings ->
-                    val newStyle = if (args.isEmpty() || args[0].isBlank()) {
+                    val newStyle = if (args.isNullOrEmpty()) {
                         PlottingStyle.values().first { it != settings.plotMode }
                     } else {
                         PlottingStyle.values().first { it.name.startsWith(args[0], true) }
@@ -33,17 +40,17 @@ class NightscoutGraphModeCommand(category: Category, parent: Command) : DiscordC
                 }
 
         val command = mode.flatMap {
-            NightscoutDAO.instance.updateGraphSettings(event.author.id, it)
+            NightscoutDAO.instance.updateGraphSettings(sender.getAuthorUniqueId(), it)
         }
 
         command.subscribe({
-            event.replySuccess("Plotting style changed to `${it.plotMode.name}`")
+            sender.replySuccessS("Plotting style changed to `${it.plotMode.name}`")
         }, {
-            if (it is NoSuchElementException) {
-                event.replyError("No plotting mode known by the name of `${args[0]}`")
+            if (it is NoSuchElementException && !args.isNullOrEmpty()) {
+                sender.replyErrorS("No plotting mode known by the name of `${args[0]}`")
             } else {
-                event.replyError("Could not update plotting style")
-                logger.warn("Unexpected error when changing graph mode for ${event.author}", it)
+                sender.replyErrorS("Could not update plotting style")
+                logger.warn("Unexpected error when changing graph mode for ${sender.event.author}", it)
             }
         })
     }

@@ -24,7 +24,9 @@ import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.*
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
@@ -109,7 +111,7 @@ object Main {
                 // BG
                 ConvertCommand(bgCategory),
 //                NightscoutCommand(bgCategory),
-                NightscoutGraphCommand(bgCategory),
+//                NightscoutGraphCommand(bgCategory),
 
                 // Utility
                 PingCommand(utilitiesCategory),
@@ -221,7 +223,8 @@ object Main {
                 .parse(arrayOf(
                         TestCommand(),
                         HelpCommand(diabotHelp),
-                        NightscoutCommand()
+                        NightscoutCommand(),
+                        NightscoutGraphCommand()
                 ))
 
         commandManager.commandHelpHandler.allCommands.forEach {

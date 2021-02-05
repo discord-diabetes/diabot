@@ -1,40 +1,42 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
+import cloud.commandframework.annotations.CommandDescription
+import cloud.commandframework.annotations.CommandMethod
+import com.dongtronic.diabot.commands.Category
+import com.dongtronic.diabot.commands.annotations.ChildCommands
+import com.dongtronic.diabot.commands.annotations.CommandCategory
+import com.dongtronic.diabot.commands.annotations.Cooldown
+import com.dongtronic.diabot.commands.annotations.Example
+import com.dongtronic.diabot.commands.cooldown.CooldownScope
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.graph.BgGraph
-import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.platforms.discord.JDACommandUser
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
 import com.dongtronic.nightscout.data.NightscoutDTO
-import com.jagrosh.jdautilities.command.CommandEvent
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import java.util.concurrent.TimeUnit
 
 
-class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null) {
-
+@ChildCommands(NightscoutGraphModeCommand::class)
+class NightscoutGraphCommand {
     private val logger = logger()
 
-    init {
-        this.name = "nightscoutgraph"
-        this.help = "Generates a graph of your recent BG data from Nightscout"
-        this.guildOnly = false
-        this.aliases = arrayOf("nsg", "bgg", "bsg", "nsgraph", "bggraph", "bsgraph", "graph")
-        this.category = category
-        this.examples = arrayOf("diabot nightscoutgraph")
-        this.children = arrayOf(NightscoutGraphModeCommand(category, this))
-        this.cooldown = 5
-        this.cooldownScope = CooldownScope.USER
-    }
-
-    override fun execute(event: CommandEvent) {
+    @Cooldown(5, TimeUnit.SECONDS, CooldownScope.USER)
+    @Example(["[nightscoutgraph]"])
+    @CommandMethod("nightscoutgraph|nsg|bgg|bsg|nsgraph|bggraph|bsgraph|graph")
+    @CommandDescription("Generates a graph of your recent BG data from Nightscout")
+    @CommandCategory(Category.BG)
+    fun execute(sender: JDACommandUser) {
+        val event = sender.event
         getDataSet(event.author.id)
                 .map { BitmapEncoder.getBitmapBytes(it, BitmapEncoder.BitmapFormat.PNG) }
                 .flatMap { event.channel.sendFile(it, "graph.png").submit().toMono() }
-                .subscribe({}, {
-                    event.reactError()
+                .subscribe(null, {
+                    sender.replyErrorS("Error generating graph")
                     logger.error("Error generating NS graph for ${event.author}", it)
                 })
     }
