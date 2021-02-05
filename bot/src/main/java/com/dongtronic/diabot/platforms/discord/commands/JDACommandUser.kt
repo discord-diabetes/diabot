@@ -8,6 +8,7 @@ import com.dongtronic.diabot.platforms.discord.listeners.CommandUpdateListener
 import com.dongtronic.diabot.submitMono
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import reactor.core.publisher.Mono
 
@@ -58,6 +59,17 @@ class JDACommandUser(
 
     override fun reply(message: CharSequence, type: ReplyType): Mono<Message> {
         return reply(MessageBuilder(message).build(), type)
+    }
+
+    /**
+     * Replies to the author's message with an embed.
+     *
+     * @param embed Message embed to send
+     * @param type Method of replying
+     * @return A [Mono] of the sent message
+     */
+    fun reply(embed: MessageEmbed, type: ReplyType): Mono<Message> {
+        return reply(MessageBuilder(embed).build(), type)
     }
 
     override fun react(unicode: String): Mono<Boolean> {
