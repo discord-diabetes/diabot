@@ -24,7 +24,7 @@ class NightscoutSubcommands {
     private val logger = logger()
 
     @NoAutoPermission
-    @CommandMethod("nightscout|ns|bg|bs delete|del|d")
+    @CommandMethod("nightscout delete|del|d")
     @CommandDescription("Deletes your Nightscout data from Diabot")
     @CommandCategory(Category.BG)
     @Example(["[delete]", "[del] --url --token", "[del] -u -t -d"])
