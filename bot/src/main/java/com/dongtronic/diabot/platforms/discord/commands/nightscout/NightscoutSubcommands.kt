@@ -18,6 +18,8 @@ import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import kotlin.reflect.KProperty
 
 class NightscoutSubcommands {
@@ -89,8 +91,16 @@ class NightscoutSubcommands {
     @CommandCategory(Category.BG)
     fun setUrl(e: JDACommandUser, @Argument("url") url: String) {
         deleteMessage(e)
+        val validated = try {
+            validateNightscoutUrl(url)
+        } catch (exc: IllegalArgumentException) {
+            e.replyErrorS("Could not set your Nightscout URL. " +
+                    "Please make sure you are specifying the URL to your Nightscout instance exactly as it appears in your web browser. " +
+                    "An example of a valid URL would be: `https://my-nightscout.herokuapp.com/`", ReplyType.MENTION)
+            return
+        }
 
-        NightscoutDAO.instance.setUrl(e.getAuthorUniqueId(), url).subscribe({
+        NightscoutDAO.instance.setUrl(e.getAuthorUniqueId(), validated).subscribe({
             e.replySuccessS("Set Nightscout URL", ReplyType.MENTION)
         }, {
             logger.warn("Could not set NS URL", it)
@@ -147,5 +157,32 @@ class NightscoutSubcommands {
                 }
             }
         })
+    }
+
+    companion object {
+        /**
+         * Sanitise a Nightscout URL of any unnecessary API paths or excess slashes for storing in the database.
+         * This will do the following sanitations:
+         * - Trim leading and trailing whitespace
+         * - Trim trailing slashes (`/`)
+         * - Trim trailing Nightscout API endpoints
+         *
+         * Lastly, an attempt will be made at converting the final URL to a [HttpUrl] instance. If the final URL is not
+         * a well-formed URL then the conversion will throw a [IllegalArgumentException], signifying that the URL is
+         * invalid.
+         *
+         * @param url The URL to validate
+         * @return A fully validated Nightscout URL
+         * @throws IllegalArgumentException If the given URL is not a well-formed HTTP or HTTPS URL
+         */
+        fun validateNightscoutUrl(url: String): String {
+            val finalUrl = url.trim()
+                    .trimEnd('/')
+                    .removeSuffix("/api/v1")
+
+            finalUrl.toHttpUrl()
+
+            return finalUrl
+        }
     }
 }
