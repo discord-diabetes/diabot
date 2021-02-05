@@ -22,7 +22,6 @@ import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.sortOptions
-import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
 import com.dongtronic.nightscout.data.NightscoutDTO
@@ -63,7 +62,6 @@ class NightscoutCommand {
             @Greedy
             arg: String?
     ) {
-        val event = user.event
         val args = arg?.trim() ?: ""
 
         // grab the necessary data
@@ -75,8 +73,7 @@ class NightscoutCommand {
             getUnstoredData(user, args)
         }.flatMap { data ->
             // send the message
-            event.channel.sendMessage(data.t2)
-                    .submitMono()
+            user.reply(data.t2, ReplyType.NONE)
                     .doOnSuccess { addReactions(data.t1, it) }
         }.subscribeOn(Schedulers.boundedElastic())
 
