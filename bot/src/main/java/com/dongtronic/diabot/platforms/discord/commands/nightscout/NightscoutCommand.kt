@@ -6,6 +6,7 @@ import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.annotations.specifier.Greedy
 import com.dongtronic.diabot.commands.Category
 import com.dongtronic.diabot.commands.ReplyType
+import com.dongtronic.diabot.commands.annotations.ChildCommands
 import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.annotations.DisplayName
 import com.dongtronic.diabot.commands.annotations.Example
@@ -46,6 +47,7 @@ import java.net.UnknownHostException
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+@ChildCommands(NightscoutSubcommands::class, NightscoutDisplayCommands::class)
 class NightscoutCommand {
 
     private val logger = logger()

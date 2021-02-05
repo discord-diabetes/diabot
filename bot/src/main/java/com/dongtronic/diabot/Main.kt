@@ -221,8 +221,6 @@ object Main {
                 .parse(arrayOf(
                         TestCommand(),
                         HelpCommand(diabotHelp),
-                        NightscoutSubcommands(),
-                        NightscoutDisplayCommands(),
                         NightscoutCommand()
                 ))
 

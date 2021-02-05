@@ -83,14 +83,16 @@ class DiabotParser<C>(
     fun addDiscordPermissionSupport() = apply { ParserUtils.registerDiscordPermissions(parser) }
 
     /**
-     * Parse class instances for DisplayName annotations and commands.
+     * Parse class instances for DisplayName annotations and (sub)commands.
      *
      * @param instances Array of classes to parse
      * @return this [DiabotParser] instance
      */
     fun parse(instances: Array<Any>) = apply {
         ParserUtils.parseDisplayNames(syntaxFormatter, instances)
-        instances.forEach { parser.parse(it) }
+
+        val childCommands = ParserUtils.parseChildCommands(instances)
+        childCommands.plus(instances).forEach { parser.parse(it) }
     }
 
     companion object {

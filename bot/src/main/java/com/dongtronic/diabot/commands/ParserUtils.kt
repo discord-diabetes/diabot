@@ -20,6 +20,7 @@ import com.dongtronic.diabot.commands.cooldown.CooldownStorage
 import com.dongtronic.diabot.util.logger
 import io.leangen.geantyref.TypeToken
 import java.util.*
+import kotlin.reflect.full.createInstance
 
 /**
  * Utility class which provides features unique to Diabot for the Cloud framework.
@@ -315,5 +316,20 @@ object ParserUtils {
 
                     formatter.displayNameMap[argumentHash] = displayName.name
                 }
+    }
+
+    /**
+     * Parses an array of classes for child commands (specified by [ChildCommands] annotations) and creates an instance
+     * of each.
+     *
+     * The child commands should not have a constructor which requires parameters.
+     *
+     * @param parents Array of parent commands
+     * @return The initialised child commands
+     */
+    fun parseChildCommands(parents: Array<Any>): List<Any> {
+        return parents.filter { it.javaClass.isAnnotationPresent(ChildCommands::class.java) }
+                .flatMap { it.javaClass.getAnnotation(ChildCommands::class.java).childCommands.toList() }
+                .map { it.createInstance() }
     }
 }
