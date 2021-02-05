@@ -12,7 +12,7 @@ import com.dongtronic.diabot.commands.annotations.GuildOnly
 import com.dongtronic.diabot.commands.annotations.NoAutoPermission
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.util.logger
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult

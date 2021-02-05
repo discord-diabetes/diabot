@@ -7,7 +7,7 @@ import com.dongtronic.diabot.commands.Category
 import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.annotations.NoAutoPermission
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.Companion.sortOptions
 import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.EmbedBuilder

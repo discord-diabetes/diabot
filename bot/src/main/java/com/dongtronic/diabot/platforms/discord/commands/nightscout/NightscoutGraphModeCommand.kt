@@ -10,7 +10,7 @@ import com.dongtronic.diabot.commands.annotations.DisplayName
 import com.dongtronic.diabot.commands.annotations.Example
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.graph.PlottingStyle
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.util.logger
 
 class NightscoutGraphModeCommand {

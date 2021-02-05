@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.platforms.discord
+package com.dongtronic.diabot.platforms.discord.commands
 
 import com.dongtronic.diabot.commands.ResponseLevel
 import com.dongtronic.diabot.commands.ResponseLevelMapper

@@ -15,7 +15,7 @@ import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.cooldown.CooldownIds
 import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.data.migration.MigrationManager
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand

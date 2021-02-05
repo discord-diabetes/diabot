@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.platforms.discord
+package com.dongtronic.diabot.platforms.discord.commands
 
 import cloud.commandframework.jda.JDACommandSender
 import com.dongtronic.diabot.commands.CommandUser

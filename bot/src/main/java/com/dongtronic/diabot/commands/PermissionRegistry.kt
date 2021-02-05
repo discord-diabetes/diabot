@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.commands
 
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import net.dv8tion.jda.api.Permission
 import java.util.*
 

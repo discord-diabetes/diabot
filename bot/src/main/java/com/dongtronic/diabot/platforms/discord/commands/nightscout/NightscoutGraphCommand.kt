@@ -10,7 +10,7 @@ import com.dongtronic.diabot.commands.annotations.Example
 import com.dongtronic.diabot.commands.cooldown.CooldownScope
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.graph.BgGraph
-import com.dongtronic.diabot.platforms.discord.JDACommandUser
+import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
 import com.dongtronic.nightscout.data.NightscoutDTO
