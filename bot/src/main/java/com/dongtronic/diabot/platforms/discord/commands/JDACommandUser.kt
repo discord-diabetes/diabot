@@ -4,6 +4,7 @@ import cloud.commandframework.jda.JDACommandSender
 import com.dongtronic.diabot.commands.CommandUser
 import com.dongtronic.diabot.commands.ReplyType
 import com.dongtronic.diabot.nameOf
+import com.dongtronic.diabot.platforms.discord.listeners.CommandUpdateListener
 import com.dongtronic.diabot.submitMono
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
@@ -12,7 +13,8 @@ import reactor.core.publisher.Mono
 
 class JDACommandUser(
         event: MessageReceivedEvent,
-        mapper: ResponseEmojiMapper = ResponseEmojiMapper()
+        mapper: ResponseEmojiMapper = ResponseEmojiMapper(),
+        private val listener: CommandUpdateListener? = null
 ) : CommandUser<MessageReceivedEvent, Message>(event, mapper) {
     override fun getAuthorName(): String {
         return event.author.name
@@ -51,6 +53,7 @@ class JDACommandUser(
         }
 
         return action.submitMono().subscribeOn(defaultScheduler)
+                .doOnNext { listener?.markReply(event.message.idLong, it.idLong) }
     }
 
     override fun reply(message: CharSequence, type: ReplyType): Mono<Message> {
@@ -81,10 +84,11 @@ class JDACommandUser(
          * Converts a [JDACommandSender] object (cloud) into a [JDACommandUser] object (Diabot)
          *
          * @param jdaCommandSender [JDACommandSender] to convert
+         * @param listener An optional [CommandUpdateListener] to delete replies when an author deletes their message
          * @return Converted [JDACommandUser]
          */
-        fun of(jdaCommandSender: JDACommandSender): JDACommandUser {
-            return JDACommandUser(jdaCommandSender.event.get(), emojiMapper)
+        fun of(jdaCommandSender: JDACommandSender, listener: CommandUpdateListener? = null): JDACommandUser {
+            return JDACommandUser(jdaCommandSender.event.get(), emojiMapper, listener)
         }
     }
 }

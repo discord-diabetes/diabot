@@ -143,6 +143,7 @@ object Main {
 
         val builtClient = client.build()
 
+        val commandUpdateListener = CommandUpdateListener(100)
         val jda = JDABuilder.createLight(token)
                 .setEnabledIntents(
                         GatewayIntent.DIRECT_MESSAGES,
@@ -160,7 +161,8 @@ object Main {
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),
-                        QuoteListener(builtClient)
+                        QuoteListener(builtClient),
+                        commandUpdateListener
                 ).build()
 
         // Pagination
@@ -177,7 +179,7 @@ object Main {
                 },
                 CommandExecutionCoordinator.simpleCoordinator(),
                 Function {
-                    JDACommandUser.of(it)
+                    JDACommandUser.of(it, commandUpdateListener)
                 },
                 Function {
                     it.toJdaCommandSender()
