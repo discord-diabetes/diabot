@@ -14,7 +14,7 @@ import reactor.core.scheduler.Schedulers
  * @property responseLevelMapper A mapper from [ResponseLevel]s to [String]s
  * @property defaultReplyType The default [ReplyType] for this platform
  * @property defaultScheduler The default [Scheduler] to subscribe on for auto-subscribe functions and for functions
- * which return a scheduler.
+ * which return a publisher.
  */
 abstract class CommandUser<E, M>(
         val event: E,
