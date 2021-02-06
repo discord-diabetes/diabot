@@ -205,7 +205,7 @@ class NightscoutCommand {
 
             args1.isNotEmpty() && args1[0].matches("^https?://.*".toRegex()) -> {
                 // is a URL
-                val url = NightscoutSetUrlCommand.validateNightscoutUrl(args1[0])
+                val url = NightscoutSubcommands.validateNightscoutUrl(args1[0])
                 getDataFromDomain(url, event)
             }
 
