@@ -32,6 +32,7 @@ import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.dongtronic.diabot.util.logger
 import com.github.ygimenez.method.Pages
+import com.github.ygimenez.model.PaginatorBuilder
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
@@ -147,6 +148,7 @@ object Main {
         val jda = JDABuilder.createLight(token)
                 .setEnabledIntents(
                         GatewayIntent.DIRECT_MESSAGES,
+                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                         GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.GUILD_MESSAGES,
                         GatewayIntent.GUILD_MESSAGE_REACTIONS
@@ -166,7 +168,11 @@ object Main {
                 ).build()
 
         // Pagination
-        Pages.activate(jda)
+        val paginator = PaginatorBuilder.createPaginator()
+                .setHandler(jda)
+                .shouldRemoveOnReact(true)
+                .build()
+        Pages.activate(paginator)
 
         // this will be changed later once the jda-utilities command framework is removed
         val prefix = "!"
