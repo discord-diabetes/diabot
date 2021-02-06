@@ -19,6 +19,8 @@ import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.commands.cooldown.CooldownStorage
 import com.dongtronic.diabot.util.logger
 import io.leangen.geantyref.TypeToken
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.*
 import kotlin.reflect.full.createInstance
 
@@ -32,6 +34,8 @@ object ParserUtils {
     val META_CATEGORY = CommandMeta.Key.of(TypeToken.get(Category::class.java), "category")
     val META_EXAMPLE = CommandMeta.Key.of(TypeToken.get(Array<String>::class.java), "example")
     val META_GUILDONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "guildonly")
+    val META_HOMEGUILDONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "homeguildonly")
+    val META_OWNERSONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "ownersonly")
     val META_COOLDOWN = CommandMeta.Key.of(TypeToken.get(CooldownMeta::class.java), "cooldown")
 
     /**
@@ -193,6 +197,74 @@ object ParserUtils {
     }
 
     /**
+     * Registers a:
+     * - builder modifier that adds `META_HOMEGUILDONLY` to the command meta
+     * - command post processor that checks if the command was executed in the home guild
+     *
+     * From the command postprocessor, if the command was not executed in the home guild then the command pipeline will
+     * be interrupted and the `notifier` parameter will be called.
+     *
+     * @param C Command sender type
+     * @param parser The annotation parser to register the builder modifier with
+     * @param cmdManager The command manager to register the command post processor with
+     * @param notifier Notifier that gets called when a command is executed outside of the home guild
+     */
+    fun <C> registerHomeGuildOnly(parser: AnnotationParser<C>, cmdManager: CommandManager<C>, notifier: (CommandPostprocessingContext<C>) -> Unit) {
+        registerBasicCommandLimit(
+                parser,
+                cmdManager,
+                HomeGuildOnly::class.java,
+                META_HOMEGUILDONLY,
+                limitation = {
+                    val guild = it.commandContext.get("Guild") as? Guild
+                    val homeId = System.getenv()["HOME_GUILD_ID"]
+
+                    // returns false if `homeId` is null
+                    guild == null || homeId != null && guild.id != homeId
+                },
+                notifier = notifier
+        )
+    }
+
+    /**
+     * Registers a:
+     * - builder modifier that adds `META_OWNERSONLY` to the command meta
+     * - command post processor that checks if the command was executed by a bot (co)owner
+     *
+     * From the command postprocessor, if the command was not executed by a bot owner then the command pipeline will
+     * be interrupted and the `notifier` parameter will be called.
+     *
+     * @param C Command sender type
+     * @param parser The annotation parser to register the builder modifier with
+     * @param cmdManager The command manager to register the command post processor with
+     * @param notifier Notifier that gets called when a command is executed by someone who is not a bot owner
+     * @param ownerId The user ID of the main bot owner
+     * @param coOwnerIds The user IDs of the bot's co-owners
+     */
+    fun <C> registerOwnersOnly(
+            parser: AnnotationParser<C>,
+            cmdManager: CommandManager<C>,
+            notifier: (CommandPostprocessingContext<C>) -> Unit,
+            ownerId: String,
+            vararg coOwnerIds: String
+    ) {
+        val owners = coOwnerIds.asList().plus(ownerId)
+
+        registerBasicCommandLimit(
+                parser,
+                cmdManager,
+                OwnersOnly::class.java,
+                META_OWNERSONLY,
+                limitation = {
+                    val event = it.commandContext.get("MessageReceivedEvent") as? MessageReceivedEvent
+
+                    event == null || !owners.contains(event.author.id)
+                },
+                notifier = notifier
+        )
+    }
+
+    /**
      * Generic annotation-based command execution limitation.
      *
      * This is a simpler version of [registerCommandLimit] that is only meant to limit based on a toggle.
@@ -238,7 +310,7 @@ object ParserUtils {
                 key,
                 builderModifier,
                 { _: Boolean, context: CommandPostprocessingContext<C> ->
-                    limitation(context)
+                    if (limitation(context)) true else null
                 },
                 { _: Boolean, _: Boolean, context: CommandPostprocessingContext<C> ->
                     notifier(context)

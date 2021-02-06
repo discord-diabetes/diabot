@@ -60,6 +60,29 @@ class DiabotParser<C>(
     }
 
     /**
+     * Adds support for HomeGuildOnly annotations to this parser.
+     *
+     * @param notifier Notifier that gets called when a command is executed outside of the home guild
+     * @return this [DiabotParser] instance
+     */
+    fun addHomeGuildOnlySupport(notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
+        ParserUtils.registerHomeGuildOnly(parser, cmdManager, notifier)
+    }
+
+
+    /**
+     * Adds support for OwnersOnly annotations to this parser.
+     *
+     * @param ownerId The user ID of the main bot owner
+     * @param coOwnerIds The user IDs of the bot's co-owners
+     * @param notifier Notifier that gets called when a command is executed by someone who is not a bot owner
+     * @return this [DiabotParser] instance
+     */
+    fun addOwnersOnlySupport(ownerId: String, vararg coOwnerIds: String, notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
+        ParserUtils.registerOwnersOnly(parser, cmdManager, notifier, ownerId, *coOwnerIds)
+    }
+
+    /**
      * Adds support for Cooldown annotations to this parser.
      *
      * @param idMapper Mapper that converts a command sender to a [CooldownIds] object
