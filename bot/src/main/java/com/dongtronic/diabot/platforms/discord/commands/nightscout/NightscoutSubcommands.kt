@@ -184,5 +184,26 @@ class NightscoutSubcommands {
 
             return finalUrl
         }
+
+        /**
+         * Sanitise a Nightscout URL of any unnecessary API paths or excess slashes for storing in the database.
+         * This will do the following sanitations:
+         * - Trim leading and trailing whitespace
+         * - Trim trailing slashes (`/`)
+         * - Trim trailing Nightscout API endpoints
+         *
+         * Lastly, an attempt will be made at converting the final URL to a [HttpUrl] instance. If the final URL is not
+         * a well-formed URL then this function will return `null`, signifying that the URL is invalid.
+         *
+         * @param url The URL to validate
+         * @return A fully validated Nightscout URL, or null if the URL was not valid
+         */
+        fun validateNightscoutUrlOrNull(url: String): String? {
+            return try {
+                validateNightscoutUrl(url)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
     }
 }

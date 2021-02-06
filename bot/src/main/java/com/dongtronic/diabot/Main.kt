@@ -25,6 +25,7 @@ import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationComma
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommands
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
@@ -240,8 +241,13 @@ object Main {
                 .parse(arrayOf(
                         TestCommand(),
                         HelpCommand(diabotHelp),
+
+                        // BG Conversions
                         NightscoutCommand(),
-                        NightscoutGraphCommand()
+                        NightscoutGraphCommand(),
+
+                        // Admin
+                        NightscoutAdminCommands()
                 ))
 
         commandManager.commandHelpHandler.allCommands.forEach {
