@@ -27,7 +27,9 @@ class NightscoutAdminCommands {
     @CommandCategory(Category.ADMIN)
     fun deleteUrl(
             sender: JDACommandUser,
-            @Argument(value = "user", description = "User to delete URL for")
+            @Argument(value = "user",
+                    description = "User to delete URL for",
+                    parserName = "user-global")
             user: User
     ) {
         val event = sender.event
@@ -58,7 +60,9 @@ class NightscoutAdminCommands {
     @CommandCategory(Category.ADMIN)
     fun setUrl(
             sender: JDACommandUser,
-            @Argument(value = "user", description = "User to set URL for")
+            @Argument(value = "user",
+                    description = "User to set URL for",
+                    parserName = "user-global")
             user: User,
             @Argument(value = "url", description = "The URL to set")
             @Greedy

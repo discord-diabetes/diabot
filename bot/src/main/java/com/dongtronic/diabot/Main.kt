@@ -7,6 +7,9 @@ import cloud.commandframework.annotations.CommandPermission
 import cloud.commandframework.execution.CommandExecutionCoordinator
 import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.jda.JDA4CommandManager
+import cloud.commandframework.jda.parsers.UserArgument
+import cloud.commandframework.jda.parsers.UserArgument.Isolation
+import cloud.commandframework.jda.parsers.UserArgument.UserParser
 import com.dongtronic.diabot.commands.DiabotHelp
 import com.dongtronic.diabot.commands.DiabotParser
 import com.dongtronic.diabot.commands.PermissionRegistry
@@ -38,6 +41,7 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
+import io.leangen.geantyref.TypeToken
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
@@ -194,6 +198,22 @@ object Main {
                     it.toJdaCommandSender()
                 }
         )
+
+        // override default user parser. as of cloud 1.5.0 the default isolation is GLOBAL, but GUILD is usually a safer bet.
+        commandManager.parserRegistry.registerParserSupplier(TypeToken.get(User::class.java)) {
+            UserParser<JDACommandUser>(UserArgument.ParserMode.values().toSet(), Isolation.GUILD)
+        }
+
+        // allow global isolation if explicitly specified (by using the parser named `user-global`)
+        commandManager.parserRegistry.registerNamedParserSupplier("user-global") {
+            UserParser<JDACommandUser>(
+                    setOf(
+                            UserArgument.ParserMode.ID,
+                            UserArgument.ParserMode.MENTION
+                    ),
+                    Isolation.GLOBAL
+            )
+        }
 
         val diabotHelp = DiabotHelp(
                 commandManager,
