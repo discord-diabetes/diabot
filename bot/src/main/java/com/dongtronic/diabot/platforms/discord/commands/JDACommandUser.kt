@@ -74,7 +74,7 @@ class JDACommandUser(
      * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun reply(embed: MessageEmbed, type: ReplyType, markReply: Boolean = true): Mono<Message> {
+    fun reply(embed: MessageEmbed, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<Message> {
         return reply(MessageBuilder(embed).build(), type, markReply)
     }
 
