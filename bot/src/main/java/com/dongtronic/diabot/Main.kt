@@ -4,7 +4,7 @@ import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandDescription
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.annotations.CommandPermission
-import cloud.commandframework.execution.CommandExecutionCoordinator
+import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.jda.JDA4CommandManager
 import cloud.commandframework.jda.parsers.UserArgument
@@ -190,7 +190,10 @@ object Main {
                 BiFunction { sender: JDACommandUser, permission: String ->
                     permissionRegistry.hasPermission(sender, permission)
                 },
-                CommandExecutionCoordinator.simpleCoordinator(),
+                AsynchronousCommandExecutionCoordinator
+                        .newBuilder<JDACommandUser>()
+                        .withSynchronousParsing()
+                        .build(),
                 Function {
                     JDACommandUser.of(it, cmdUpdateHandler)
                 },
