@@ -12,13 +12,16 @@ import reactor.core.scheduler.Schedulers
  * @param M Message type
  * @property event Message event linked to this user
  * @property responseLevelMapper A mapper from [ResponseLevel]s to [String]s
+ * @property updateHandler An optional [CommandUpdateHandler] to track message updates that should modify or delete
+ * a response from the bot
  * @property defaultReplyType The default [ReplyType] for this platform
  * @property defaultScheduler The default [Scheduler] to subscribe on for auto-subscribe functions and for functions
  * which return a publisher.
  */
 abstract class CommandUser<E, M>(
         val event: E,
-        private val responseLevelMapper: ResponseLevelMapper
+        val responseLevelMapper: ResponseLevelMapper,
+        val updateHandler: CommandUpdateHandler<*>? = null
 ) {
     open val defaultReplyType = ReplyType.NATIVE_REPLY
     open val defaultScheduler: Scheduler = Schedulers.boundedElastic()
@@ -68,106 +71,124 @@ abstract class CommandUser<E, M>(
     //
 
     /**
-     * Replies to the author's message with a raw message.
+     * Replies to the author's message with a raw message and optionally marks the reply IDs for later deletion.
      * 
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    abstract fun reply(message: M, type: ReplyType = defaultReplyType): Mono<M>
+    abstract fun reply(message: M, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<M>
 
     /**
-     * Replies to the author's message with a raw message.
+     * Replies to the author's message with a raw message and optionally marks the reply IDs for later deletion.
      *
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    abstract fun reply(message: CharSequence, type: ReplyType = defaultReplyType): Mono<M>
+    abstract fun reply(message: CharSequence, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<M>
 
     /**
-     * Replies to the author's message with a response level.
+     * Replies to the author's message with a response level and optionally marks the reply IDs for later deletion.
      *
      * @param responseLevel Response level
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun reply(responseLevel: ResponseLevel, message: CharSequence, type: ReplyType = defaultReplyType): Mono<M> =
-            reply(responseLevelMapper.getResponseIndicator(responseLevel) + message, type)
+    fun reply(
+            responseLevel: ResponseLevel,
+            message: CharSequence,
+            type: ReplyType = defaultReplyType,
+            markReply: Boolean = true
+    ): Mono<M> =
+            reply(responseLevelMapper.getResponseIndicator(responseLevel) + message, type, markReply)
 
     /**
-     * Replies to the author's message with a [ResponseLevel.SUCCESS] response level.
+     * Replies to the author's message with a [ResponseLevel.SUCCESS] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun replySuccess(message: CharSequence, type: ReplyType = defaultReplyType): Mono<M> =
-            reply(ResponseLevel.SUCCESS, message, type)
+    fun replySuccess(message: CharSequence, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<M> =
+            reply(ResponseLevel.SUCCESS, message, type, markReply)
 
     /**
-     * Replies to the author's message with a [ResponseLevel.WARNING] response level.
+     * Replies to the author's message with a [ResponseLevel.WARNING] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun replyWarning(message: CharSequence, type: ReplyType = defaultReplyType): Mono<M> =
-            reply(ResponseLevel.WARNING, message, type)
+    fun replyWarning(message: CharSequence, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<M> =
+            reply(ResponseLevel.WARNING, message, type, markReply)
 
     /**
-     * Replies to the author's message with a [ResponseLevel.ERROR] response level.
+     * Replies to the author's message with a [ResponseLevel.ERROR] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * @param message Message to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun replyError(message: CharSequence, type: ReplyType = defaultReplyType): Mono<M> =
-            reply(ResponseLevel.ERROR, message, type)
+    fun replyError(message: CharSequence, type: ReplyType = defaultReplyType, markReply: Boolean = true): Mono<M> =
+            reply(ResponseLevel.ERROR, message, type, markReply)
 
     //
     // Message Responses (auto-subscribe)
     //
 
     /**
-     * Replies to the author's message with a raw message.
+     * Replies to the author's message with a raw message and optionally marks the reply IDs for later deletion.
      *
      * Auto-subscribing version of [CommandUser.reply].
      *
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replyS(
             message: M,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(message, type)
+            reply(message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     /**
-     * Replies to the author's message with a raw message.
+     * Replies to the author's message with a raw message and optionally marks the reply IDs for later deletion.
      *
      * Auto-subscribing version of [CommandUser.reply].
      *
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replyS(
             message: CharSequence,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(message, type)
+            reply(message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     /**
-     * Replies to the author's message with a response level.
+     * Replies to the author's message with a response level and optionally marks the reply IDs for later deletion.
      *
      * Auto-subscribing version of [CommandUser.reply].
      *
@@ -175,69 +196,80 @@ abstract class CommandUser<E, M>(
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replyS(
             responseLevel: ResponseLevel,
             message: CharSequence,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(responseLevelMapper.getResponseIndicator(responseLevel) + message, type)
+            reply(responseLevelMapper.getResponseIndicator(responseLevel) + message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     /**
-     * Replies to the author's message with a [ResponseLevel.SUCCESS] response level.
+     * Replies to the author's message with a [ResponseLevel.SUCCESS] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * Auto-subscribing version of [CommandUser.replySuccess].
      *
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replySuccessS(
             message: CharSequence,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(ResponseLevel.SUCCESS, message, type)
+            reply(ResponseLevel.SUCCESS, message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     /**
-     * Replies to the author's message with a [ResponseLevel.WARNING] response level.
+     * Replies to the author's message with a [ResponseLevel.WARNING] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * Auto-subscribing version of [CommandUser.replyWarning].
      *
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replyWarningS(
             message: CharSequence,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(ResponseLevel.WARNING, message, type)
+            reply(ResponseLevel.WARNING, message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     /**
-     * Replies to the author's message with a [ResponseLevel.ERROR] response level.
+     * Replies to the author's message with a [ResponseLevel.ERROR] response level and optionally marks the reply IDs
+     * for later deletion.
      *
      * Auto-subscribing version of [CommandUser.replyError].
      *
      * @param message Message to send
      * @param type Method of replying
      * @param scheduler The scheduler to subscribe on
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Disposable] of the subscription
      */
     fun replyErrorS(
             message: CharSequence,
             type: ReplyType = defaultReplyType,
-            scheduler: Scheduler = defaultScheduler
+            scheduler: Scheduler = defaultScheduler,
+            markReply: Boolean = true
     ): Disposable =
-            reply(ResponseLevel.ERROR, message, type)
+            reply(ResponseLevel.ERROR, message, type, markReply)
                     .subscribeOn(scheduler).subscribe()
 
     //

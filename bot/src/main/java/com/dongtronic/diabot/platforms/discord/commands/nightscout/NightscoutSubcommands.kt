@@ -69,6 +69,7 @@ class NightscoutSubcommands {
     @CommandDescription("Sets a token to authenticate with Nightscout")
     @CommandCategory(Category.BG)
     fun setToken(e: JDACommandUser, @Argument("token") token: String?) {
+        val markReply = token == null
         val replyType = if (token == null) ReplyType.NATIVE_REPLY else ReplyType.MENTION
         if (token != null) {
             deleteMessage(e)
@@ -76,13 +77,13 @@ class NightscoutSubcommands {
 
         NightscoutDAO.instance.setToken(e.getAuthorUniqueId(), token).subscribe({
             if (token != null) {
-                e.replySuccessS("Set Nightscout token", replyType)
+                e.replySuccessS("Set Nightscout token", replyType, markReply = markReply)
             } else {
-                e.replySuccessS("Deleted Nightscout token", replyType)
+                e.replySuccessS("Deleted Nightscout token", replyType, markReply = markReply)
             }
         }, {
             logger.warn("Could not set Nightscout token", it)
-            e.replyErrorS("An error occurred while setting Nightscout token", replyType)
+            e.replyErrorS("An error occurred while setting Nightscout token", replyType, markReply = markReply)
         })
     }
 
@@ -94,17 +95,21 @@ class NightscoutSubcommands {
         val validated = try {
             validateNightscoutUrl(url)
         } catch (exc: IllegalArgumentException) {
-            e.replyErrorS("Could not set your Nightscout URL. " +
-                    "Please make sure you are specifying the URL to your Nightscout instance exactly as it appears in your web browser. " +
-                    "An example of a valid URL would be: `https://my-nightscout.herokuapp.com/`", ReplyType.MENTION)
+            val message = buildString {
+                append("Could not set your Nightscout URL. ")
+                append("Please make sure you are specifying the URL to your Nightscout instance exactly as it appears in your web browser. ")
+                append("An example of a valid URL would be: `https://my-nightscout.herokuapp.com/`")
+            }
+
+            e.replyErrorS(message, ReplyType.MENTION, markReply = false)
             return
         }
 
         NightscoutDAO.instance.setUrl(e.getAuthorUniqueId(), validated).subscribe({
-            e.replySuccessS("Set Nightscout URL", ReplyType.MENTION)
+            e.replySuccessS("Set Nightscout URL", ReplyType.MENTION, markReply = false)
         }, {
             logger.warn("Could not set NS URL", it)
-            e.replyErrorS("An error occurred while setting Nightscout URL", ReplyType.MENTION)
+            e.replyErrorS("An error occurred while setting Nightscout URL", ReplyType.MENTION, markReply = false)
         })
     }
 

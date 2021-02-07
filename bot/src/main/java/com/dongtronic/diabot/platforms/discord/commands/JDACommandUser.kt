@@ -4,7 +4,7 @@ import cloud.commandframework.jda.JDACommandSender
 import com.dongtronic.diabot.commands.CommandUser
 import com.dongtronic.diabot.commands.ReplyType
 import com.dongtronic.diabot.nameOf
-import com.dongtronic.diabot.platforms.discord.listeners.CommandUpdateListener
+import com.dongtronic.diabot.platforms.discord.listeners.JDACommandUpdateHandler
 import com.dongtronic.diabot.submitMono
 import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
@@ -15,8 +15,8 @@ import reactor.core.publisher.Mono
 class JDACommandUser(
         event: MessageReceivedEvent,
         mapper: ResponseEmojiMapper = ResponseEmojiMapper(),
-        private val listener: CommandUpdateListener? = null
-) : CommandUser<MessageReceivedEvent, Message>(event, mapper) {
+        updateHandler: JDACommandUpdateHandler? = null
+) : CommandUser<MessageReceivedEvent, Message>(event, mapper, updateHandler) {
     override fun getAuthorName(): String {
         return event.author.name
     }
@@ -41,7 +41,7 @@ class JDACommandUser(
                 .map { true }
     }
 
-    override fun reply(message: Message, type: ReplyType): Mono<Message> {
+    override fun reply(message: Message, type: ReplyType, markReply: Boolean): Mono<Message> {
         val action = when (type) {
             ReplyType.NATIVE_REPLY -> event.message.reply(message)
             ReplyType.NONE -> event.channel.sendMessage(message)
@@ -53,23 +53,29 @@ class JDACommandUser(
             }
         }
 
-        return action.submitMono().subscribeOn(defaultScheduler)
-                .doOnNext { listener?.markReply(event.message.idLong, it.idLong) }
+        var mono = action.submitMono().subscribeOn(defaultScheduler)
+
+        if (markReply) {
+            mono = mono.doOnNext { updateHandler?.markReply(event.message.id, it.id) }
+        }
+
+        return mono
     }
 
-    override fun reply(message: CharSequence, type: ReplyType): Mono<Message> {
-        return reply(MessageBuilder(message).build(), type)
+    override fun reply(message: CharSequence, type: ReplyType, markReply: Boolean): Mono<Message> {
+        return reply(MessageBuilder(message).build(), type, markReply)
     }
 
     /**
-     * Replies to the author's message with an embed.
+     * Replies to the author's message with an embed and optionally marks the reply IDs for later deletion.
      *
      * @param embed Message embed to send
      * @param type Method of replying
+     * @param markReply If the reply's IDs should be marked for later deletion
      * @return A [Mono] of the sent message
      */
-    fun reply(embed: MessageEmbed, type: ReplyType): Mono<Message> {
-        return reply(MessageBuilder(embed).build(), type)
+    fun reply(embed: MessageEmbed, type: ReplyType, markReply: Boolean = true): Mono<Message> {
+        return reply(MessageBuilder(embed).build(), type, markReply)
     }
 
     override fun react(unicode: String): Mono<Boolean> {
@@ -96,10 +102,10 @@ class JDACommandUser(
          * Converts a [JDACommandSender] object (cloud) into a [JDACommandUser] object (Diabot)
          *
          * @param jdaCommandSender [JDACommandSender] to convert
-         * @param listener An optional [CommandUpdateListener] to delete replies when an author deletes their message
+         * @param listener An optional [JDACommandUpdateHandler] to delete replies when an author deletes their message
          * @return Converted [JDACommandUser]
          */
-        fun of(jdaCommandSender: JDACommandSender, listener: CommandUpdateListener? = null): JDACommandUser {
+        fun of(jdaCommandSender: JDACommandSender, listener: JDACommandUpdateHandler? = null): JDACommandUser {
             return JDACommandUser(jdaCommandSender.event.get(), emojiMapper, listener)
         }
     }
