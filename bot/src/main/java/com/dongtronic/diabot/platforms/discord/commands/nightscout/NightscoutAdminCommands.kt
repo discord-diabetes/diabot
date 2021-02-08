@@ -15,7 +15,7 @@ import com.mongodb.client.result.UpdateResult
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.User
 
-@ChildCommands()
+@ChildCommands(NightscoutAdminSimpleCommands::class)
 class NightscoutAdminCommands {
     private val logger = logger()
 
