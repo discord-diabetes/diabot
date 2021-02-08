@@ -121,7 +121,7 @@ object Main {
 //                NightscoutGraphCommand(bgCategory),
 
                 // Utility
-                PingCommand(utilitiesCategory),
+//                PingCommand(utilitiesCategory),
                 RewardsCommand(utilitiesCategory),
                 GithubCommand(utilitiesCategory),
                 DisclaimerCommand(utilitiesCategory),
@@ -267,9 +267,13 @@ object Main {
                         TestCommand(),
                         HelpCommand(diabotHelp),
 
+
                         // BG Conversions
                         NightscoutCommand(),
                         NightscoutGraphCommand(),
+
+
+                        PingCommand(),
 
                         // Admin
                         NightscoutAdminCommands()
