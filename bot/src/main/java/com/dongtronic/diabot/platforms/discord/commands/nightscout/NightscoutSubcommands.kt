@@ -68,6 +68,7 @@ class NightscoutSubcommands {
     @CommandMethod("nightscout token|t [token]")
     @CommandDescription("Sets a token to authenticate with Nightscout")
     @CommandCategory(Category.BG)
+    @Example(["[token] diabot-108e73ff47810c9f", "[token] (to delete)"])
     fun setToken(e: JDACommandUser, @Argument("token") token: String?) {
         val markReply = token == null
         val replyType = if (token == null) ReplyType.NATIVE_REPLY else ReplyType.MENTION
@@ -90,6 +91,7 @@ class NightscoutSubcommands {
     @CommandMethod("nightscout set|seturl|url|s <url>")
     @CommandDescription("Sets your Nightscout URL")
     @CommandCategory(Category.BG)
+    @Example(["[set] https://my-nightscout.herokuapp.com"])
     fun setUrl(e: JDACommandUser, @Argument("url") url: String) {
         deleteMessage(e)
         val validated = try {
@@ -118,6 +120,7 @@ class NightscoutSubcommands {
     @CommandMethod("nightscout public|pub|p [visibility]")
     @CommandDescription("Sets your Nightscout data as public or private in a guild")
     @CommandCategory(Category.BG)
+    @Example(["[public] (toggles privacy)", "[public] yes", "[public] no"])
     fun setPublic(e: JDACommandUser, @Argument("visibility") visibility: String?) {
         val guild = e.event.guild
         val enables = arrayOf("T", "TRUE", "Y", "YES", "PUBLIC", "ON")
