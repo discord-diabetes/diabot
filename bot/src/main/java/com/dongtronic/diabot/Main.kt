@@ -31,7 +31,7 @@ import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdm
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
-import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
+import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommands
 import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.dongtronic.diabot.util.logger
 import com.github.ygimenez.method.Pages
@@ -122,7 +122,7 @@ object Main {
 
                 // Utility
 //                PingCommand(utilitiesCategory),
-                RewardsCommand(utilitiesCategory),
+//                RewardsCommand(utilitiesCategory),
                 GithubCommand(utilitiesCategory),
                 DisclaimerCommand(utilitiesCategory),
                 NutritionCommand(utilitiesCategory),
@@ -275,6 +275,7 @@ object Main {
 
                         // Utility
                         PingCommand(),
+                        RewardsCommands(),
 
                         // Info
 
