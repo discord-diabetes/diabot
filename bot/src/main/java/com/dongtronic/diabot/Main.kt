@@ -267,13 +267,18 @@ object Main {
                         TestCommand(),
                         HelpCommand(diabotHelp),
 
+                        // A1c
 
                         // BG Conversions
                         NightscoutCommand(),
                         NightscoutGraphCommand(),
 
-
+                        // Utility
                         PingCommand(),
+
+                        // Info
+
+                        // Fun
 
                         // Admin
                         NightscoutAdminCommands()
