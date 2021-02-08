@@ -69,7 +69,6 @@ class DiabotParser<C>(
         ParserUtils.registerHomeGuildOnly(parser, cmdManager, notifier)
     }
 
-
     /**
      * Adds support for OwnersOnly annotations to this parser.
      *
@@ -80,6 +79,16 @@ class DiabotParser<C>(
      */
     fun addOwnersOnlySupport(ownerId: String, vararg coOwnerIds: String, notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
         ParserUtils.registerOwnersOnly(parser, cmdManager, notifier, ownerId, *coOwnerIds)
+    }
+
+    /**
+     * Adds support for RequireAdminChannel annotations to this parser.
+     *
+     * @param notifier Notifier that gets called when a command is executed outside of an admin channel
+     * @return this [DiabotParser] instance
+     */
+    fun addAdminChannelOnlySupport(notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
+        ParserUtils.registerRequireAdminChannel(parser, cmdManager, notifier)
     }
 
     /**

@@ -238,6 +238,9 @@ object Main {
                 .addGuildOnlySupport {
                     it.commandContext.sender.replyErrorS("This command can only be executed in a server.")
                 }
+                .addAdminChannelOnlySupport {
+                    it.commandContext.sender.replyErrorS("This command can only be executed in an admin channel.")
+                }
                 .addHomeGuildOnlySupport {
                     val message = System.getenv()["HOME_GUILD_MESSAGE"]
                             ?: "This command can only be executed in the bot's home guild."

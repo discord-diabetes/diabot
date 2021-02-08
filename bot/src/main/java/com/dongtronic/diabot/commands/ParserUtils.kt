@@ -6,6 +6,7 @@ import cloud.commandframework.annotations.AnnotationParser
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandMethod
 import cloud.commandframework.arguments.StaticArgument
+import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.meta.CommandMeta
 import cloud.commandframework.permission.AndPermission
@@ -17,9 +18,12 @@ import com.dongtronic.diabot.commands.annotations.*
 import com.dongtronic.diabot.commands.cooldown.CooldownIds
 import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.commands.cooldown.CooldownStorage
+import com.dongtronic.diabot.data.mongodb.ChannelDAO
+import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.util.logger
 import io.leangen.geantyref.TypeToken
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import java.util.*
 import kotlin.reflect.full.createInstance
@@ -37,6 +41,7 @@ object ParserUtils {
     val META_HOMEGUILDONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "homeguildonly")
     val META_OWNERSONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "ownersonly")
     val META_COOLDOWN = CommandMeta.Key.of(TypeToken.get(CooldownMeta::class.java), "cooldown")
+    val META_ADMINCHANNELONLY = CommandMeta.Key.of(TypeToken.get(Boolean::class.javaObjectType), "adminchannelonly")
 
     /**
      * Registers two builder modifiers:
@@ -259,6 +264,45 @@ object ParserUtils {
                     val event = it.commandContext.get("MessageReceivedEvent") as? MessageReceivedEvent
 
                     event == null || !owners.contains(event.author.id)
+                },
+                notifier = notifier
+        )
+    }
+
+    /**
+     * Registers a:
+     * - builder modifier that adds `META_ADMINCHANNELONLY` to the command meta
+     * - command post processor that checks if the command was executed in an admin channel
+     *
+     * From the command postprocessor, if the command was not executed in an admin channel then the command pipeline will
+     * be interrupted and the `notifier` parameter will be called.
+     *
+     * Do note that this will block the command execution thread. You should be using an asynchronous command execution
+     * coordinator, like [AsynchronousCommandExecutionCoordinator].
+     *
+     * @param C Command sender type
+     * @param parser The annotation parser to register the builder modifier with
+     * @param cmdManager The command manager to register the command post processor with
+     * @param notifier Notifier that gets called when a command is executed outside of an admin channel
+     */
+    fun <C> registerRequireAdminChannel(parser: AnnotationParser<C>, cmdManager: CommandManager<C>, notifier: (CommandPostprocessingContext<C>) -> Unit) {
+        registerBasicCommandLimit(
+                parser,
+                cmdManager,
+                RequireAdminChannel::class.java,
+                META_ADMINCHANNELONLY,
+                limitation = {
+                    // apply limitation if the channel wasn't found for any reason
+                    val channel = it.commandContext.get("MessageChannel") as? MessageChannel
+                            ?: return@registerBasicCommandLimit true
+
+                    val isAdmin = ChannelDAO.instance.hasAttribute(channel.id, ChannelDTO.ChannelAttribute.ADMIN)
+                            // assume it's not an admin channel if an error occurred
+                            .onErrorReturn(false)
+                            // it's safe to block since command execution will be on a different thread
+                            .block()!!
+
+                    !isAdmin
                 },
                 notifier = notifier
         )
