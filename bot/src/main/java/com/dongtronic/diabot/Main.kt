@@ -125,7 +125,7 @@ object Main {
 //                RewardsCommand(utilitiesCategory),
 //                GithubCommand(utilitiesCategory),
 //                DisclaimerCommand(utilitiesCategory),
-                NutritionCommand(utilitiesCategory),
+//                NutritionCommand(utilitiesCategory),
 
                 // Info
                 InfoCommand(infoCategory),
@@ -278,6 +278,7 @@ object Main {
                         RewardsCommands(),
                         GithubCommand(),
                         DisclaimerCommand(),
+                        NutritionCommand(),
 
                         // Info
 
