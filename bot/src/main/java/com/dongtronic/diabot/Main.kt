@@ -129,7 +129,7 @@ object Main {
 
                 // Info
 //                InfoCommand(infoCategory),
-                SupportCommand(infoCategory),
+//                SupportCommand(infoCategory),
 
                 // Fun
                 ExcuseCommand(funCategory),
@@ -282,6 +282,7 @@ object Main {
 
                         // Info
                         InfoCommands(),
+                        SupportCommand(),
 
                         // Fun
 
