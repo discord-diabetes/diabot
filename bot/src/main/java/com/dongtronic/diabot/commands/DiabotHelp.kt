@@ -52,7 +52,7 @@ class DiabotHelp<C>(
             rawQuery: String,
             recipient: C
     ) {
-        val helpTopic = commandManager.commandHelpHandler.queryHelp(recipient, rawQuery)
+        val helpTopic = commandManager.getCommandHelpHandler { !it.isHidden }.queryHelp(recipient, rawQuery)
 
         printTopic(recipient, rawQuery, helpTopic)
     }
