@@ -25,7 +25,7 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
-import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommands
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommands
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
@@ -128,7 +128,7 @@ object Main {
 //                NutritionCommand(utilitiesCategory),
 
                 // Info
-                InfoCommand(infoCategory),
+//                InfoCommand(infoCategory),
                 SupportCommand(infoCategory),
 
                 // Fun
@@ -281,6 +281,7 @@ object Main {
                         NutritionCommand(),
 
                         // Info
+                        InfoCommands(),
 
                         // Fun
 
