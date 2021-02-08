@@ -123,7 +123,7 @@ object Main {
                 // Utility
 //                PingCommand(utilitiesCategory),
 //                RewardsCommand(utilitiesCategory),
-                GithubCommand(utilitiesCategory),
+//                GithubCommand(utilitiesCategory),
                 DisclaimerCommand(utilitiesCategory),
                 NutritionCommand(utilitiesCategory),
 
@@ -276,6 +276,7 @@ object Main {
                         // Utility
                         PingCommand(),
                         RewardsCommands(),
+                        GithubCommand(),
 
                         // Info
 
