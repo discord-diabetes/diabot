@@ -116,7 +116,7 @@ object Main {
                 EstimationCommand(a1cCategory),
 
                 // BG
-                ConvertCommand(bgCategory),
+//                ConvertCommand(bgCategory),
 //                NightscoutCommand(bgCategory),
 //                NightscoutGraphCommand(bgCategory),
 
@@ -270,6 +270,7 @@ object Main {
                         // A1c
 
                         // BG Conversions
+                        ConvertCommand(),
                         NightscoutCommand(),
                         NightscoutGraphCommand(),
 
