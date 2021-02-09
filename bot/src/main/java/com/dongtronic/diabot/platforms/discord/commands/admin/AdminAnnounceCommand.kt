@@ -19,7 +19,7 @@ class AdminAnnounceCommand {
 
     @GuildOnly
     @DiscordPermission(Permission.ADMINISTRATOR)
-    @CommandMethod("admin announce <channel> <message>")
+    @CommandMethod("admin|a announce <channel> <message>")
     @CommandDescription("Announce a message in a channel")
     @CommandCategory(Category.ADMIN)
     fun execute(
