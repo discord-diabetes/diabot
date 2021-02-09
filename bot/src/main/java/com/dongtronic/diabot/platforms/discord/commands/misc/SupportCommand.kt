@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 class SupportCommand {
     @CommandMethod("support")
     @CommandDescription("Get information about supporting Diabot development")
-    @CommandCategory(Category.UTILITIES)
+    @CommandCategory(Category.INFO)
     fun execute(sender: JDACommandUser) {
         val builder = EmbedBuilder()
 
