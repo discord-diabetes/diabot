@@ -13,8 +13,10 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
-    val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
-    private val logger = logger()
+    companion object {
+        val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
+        private val logger = logger()
+    }
 
     init {
         this.name = "quote"
@@ -26,7 +28,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
                 QuoteEditCommand(category, this),
-                QuoteImportCommand(category, this))
+                QuoteImportCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
