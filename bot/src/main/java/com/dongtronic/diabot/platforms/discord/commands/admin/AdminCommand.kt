@@ -20,8 +20,8 @@ class AdminCommand(category: Command.Category) : DiscordCommand(category, null) 
         this.children = arrayOf(
                 AdminUsernameCommand(category, this),
                 AdminRewardsCommand(category, this),
-                AdminChannelsCommand(category, this),
-                AdminAnnounceCommand(category, this))
+                AdminChannelsCommand(category, this))
+//                AdminAnnounceCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
