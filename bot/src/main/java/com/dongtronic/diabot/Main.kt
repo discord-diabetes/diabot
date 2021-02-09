@@ -140,7 +140,7 @@ object Main {
 
                 // Admin
 //                AdminCommand(adminCategory),
-                ShutdownCommand(adminCategory),
+//                ShutdownCommand(adminCategory),
 //                NightscoutAdminCommand(adminCategory),
                 RolesCommand(adminCategory))
 
@@ -289,6 +289,7 @@ object Main {
 
                         // Admin
                         AdminCommands(),
+                        ShutdownCommand(),
                         NightscoutAdminCommands()
                 ))
 
