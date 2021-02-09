@@ -133,7 +133,7 @@ object Main {
 
                 // Fun
 //                ExcuseCommand(funCategory),
-                AwyissCommand(funCategory),
+//                AwyissCommand(funCategory),
                 DiacastCommand(funCategory),
                 OwnerCommand(funCategory),
                 QuoteCommand(funCategory)
@@ -288,6 +288,7 @@ object Main {
 
                         // Fun
                         ExcuseCommand(),
+                        AwyissCommand(),
 
                         // Admin
                         AdminCommands(),
