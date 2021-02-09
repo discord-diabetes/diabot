@@ -15,6 +15,7 @@ class AdminUsernameDisableCommand(category: Command.Category, parent: Command?) 
         this.help = "Disable username pattern enforcement"
         this.guildOnly = true
         this.aliases = arrayOf("d")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {
