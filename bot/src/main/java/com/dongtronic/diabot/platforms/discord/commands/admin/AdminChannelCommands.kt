@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.platforms.discord.commands.admin.channels
+package com.dongtronic.diabot.platforms.discord.commands.admin
 
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandDescription

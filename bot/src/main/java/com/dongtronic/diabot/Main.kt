@@ -19,7 +19,7 @@ import com.dongtronic.diabot.commands.cooldown.CooldownIds
 import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
-import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
+import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommands
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
@@ -139,7 +139,7 @@ object Main {
                 QuoteCommand(funCategory),
 
                 // Admin
-                AdminCommand(adminCategory),
+//                AdminCommand(adminCategory),
                 ShutdownCommand(adminCategory),
 //                NightscoutAdminCommand(adminCategory),
                 RolesCommand(adminCategory))
@@ -288,6 +288,7 @@ object Main {
                         // Fun
 
                         // Admin
+                        AdminCommands(),
                         NightscoutAdminCommands()
                 ))
 

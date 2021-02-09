@@ -1,4 +1,4 @@
-package com.dongtronic.diabot.platforms.discord.commands.admin.username
+package com.dongtronic.diabot.platforms.discord.commands.admin
 
 import cloud.commandframework.annotations.Argument
 import cloud.commandframework.annotations.CommandDescription
