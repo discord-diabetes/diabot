@@ -136,13 +136,14 @@ object Main {
                 AwyissCommand(funCategory),
                 DiacastCommand(funCategory),
                 OwnerCommand(funCategory),
-                QuoteCommand(funCategory),
+                QuoteCommand(funCategory)
 
                 // Admin
 //                AdminCommand(adminCategory),
 //                ShutdownCommand(adminCategory),
 //                NightscoutAdminCommand(adminCategory),
-                RolesCommand(adminCategory))
+//                RolesCommand(adminCategory)
+        )
 
 
         // Custom help handler
@@ -290,7 +291,8 @@ object Main {
                         // Admin
                         AdminCommands(),
                         ShutdownCommand(),
-                        NightscoutAdminCommands()
+                        NightscoutAdminCommands(),
+                        RolesCommand()
                 ))
 
         commandManager.commandHelpHandler.allCommands.forEach {
