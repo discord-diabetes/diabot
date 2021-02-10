@@ -108,5 +108,16 @@ class JDACommandUser(
         fun of(jdaCommandSender: JDACommandSender, listener: JDACommandUpdateHandler? = null): JDACommandUser {
             return JDACommandUser(jdaCommandSender.event.get(), emojiMapper, listener)
         }
+
+        /**
+         * Converts a [MessageReceivedEvent] into a [JDACommandUser]
+         *
+         * @param event [MessageReceivedEvent] to convert
+         * @param listener An optional [JDACommandUpdateHandler] to delete replies when an author deletes their message
+         * @return Converted [JDACommandUser]
+         */
+        fun of(event: MessageReceivedEvent, listener: JDACommandUpdateHandler? = null): JDACommandUser {
+            return JDACommandUser(event, emojiMapper, listener)
+        }
     }
 }
