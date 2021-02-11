@@ -4,9 +4,10 @@ import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
+import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
-class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
+class QuoteAddCommand(category: Category, parent: Command) : DiscordCommand(category, parent) {
     private val mentionsRegex = QuoteCommand.mentionsRegex
     private val quoteRegex = Regex("\"(?<message>[\\s\\S]*)\" ?- ?(?<author>.*[^\\s])")
     private val logger = logger()

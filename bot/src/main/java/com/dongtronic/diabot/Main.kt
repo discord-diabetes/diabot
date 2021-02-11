@@ -113,7 +113,7 @@ object Main {
 
 
                 // A1c
-                EstimationCommand(a1cCategory),
+                EstimationCommand(a1cCategory)
 
                 // BG
 //                ConvertCommand(bgCategory),
@@ -136,7 +136,7 @@ object Main {
 //                AwyissCommand(funCategory),
 //                DiacastCommand(funCategory),
 //                OwnerCommand(funCategory),
-                QuoteCommand(funCategory)
+//                QuoteCommand(funCategory)
 
                 // Admin
 //                AdminCommand(adminCategory),
@@ -170,7 +170,7 @@ object Main {
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),
-                        QuoteListener(builtClient),
+//                        QuoteListener(builtClient),
                         cmdUpdateHandler
                 ).build()
 
@@ -291,6 +291,7 @@ object Main {
                         AwyissCommand(),
                         DiacastCommand(),
                         OwnerCommand(),
+                        QuoteCommand(),
 
                         // Admin
                         AdminCommands(),
@@ -299,6 +300,7 @@ object Main {
                         RolesCommand()
                 ))
 
+        jda.addEventListener(QuoteListener(commandManager, cmdUpdateHandler))
         commandManager.commandHelpHandler.allCommands.forEach {
             // debug code
             logger.debug("Syntax: ${it.syntaxString}; Desc: ${it.description}")
