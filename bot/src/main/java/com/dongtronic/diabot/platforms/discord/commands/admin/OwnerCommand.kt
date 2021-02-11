@@ -15,7 +15,7 @@ class OwnerCommand {
     @CommandCategory(Category.FUN)
     fun execute(sender: JDACommandUser) {
         val nickname = sender.getAuthorDisplayName()
-        if (Main.ownerId == sender.getAuthorUniqueId()) {
+        if (Main.ownerIds.contains(sender.getAuthorUniqueId())) {
             sender.replyS(":wave: Hello $nickname :)\nThanks for making me :heart:")
         } else {
             sender.replyS(":wave: Hello $nickname")

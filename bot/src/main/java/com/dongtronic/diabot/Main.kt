@@ -59,8 +59,9 @@ import javax.security.auth.login.LoginException
 
 object Main {
     private val logger = logger()
-    const val ownerId = "189436077793083392" // Cas
+    val ownerIds = arrayOf("189436077793083392") // Cas
     val coOwnerIds = arrayOf("125616270254014464", "319371513159614464") // Adi, Garlic
+    val allOwnerIds = ownerIds.plus(coOwnerIds)
 
     @Throws(LoginException::class)
     @JvmStatic
@@ -99,8 +100,9 @@ object Main {
             client.setPrefix("diabot ")
         }
 
-        client.setOwnerId(ownerId)
-        client.setCoOwnerIds(*coOwnerIds)
+        client.setOwnerId(ownerIds.first())
+
+        client.setCoOwnerIds(*ownerIds.drop(1).plus(coOwnerIds).toTypedArray())
 
         client.setServerInvite("https://discord.gg/diabetes")
 
@@ -234,7 +236,7 @@ object Main {
                 .addAutoPermissionSupport()
                 .addCategorySupport()
                 .addExampleSupport()
-                .addOwnersOnlySupport(ownerId, *coOwnerIds) {}
+                .addOwnersOnlySupport(*allOwnerIds) {}
                 .addGuildOnlySupport {
                     it.commandContext.sender.replyErrorS("This command can only be executed in a server.")
                 }

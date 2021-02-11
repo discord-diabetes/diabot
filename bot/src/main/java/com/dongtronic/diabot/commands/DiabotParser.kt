@@ -72,13 +72,12 @@ class DiabotParser<C>(
     /**
      * Adds support for OwnersOnly annotations to this parser.
      *
-     * @param ownerId The user ID of the main bot owner
-     * @param coOwnerIds The user IDs of the bot's co-owners
+     * @param ownerIds The user IDs of the bot's owners
      * @param notifier Notifier that gets called when a command is executed by someone who is not a bot owner
      * @return this [DiabotParser] instance
      */
-    fun addOwnersOnlySupport(ownerId: String, vararg coOwnerIds: String, notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
-        ParserUtils.registerOwnersOnly(parser, cmdManager, notifier, ownerId, *coOwnerIds)
+    fun addOwnersOnlySupport(vararg ownerIds: String, notifier: (CommandPostprocessingContext<C>) -> Unit) = apply {
+        ParserUtils.registerOwnersOnly(parser, cmdManager, notifier, *ownerIds)
     }
 
     /**

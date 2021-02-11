@@ -243,18 +243,14 @@ object ParserUtils {
      * @param parser The annotation parser to register the builder modifier with
      * @param cmdManager The command manager to register the command post processor with
      * @param notifier Notifier that gets called when a command is executed by someone who is not a bot owner
-     * @param ownerId The user ID of the main bot owner
-     * @param coOwnerIds The user IDs of the bot's co-owners
+     * @param ownerIds The user IDs of the bot's owners
      */
     fun <C> registerOwnersOnly(
             parser: AnnotationParser<C>,
             cmdManager: CommandManager<C>,
             notifier: (CommandPostprocessingContext<C>) -> Unit,
-            ownerId: String,
-            vararg coOwnerIds: String
+            vararg ownerIds: String
     ) {
-        val owners = coOwnerIds.asList().plus(ownerId)
-
         registerBasicCommandLimit(
                 parser,
                 cmdManager,
@@ -263,7 +259,7 @@ object ParserUtils {
                 limitation = {
                     val event = it.commandContext.get("MessageReceivedEvent") as? MessageReceivedEvent
 
-                    event == null || !owners.contains(event.author.id)
+                    event == null || !ownerIds.contains(event.author.id)
                 },
                 notifier = notifier
         )
