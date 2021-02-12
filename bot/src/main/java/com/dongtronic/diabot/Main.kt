@@ -25,6 +25,7 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommands
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommands
@@ -39,10 +40,8 @@ import com.github.ygimenez.model.PaginatorBuilder
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
-import com.jagrosh.jdautilities.examples.command.AboutCommand
 import io.leangen.geantyref.TypeToken
 import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
@@ -109,9 +108,9 @@ object Main {
         // adds commands
         client.addCommands(
                 // command to show information about the bot
-                AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
-                        arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
+//                AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
+//                        arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
+//                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
 
 
                 // A1c
@@ -287,6 +286,7 @@ object Main {
                         // Info
                         InfoCommands(),
                         SupportCommand(),
+                        AboutCommand(prefix),
 
                         // Fun
                         ExcuseCommand(),
