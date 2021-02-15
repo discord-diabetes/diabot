@@ -1,8 +1,7 @@
-package com.dongtronic.diabot.converters
+package com.dongtronic.diabot.logic.diabetes
 
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
-import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import org.junit.Assert
 import org.junit.Test
@@ -78,7 +77,7 @@ class BloodGlucoseConverterTest {
     fun ambiguous() {
         val actual = BloodGlucoseConverter.convert("27", "")
 
-        val expected = ConversionDTO(27.0, 1.5, 486.0)
+        val expected = ConversionDTO(27.0, 1.5, 486)
 
         Assert.assertEquals(actual, expected)
     }

@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
-import com.dongtronic.diabot.data.A1cDTO
+import com.dongtronic.diabot.data.A1cFromBgDTO
+import com.dongtronic.diabot.data.A1cToBgDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MGDL
@@ -46,13 +47,18 @@ class EstimationCommand(category: Command.Category) : DiscordCommand(category, n
     private fun estimateAverage(event: CommandEvent) {
         val items = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val pattern = "[^0-9\\.]"
-        val number = items[1].replace(pattern.toRegex(), "")
+        val number = items[1].replace(pattern.toRegex(), "").toDoubleOrNull()
 
-        val result: A1cDTO?
+        if (number == null) {
+            event.replyError("You did not input a proper number")
+            return
+        }
 
-        result = A1cConverter.estimateAverage(number)
+        val result: A1cToBgDTO?
 
-        event.reply(String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**", result!!.dcct, result.ifcc, result.original.mgdl, result.original.mmol))
+        result = A1cConverter.a1cToBg(number)
+
+        event.reply(String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**", result.dcct, result.ifcc, result.bgAverage.mgdl, result.bgAverage.mmol))
 
     }
 
@@ -60,21 +66,27 @@ class EstimationCommand(category: Command.Category) : DiscordCommand(category, n
         // split the arguments on all whitespaces
         val items = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        val result: A1cDTO
+        val result: A1cFromBgDTO
 
         try {
-            result = if (items.size == 3) {
-                A1cConverter.estimateA1c(items[1], items[2])
-            } else {
-                A1cConverter.estimateA1c(items[1], null)
-            }
+            result = A1cConverter.a1cFromBg(items[1], items.getOrNull(2))
 
             when {
-                result.original.inputUnit === MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
-                result.original.inputUnit === MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
+                result.inputGlucose.inputUnit === MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.inputGlucose.mmol, result.dcct, result.ifcc))
+                result.inputGlucose.inputUnit === MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.inputGlucose.mgdl, result.dcct, result.ifcc))
                 else -> {
                     //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
-                    val reply = String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)) + String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL))
+                    val reply = String.format(
+                            "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n",
+                            result.inputGlucose.original,
+                            result.getDcct(MMOL),
+                            result.getIfcc(MMOL)
+                    ) + String.format(
+                            "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                            result.inputGlucose.original,
+                            result.getDcct(MGDL),
+                            result.getIfcc(MGDL)
+                    )
                     event.reply(reply)
                 }
             }
