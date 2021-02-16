@@ -114,7 +114,7 @@ object Main {
 
 
                 // A1c
-                EstimationCommand(a1cCategory)
+//                EstimationCommand(a1cCategory)
 
                 // BG
 //                ConvertCommand(bgCategory),
@@ -270,6 +270,7 @@ object Main {
                         HelpCommand(diabotHelp),
 
                         // A1c
+                        EstimationCommand(),
 
                         // BG Conversions
                         ConvertCommand(),
