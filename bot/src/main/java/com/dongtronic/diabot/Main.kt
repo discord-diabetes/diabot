@@ -167,7 +167,7 @@ object Main {
                 .addEventListeners(
                         waiter,
                         builtClient,
-                        ConversionListener(),
+                        ConversionListener(cmdUpdateHandler),
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),

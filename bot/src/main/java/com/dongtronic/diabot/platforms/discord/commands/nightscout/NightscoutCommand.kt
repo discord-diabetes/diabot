@@ -18,6 +18,7 @@ import com.dongtronic.diabot.exceptions.NightscoutDataException
 import com.dongtronic.diabot.exceptions.NightscoutPrivateException
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
+import com.dongtronic.diabot.logic.diabetes.BGConversionFormatter
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutDisplayCommands.DisplayOptions.*
@@ -422,15 +423,9 @@ class NightscoutCommand {
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
         val newest = dto.getNewestEntry()
-        // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-        if (newest.glucose.mgdl == 69 || newest.glucose.mmol == 6.9) {
-            response.addReaction("\uD83D\uDE0F").queue()
-        }
-        // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-        if (newest.glucose.mgdl == 100
-                || newest.glucose.mmol == 5.5
-                || newest.glucose.mmol == 10.0) {
-            response.addReaction("\uD83D\uDCAF").queue()
+
+        BGConversionFormatter.getReactions(newest.glucose).forEach {
+            response.addReaction(it).queue()
         }
     }
 
