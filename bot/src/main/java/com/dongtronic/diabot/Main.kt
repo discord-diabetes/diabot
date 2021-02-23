@@ -1,9 +1,5 @@
 package com.dongtronic.diabot
 
-import cloud.commandframework.annotations.Argument
-import cloud.commandframework.annotations.CommandDescription
-import cloud.commandframework.annotations.CommandMethod
-import cloud.commandframework.annotations.CommandPermission
 import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator
 import cloud.commandframework.execution.postprocessor.CommandPostprocessingContext
 import cloud.commandframework.jda.JDA4CommandManager
@@ -14,7 +10,6 @@ import com.dongtronic.diabot.commands.DiabotHelp
 import com.dongtronic.diabot.commands.DiabotParser
 import com.dongtronic.diabot.commands.PermissionRegistry
 import com.dongtronic.diabot.commands.ReplyType
-import com.dongtronic.diabot.commands.annotations.CommandCategory
 import com.dongtronic.diabot.commands.cooldown.CooldownIds
 import com.dongtronic.diabot.commands.cooldown.CooldownMeta
 import com.dongtronic.diabot.data.migration.MigrationManager
@@ -43,7 +38,6 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import io.leangen.geantyref.TypeToken
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.ChunkingFilter
@@ -266,9 +260,6 @@ object Main {
                 )
                 .addDiscordPermissionSupport()
                 .parse(arrayOf(
-                        TestCommand(),
-                        HelpCommand(diabotHelp),
-
                         // A1c
                         EstimationCommand(),
 
@@ -288,6 +279,7 @@ object Main {
                         InfoCommands(),
                         SupportCommand(),
                         AboutCommand(prefix),
+                        HelpCommand(diabotHelp),
 
                         // Fun
                         ExcuseCommand(),
@@ -307,30 +299,6 @@ object Main {
         commandManager.commandHelpHandler.allCommands.forEach {
             // debug code
             logger.debug("Syntax: ${it.syntaxString}; Desc: ${it.description}")
-        }
-    }
-
-    class TestCommand {
-        @CommandPermission("testcommand")
-        @CommandDescription("Test command stuff")
-        @CommandMethod("test|tst|tast <channel> [user]")
-        @CommandCategory(com.dongtronic.diabot.commands.Category.FUN)
-        fun testCommand(
-                sender: JDACommandUser,
-                @Argument("channel") channel: MessageChannel?,
-                @Argument("user") user: User?
-        ) {
-            val b = StringBuilder()
-
-            b.append("hi ${sender.getAuthorDisplayName()}!")
-            if (channel != null) {
-                b.append(" (channel ${channel.name})")
-            }
-            if (user != null) {
-                b.append(" (user ${user.name})")
-            }
-
-            sender.reply(b.toString())
         }
     }
 }
