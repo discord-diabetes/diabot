@@ -4,6 +4,7 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 import org.apache.commons.lang3.StringUtils
 
 class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
