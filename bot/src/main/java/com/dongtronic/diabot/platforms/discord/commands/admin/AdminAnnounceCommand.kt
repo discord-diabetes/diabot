@@ -16,6 +16,7 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
         this.arguments = "<channel> <message>"
         this.guildOnly = true
         this.ownerCommand = false
+        this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
     }
 
     override fun execute(event: CommandEvent) {
