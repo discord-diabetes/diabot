@@ -9,6 +9,7 @@ import com.dongtronic.diabot.commands.annotations.Example
 import com.dongtronic.diabot.data.A1cFromBgDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
+import com.dongtronic.diabot.logic.diabetes.A1cUnit
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.*
 import com.dongtronic.diabot.platforms.discord.commands.JDACommandUser
@@ -17,17 +18,28 @@ import com.dongtronic.diabot.util.logger
 class EstimationCommand {
     private val logger = logger()
 
-    @CommandMethod("estimate average <a1c>")
+    @CommandMethod("estimate average <a1c> [a1cUnit]")
     @CommandDescription("Estimate average blood glucose from an A1c value")
     @CommandCategory(Category.A1C)
-    @Example(["[average] 6.7", "[average] 42"])
+    @Example(["[average] 6.7", "[average] 42", "[average] 65 ifcc", "[average] 8.0 dcct"])
     private fun estimateAverage(
             sender: JDACommandUser,
             @Argument("a1c", description = "The A1c value to estimate average blood glucose from")
-            a1c: Double
+            a1c: Double,
+            @Argument("a1cUnit", description = "The measurement unit used for the A1c value")
+            a1cUnit: String?
     ) {
+        val unit = if (a1cUnit != null) {
+            val fromName = A1cUnit.byName(a1cUnit)
+
+            if (fromName == null) {
+                sender.replyErrorS("No A1c unit is known by `$a1cUnit`. Please specify either `DCCT` or `IFCC`")
+                return
+            } else fromName
+        } else null
+
         val result = try {
-            A1cConverter.a1cToBg(a1c)
+            A1cConverter.a1cToBg(a1c, unit)
         } catch (e: IllegalArgumentException) {
             sender.replyErrorS("Could not estimate average. Please make sure your A1c value is lower " +
                     "than **36.4%** (DCCT) **374 mmol/mol** (IFCC) and is not negative.")
