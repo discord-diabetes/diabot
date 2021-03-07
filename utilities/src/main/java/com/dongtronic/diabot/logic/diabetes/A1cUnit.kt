@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.logic.diabetes
 
 enum class A1cUnit(
-        val unit: String,
+        vararg units: String,
         /**
          * Convert an A1c unit to the other A1c unit
          *
@@ -24,18 +24,26 @@ enum class A1cUnit(
         private val convertToMmol: ((Number) -> Number) = { throw NotImplementedError() }
 ) : ConvertableUnit {
     IFCC("mmol/mol",
+            "mmol",
+            "ifcc",
             convertToOther = { DiabetesConstants.ifccToDcct(it.toDouble()) },
             convertToMgdl = { DiabetesConstants.ifccToMgdl(it.toDouble()) },
             convertToMmol = { DiabetesConstants.ifccToMmol(it.toDouble()) }
     ),
 
     DCCT("%",
+            "dcct",
             convertToOther = { DiabetesConstants.dcctToIfcc(it.toDouble()) },
             convertToMgdl = { DiabetesConstants.dcctToMgdl(it.toDouble()) },
             convertToMmol = { DiabetesConstants.dcctToMmol(it.toDouble()) }
     ),
 
     AMBIGUOUS("Ambiguous");
+
+    /**
+     * A list of names which identify this particular [A1cUnit]
+     */
+    val units: List<String> = units.toList()
 
     /**
      * Get the other [A1cUnit]. For example, if this unit is IFCC then this value will be DCCT.
@@ -81,6 +89,26 @@ enum class A1cUnit(
             DiabetesConstants.round(result)
         } else {
             result
+        }
+    }
+
+    companion object {
+        /**
+         * Attempts to find a [A1cUnit] which matches the unit name given.
+         * This function does not match [A1cUnit.AMBIGUOUS].
+         *
+         * @param unit The name of the unit to look up
+         * @return [A1cUnit] if a unit was matched, null if no matches were found
+         */
+        fun byName(unit: String): A1cUnit? {
+            return values().firstOrNull { a1cUnit ->
+                if (a1cUnit == AMBIGUOUS)
+                    return@firstOrNull false
+
+                a1cUnit.units.any { name ->
+                    name.equals(unit, ignoreCase = true)
+                }
+            }
         }
     }
 }
