@@ -64,7 +64,7 @@ class A1cConverterTest {
 
         val actual = A1cConverter.a1cFromBg(bg)
 
-        val expected = A1cFromBgDTO(bg, 54.1, 7.1)
+        val expected = A1cFromBgDTO(bg, 54.0, 7.1)
 
         assertEquals(expected, actual)
     }
