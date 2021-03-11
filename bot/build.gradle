@@ -1,8 +1,3 @@
-repositories {
-    maven { url 'https://repo.incendo.org/content/repositories/snapshots/' }
-    maven { url 'https://jitpack.io' }
-}
-
 dependencies {
     // Cloud command framework
     implementation 'cloud.commandframework:cloud-annotations:1.5.0-SNAPSHOT'
