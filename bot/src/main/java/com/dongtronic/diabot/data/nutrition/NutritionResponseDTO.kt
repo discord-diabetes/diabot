@@ -11,15 +11,15 @@ class NutritionResponseDTO {
     @JsonProperty("foods")
     var foods: List<Food> = ArrayList()
     @JsonIgnore
-    private val additionalProperties: MutableMap<String, Any> = HashMap()
+    private val additionalProperties: MutableMap<String, Any?> = HashMap()
 
     @JsonAnyGetter
-    fun getAdditionalProperties(): Map<String, Any> {
+    fun getAdditionalProperties(): Map<String, Any?> {
         return additionalProperties
     }
 
     @JsonAnySetter
-    fun setAdditionalProperty(name: String, value: Any) {
+    fun setAdditionalProperty(name: String, value: Any?) {
         additionalProperties[name] = value
     }
 
