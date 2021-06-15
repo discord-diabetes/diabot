@@ -143,7 +143,9 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             if (bgsJson.hasNonNull("bgdelta")) {
                 bgDelta = bgsJson.get("bgdelta").asText()
             }
-            if (dto.delta == null) {
+            if (dto.delta == null
+                    // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
+                    || (dto.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
                 dto.deltaIsNegative = bgDelta.contains("-")
                 dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
             }
