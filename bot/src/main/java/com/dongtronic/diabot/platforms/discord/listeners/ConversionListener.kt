@@ -43,6 +43,9 @@ class ConversionListener : ListenerAdapter() {
         }
 
         try {
+            if(numberString.contains(',')) {
+                numberString = numberString.replace(',', '.')
+            }
             val result: ConversionDTO? = if (unitString.length > 1) {
                 BloodGlucoseConverter.convert(numberString, unitString)
             } else {
