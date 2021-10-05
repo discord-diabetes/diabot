@@ -1,4 +1,4 @@
 # for help: https://help.github.com/en/articles/about-code-owners
 
 *       @cascer1
-/src/main/java/com/dongtronic/diabot/data/* @p5nbTgip0r
+/bot/src/main/java/com/dongtronic/diabot/data/* @p5nbTgip0r
