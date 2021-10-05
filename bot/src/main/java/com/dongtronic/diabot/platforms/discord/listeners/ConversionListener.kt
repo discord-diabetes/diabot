@@ -43,7 +43,7 @@ class ConversionListener : ListenerAdapter() {
         }
 
         try {
-            if(numberString.contains(',')) {
+            if (numberString.contains(',')) {
                 numberString = numberString.replace(',', '.')
             }
             val result: ConversionDTO? = if (unitString.length > 1) {
