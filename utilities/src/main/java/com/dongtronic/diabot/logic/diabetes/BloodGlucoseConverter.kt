@@ -27,7 +27,7 @@ object BloodGlucoseConverter {
     private fun convert(originalValue: Double): ConversionDTO {
         return when {
             originalValue < 25 -> convert(originalValue, GlucoseUnit.MMOL)
-            originalValue > 50 -> convert(originalValue, GlucoseUnit.AMBIGUOUS)
+            originalValue > 50 -> convert(originalValue, GlucoseUnit.MGDL)
             else -> convertAmbiguous(originalValue)
         }
     }
