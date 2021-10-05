@@ -1,3 +1,5 @@
+detekt.sarif.json
+
 ### Local logback config ###
 logback-test.xml
 .idea

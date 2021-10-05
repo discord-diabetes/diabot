@@ -9,7 +9,7 @@ import com.dongtronic.diabot.exceptions.UnknownUnitException
 object BloodGlucoseConverter {
 
     @Throws(UnknownUnitException::class)
-    fun convert(value: String, unit: String?): ConversionDTO? {
+    fun convert(value: String, unit: String?): ConversionDTO {
         val input = value.toDoubleOrNull()
                 ?: throw IllegalArgumentException("value must be numeric")
 
@@ -24,19 +24,12 @@ object BloodGlucoseConverter {
         }
     }
 
-    private fun convert(originalValue: Double): ConversionDTO? {
-        var result: ConversionDTO? = null
-        try {
-            result = when {
-                originalValue < 25 -> convert(originalValue, "mmol")
-                originalValue > 50 -> convert(originalValue, "mgdl")
-                else -> convertAmbiguous(originalValue)
-            }
-        } catch (ex: UnknownUnitException) {
-            // Ignored on purpose
+    private fun convert(originalValue: Double): ConversionDTO {
+        return when {
+            originalValue < 25 -> convert(originalValue, GlucoseUnit.MMOL)
+            originalValue > 50 -> convert(originalValue, GlucoseUnit.AMBIGUOUS)
+            else -> convertAmbiguous(originalValue)
         }
-
-        return result
     }
 
     @Throws(UnknownUnitException::class)
@@ -55,12 +48,27 @@ object BloodGlucoseConverter {
         }
     }
 
-    private fun convertAmbiguous(originalValue: Double): ConversionDTO {
+    private fun convert(originalValue: Double, unit: GlucoseUnit): ConversionDTO {
 
+        return when (unit) {
+            GlucoseUnit.MMOL -> {
+                val result = originalValue * 18.016
+                ConversionDTO(originalValue, result, GlucoseUnit.MMOL)
+            }
+            GlucoseUnit.MGDL -> {
+                val result = originalValue / 18.016
+                ConversionDTO(originalValue, result, GlucoseUnit.MGDL)
+            }
+            GlucoseUnit.AMBIGUOUS -> {
+                return convertAmbiguous(originalValue)
+            }
+        }
+    }
+
+    private fun convertAmbiguous(originalValue: Double): ConversionDTO {
         val toMgdl = originalValue * 18.016
         val toMmol = originalValue / 18.016
 
         return ConversionDTO(originalValue, toMmol, toMgdl)
-
     }
 }
