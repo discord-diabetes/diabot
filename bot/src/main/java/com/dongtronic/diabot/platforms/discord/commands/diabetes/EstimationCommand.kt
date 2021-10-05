@@ -7,10 +7,9 @@ import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MGDL
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MMOL
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
-class EstimationCommand(category: Command.Category) : DiscordCommand(category, null) {
+class EstimationCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = logger()
 
@@ -23,7 +22,7 @@ class EstimationCommand(category: Command.Category) : DiscordCommand(category, n
     }
 
     override fun execute(event: CommandEvent) {
-        if (event.args.isEmpty()) {
+        if(event.args.isEmpty()) {
             event.replyWarning("You didn't give me a value!")
         } else {
             // split the arguments on all whitespaces
@@ -52,7 +51,10 @@ class EstimationCommand(category: Command.Category) : DiscordCommand(category, n
 
         result = A1cConverter.estimateAverage(number)
 
-        event.reply(String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**", result!!.dcct, result.ifcc, result.original.mgdl, result.original.mmol))
+        event.reply(
+                String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
+                        result!!.dcct, result.ifcc, result.original.mgdl, result.original.mmol)
+        )
 
     }
 
@@ -69,9 +71,9 @@ class EstimationCommand(category: Command.Category) : DiscordCommand(category, n
                 A1cConverter.estimateA1c(items[1], null)
             }
 
-            when {
-                result.original.inputUnit === MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
-                result.original.inputUnit === MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
+            when (result.original.inputUnit) {
+                MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
+                MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
                 else -> {
                     //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
                     val reply = String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)) + String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL))

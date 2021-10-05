@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>TooManyFunctions:A1cConverter.kt$A1cConverter$A1cConverter</ID>
+  </CurrentIssues>
+</SmellBaseline>
