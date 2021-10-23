@@ -5,6 +5,8 @@ import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.Message
 
 class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
     private val mentionsRegex = parent.mentionsRegex
@@ -51,11 +53,33 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
 
         QuoteDAO.getInstance().addQuote(quoteDto).subscribe(
                 {
-                    event.replySuccess("New quote added by ${event.member.effectiveName} as #${it.quoteId}")
+                    event.reply(createAddedMessage(event.member.asMention, it.quoteId!!))
                 },
                 {
                     event.replyError("Could not add quote: ${it.message}")
                     logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
                 })
+    }
+
+    companion object {
+        /**
+         * Build a message for when a quote is created.
+         *
+         * @param quoterMention Quoter user as a mention
+         * @param quoteId ID of the created quote
+         * @param jumpUrl Optional jump URL to the quoted message
+         * @return A message indicating that a quote was created
+         */
+        fun createAddedMessage(quoterMention: String, quoteId: String, jumpUrl: String? = null): Message {
+            val msg = MessageBuilder()
+                    // mentions are used here solely for identifying who created the quote, so don't ping for it
+                    .denyMentions(Message.MentionType.USER)
+                    .append("New quote added by $quoterMention as #$quoteId")
+
+            if (jumpUrl != null)
+                msg.append(" (<$jumpUrl>)")
+
+            return msg.build()
+        }
     }
 }

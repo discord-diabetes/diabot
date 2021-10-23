@@ -2,7 +2,9 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
+import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteAddCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
+import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -11,8 +13,8 @@ import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.requests.restaction.MessageAction
 import org.litote.kmongo.eq
-import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.function.Consumer
 
@@ -31,18 +33,12 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
         val author = event.member
         val guild = event.guild
 
-        val messageRetrieval = Mono.defer {
-            // defer to prevent retrieving message until subscribe
-            event.channel.retrieveMessageById(event.messageId)
-                    .submit().toMono()
-        }
-
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
-        val reply: (message: String) -> Unit = {
+        val reply: (() -> MessageAction) -> Unit = { msg ->
             if (event.channel.canTalk(event.member)) {
-                event.channel.sendMessage(it).queue()
+                msg().queue()
             }
         }
 
@@ -56,9 +52,9 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                reply("New quote added by ${author.effectiveName} as #${it.quoteId} (<${message.jumpUrl}>)")
+                reply { event.channel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
             }, {
-                reply("Could not create quote for message: ${message.id}")
+                reply { event.channel.sendMessage("Could not create quote for message: ${message.id}") }
             })
         }
 
@@ -67,9 +63,9 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 .getQuotes(guild.id, QuoteDTO::messageId eq event.messageId)
                 .toMono()
                 .subscribe({/*ignored*/}, { error ->
-                    // if there are no quotes then proceed
+                    // only add quote if there are no quotes matching the reacted message ID
                     if (error is NoSuchElementException) {
-                        messageRetrieval
+                        event.retrieveMessage().submitMono()
                                 .filter { it.type == MessageType.DEFAULT && !it.author.isBot }
                                 .subscribe(quoteMessage)
                     }
