@@ -50,6 +50,6 @@ data class QuoteDTO(
     }
 
     companion object {
-        const val DISCORD_MESSAGE_LINK = "https://discordapp.com/channels/{guild}/{channel}/{message}"
+        const val DISCORD_MESSAGE_LINK = "https://discord.com/channels/{guild}/{channel}/{message}"
     }
 }
