@@ -5,6 +5,7 @@ import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
+import dev.minn.jda.ktx.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
@@ -12,7 +13,7 @@ import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Message
 
 class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
-    private val mentionsRegex = parent.mentionsRegex
+    private val mentionsRegex = Regex("^<@!?(?<uid>\\d+)>\$")
     private val quoteRegex = Regex("\"(?<message>[\\s\\S]*)\" ?- ?(?<author>.*[^\\s])")
     private val logger = logger()
 
@@ -39,15 +40,18 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
                 var author = match.groups["author"]!!.value.trim()
                 var authorId = 0L
 
-        val mention = mentionsRegex.matchEntire(author)
-        if (mention != null) {
-            val mentioned = event.message.mentionedMembers.lastOrNull()
-            val uid = mention.groups["uid"]!!.value.trim().toLongOrNull()
-            if (mentioned != null && uid != null) {
-                author = mentioned.user.name
-                authorId = uid
-            }
-        }
+                val mention = mentionsRegex.matchEntire(author)
+                if (mention != null) {
+                    val uid = mention.groups["uid"]!!.value.trim().toLongOrNull()
+
+                    if (uid != null) {
+                        try {
+                            val user = event.jda.retrieveUserById(uid).await()
+                            author = user.name
+                            authorId = uid
+                        } catch (ignored: Throwable) {}
+                    }
+                }
 
                 val quoteDto = QuoteDTO(
                         guildId = event.guild.id,

@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
-    val mentionsRegex = Regex("<@!?(?<uid>\\d+)>")
     private val logger = logger()
 
     init {
