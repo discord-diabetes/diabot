@@ -12,10 +12,13 @@ allprojects {
         jcenter()
         mavenCentral()
         maven { url 'https://m2.dv8tion.net/releases' }
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.2'
         testImplementation group: 'junit', name: 'junit', version: '4.12'
         api group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     }
