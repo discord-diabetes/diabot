@@ -56,7 +56,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                reply("New quote added by ${author.effectiveName} as #${it.quoteId}")
+                reply("New quote added by ${author.effectiveName} as #${it.quoteId} (<${message.jumpUrl}>)")
             }, {
                 reply("Could not create quote for message: ${message.id}")
             })
