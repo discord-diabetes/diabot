@@ -91,7 +91,12 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun addEmbedFooter(quoteDTO: QuoteDTO, builder: EmbedBuilder): EmbedBuilder {
         val footer = StringBuilder("\n")
-        footer.append("- ").append(quoteDTO.author)
+        if (quoteDTO.authorId != "0") {
+            // adding the author name in parentheses is to work around the @invalid-user bug on mobile
+            footer.append("- <@${quoteDTO.authorId}> (${quoteDTO.author})")
+        } else {
+            footer.append("- ").append(quoteDTO.author)
+        }
 
         quoteDTO.getMessageLink()?.let { jumpLink ->
             val jumpText = "[(Jump)]($jumpLink)"
