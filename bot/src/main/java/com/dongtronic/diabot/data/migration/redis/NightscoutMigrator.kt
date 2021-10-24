@@ -1,27 +1,34 @@
-package com.dongtronic.diabot.data.migration
+package com.dongtronic.diabot.data.migration.redis
 
+import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.util.logger
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import com.github.cloudyrock.mongock.ChangeLog
+import com.github.cloudyrock.mongock.ChangeSet
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
-class NightscoutMigrator : Migrator {
-    private val redis = com.dongtronic.diabot.data.redis.NightscoutDAO.getInstance()
+@ChangeLog(order = "002")
+class NightscoutMigrator {
     private val mongo = NightscoutDAO.instance
-    private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
+    private val redis by lazy { com.dongtronic.diabot.data.redis.NightscoutDAO.getInstance() }
+    private val jedis by lazy { Jedis(System.getenv("REDIS_URL")) }
     private val logger = logger()
 
-    override fun needsMigration(): Mono<Boolean> {
+    fun needsMigration(): Boolean {
+        if (!MigrationManager.canRedisMigrate()) return false
+
         return mongo.collection.countDocuments().toMono().map {
             return@map it == 0L || getAllUids().size.toLong() > it
-        }
+        }.block()!!
     }
 
-    override fun migrate(): Flux<Long> {
+    @ChangeSet(order = "001", id = "redisNightscout", author = "Garlic")
+    fun migrate() {
+        if (!needsMigration()) return
+
         val dtos = getAllUids().mapNotNull { userId ->
             val url = redis.getNightscoutUrl(userId)
             val token = redis.getNightscoutToken(userId)
@@ -45,15 +52,14 @@ class NightscoutMigrator : Migrator {
             )
         }
 
-        return dtos.toFlux()
+        dtos.toFlux()
                 .flatMap { mongo.addUser(it) }
                 .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import nightscout: $u", t)
                 }
                 .filter { it }
-                .count()
-                .toFlux()
+                .blockLast()!!
     }
 
     /**

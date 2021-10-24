@@ -24,13 +24,16 @@ class MongoDB {
                 it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
                 it.maxSize(mongoEnv("CONNECTIONS", "30").toInt())
             }
-            .applyConnectionString(ConnectionString(mongoEnv("URI")))
+            .applyConnectionString(ConnectionString(connectionURI))
             .build()
     val client = KMongo.createClient(clientSettings)
-    val database: MongoDatabase = client.getDatabase(mongoEnv("DATABASE", "diabot"))
+    val database: MongoDatabase = client.getDatabase(defaultDatabase)
 
     companion object {
         private var instance: MongoDB? = null
+
+        val connectionURI = mongoEnv("URI")
+        val defaultDatabase = mongoEnv("DATABASE", "diabot")
 
         fun getInstance(): MongoDB {
             if (instance == null) {

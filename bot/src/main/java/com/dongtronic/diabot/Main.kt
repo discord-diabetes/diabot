@@ -21,7 +21,6 @@ import com.jagrosh.jdautilities.examples.command.AboutCommand
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
-import net.dv8tion.jda.api.utils.MemberCachePolicy
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.util.*
 import javax.security.auth.login.LoginException
@@ -32,8 +31,8 @@ object Main {
     @Throws(LoginException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        // Migrate data from Redis to MongoDB
-        MigrationManager().migrateIfNecessary()
+        // Database migration
+        MigrationManager().initialize()
 
         val token = System.getenv("DIABOTTOKEN") // token on dokku
 

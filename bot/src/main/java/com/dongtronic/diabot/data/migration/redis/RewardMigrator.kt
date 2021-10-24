@@ -1,36 +1,42 @@
-package com.dongtronic.diabot.data.migration
+package com.dongtronic.diabot.data.migration.redis
 
+import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.data.mongodb.RewardsDAO
 import com.dongtronic.diabot.data.mongodb.RewardsDTO
 import com.dongtronic.diabot.util.logger
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import com.github.cloudyrock.mongock.ChangeLog
+import com.github.cloudyrock.mongock.ChangeSet
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
-class RewardMigrator : Migrator {
-    private val redis = com.dongtronic.diabot.data.redis.RewardDAO.getInstance()
+@ChangeLog(order = "005")
+class RewardMigrator {
     private val mongo = RewardsDAO.instance
-    private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
+    private val redis by lazy { com.dongtronic.diabot.data.redis.RewardDAO.getInstance() }
+    private val jedis by lazy { Jedis(System.getenv("REDIS_URL")) }
     private val logger = logger()
 
-    override fun needsMigration(): Mono<Boolean> {
+    fun needsMigration(): Boolean {
+        if (!MigrationManager.canRedisMigrate()) return false
+
         return mongo.rewards.countDocuments().toMono().map {
             return@map it == 0L || getAllRewards().size.toLong() > it
-        }
+        }.block()!!
     }
 
-    override fun migrate(): Flux<Long> {
-        return getAllRewards().toFlux()
+    @ChangeSet(order = "001", id = "redisRewards", author = "Garlic")
+    fun migrate() {
+        if (!needsMigration()) return
+
+        getAllRewards().toFlux()
                 .flatMap { mongo.importReward(it) }
                 .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import reward: $u", t)
                 }
                 .filter { it }
-                .count()
-                .toFlux()
+                .blockLast()!!
     }
 
     /**
