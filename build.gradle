@@ -1,8 +1,8 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
-    id 'io.gitlab.arturbosch.detekt' version '1.18.1'
+    id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}"
+    id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
+    id 'io.gitlab.arturbosch.detekt' version "${detektVersion}"
 }
 
 allprojects {
@@ -16,12 +16,12 @@ allprojects {
     }
 
     dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-        implementation "org.jetbrains.kotlin:kotlin-reflect:1.5.31"
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.2'
-        testImplementation group: 'junit', name: 'junit', version: '4.12'
-        api group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+        implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${kotlinCoroutinesVersion}"
+        testImplementation group: 'junit', name: 'junit', version: "${junitVersion}"
+        api group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
     }
 
     group = 'com.dongtronic.diabot'
