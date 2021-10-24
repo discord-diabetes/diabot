@@ -64,7 +64,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             getUnstoredData(event)
         }.flatMap { data ->
             // send the message
-            event.channel.sendMessage(data.t2)
+            event.channel.sendMessageEmbeds(data.t2)
                     .submitMono()
                     .doOnSuccess { addReactions(data.t1, it) }
         }.subscribeOn(Schedulers.boundedElastic())
