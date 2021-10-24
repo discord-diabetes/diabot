@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.data.mongodb
 
-import com.dongtronic.diabot.data.migration.MongoQuoteConversion
 import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -38,19 +37,6 @@ class QuoteDAO private constructor() {
         quoteIndexes.createIndex(descending(QuoteDTO::guildId), options).toMono()
                 .subscribeOn(scheduler)
                 .subscribe()
-
-        // Convert IDs stored in the collection from `Long` to `String`
-        MongoQuoteConversion(collection, quoteIndexes).checkAndConvert()
-                .errorOnEmpty()
-                .subscribe({
-                    logger.info("Converted ${it.t1} quote(s) and ${it.t2} quote index(es)!")
-                }, {
-                    if (it is NoSuchElementException) {
-                        logger.info("No quotes needed to be converted")
-                    } else {
-                        logger.warn("Could not convert quotes", it)
-                    }
-                })
     }
 
     /**
