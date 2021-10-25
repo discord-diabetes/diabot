@@ -16,7 +16,6 @@ import java.awt.Color
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
-import kotlin.collections.ArrayList
 
 class HelpListener : Consumer<CommandEvent> {
     private val logger = logger()
@@ -53,7 +52,7 @@ class HelpListener : Consumer<CommandEvent> {
             try {
                 // Open the DM channel and send the message
                 event.author.openPrivateChannel().submit()
-                        .thenCompose { it.sendMessage(embedBuilder.build()).submit() }
+                        .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
                         .whenComplete { message: Message?, exc: Throwable? ->
                             if (exc != null) {
                                 // If there's a throwable then assume it failed
@@ -77,7 +76,7 @@ class HelpListener : Consumer<CommandEvent> {
             buildCategoryHelp(categoryBuilder, category)
 
             // Store the CompletableFuture in the queue so we can cancel it later
-            val message = channel.thenCompose { it.sendMessage(categoryBuilder.build()).submit() }
+            val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
                     .whenComplete { message: Message?, exc: Throwable? ->
                         if (exc != null) {
                             sendingError(exc, event)

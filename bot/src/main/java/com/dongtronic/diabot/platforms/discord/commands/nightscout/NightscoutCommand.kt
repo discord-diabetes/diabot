@@ -18,10 +18,7 @@ import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -67,7 +64,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             getUnstoredData(event)
         }.flatMap { data ->
             // send the message
-            event.channel.sendMessage(data.t2)
+            event.channel.sendMessageEmbeds(data.t2)
                     .submitMono()
                     .doOnSuccess { addReactions(data.t1, it) }
         }.subscribeOn(Schedulers.boundedElastic())
@@ -157,7 +154,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A nightscout DTO and an embed based on it
      */
     private fun getStoredData(event: CommandEvent): Mono<Tuple2<NightscoutDTO, MessageEmbed>> {
-        return getUserDto(event.author)
+        return getUserDto(event.author, event.member)
                 .flatMap { buildNightscoutResponse(it, event) }
     }
 
@@ -183,13 +180,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 IllegalArgumentException("Cannot handle mentioning everyone.").toMono()
 
             mentionedMembers.size == 1 -> {
-                val user = mentionedMembers[0].user
+                val member = mentionedMembers[0]
                 val exception = IllegalArgumentException("User does not have a configured Nightscout URL.")
 
-                getUserDto(user, exception)
+                getUserDto(member.user, member, exception)
                         .handle { t, u: SynchronousSink<NightscoutUserDTO> ->
                             if (!t.isNightscoutPublic(event.guild.id)) {
-                                u.error(NightscoutPrivateException(event.nameOf(user)))
+                                u.error(NightscoutPrivateException(member.effectiveName))
                             } else {
                                 u.next(t)
                             }
@@ -202,18 +199,18 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             }
             else -> {
                 // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
-                val user = namedMembers.getOrNull(0)?.user
+                val member = namedMembers.getOrNull(0)
                 val domain = "https://${args[0]}.herokuapp.com"
                 val fallbackDto = NightscoutUserDTO(url = domain).toMono()
 
-                if (user == null) {
+                if (member == null) {
                     fallbackDto
                 } else {
-                    getUserDto(user)
+                    getUserDto(member.user, member)
                             .switchIfEmpty { fallbackDto }
                             .handle { userDTO, sink: SynchronousSink<NightscoutUserDTO> ->
                                 if (!userDTO.isNightscoutPublic(event.guild.id)) {
-                                    sink.error(NightscoutPrivateException(event.nameOf(user)))
+                                    sink.error(NightscoutPrivateException(member.effectiveName))
                                 } else {
                                     sink.next(userDTO)
                                 }
@@ -240,7 +237,6 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         return userDtos
                 .flatMap { userDTO ->
                     val member = event.guild.getMemberById(userDTO.userId)
-                    val user: User
                     val publicInThisGuild = userDTO.isNightscoutPublic(event.guild.id)
 
                     if (member == null) {
@@ -249,14 +245,14 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         return@flatMap fallback
                     }
 
-                    user = member.user
+                    val user: User = member.user
 
                     if (!publicInThisGuild) {
                         return@flatMap NightscoutPrivateException(event.nameOf(user))
                                 .toMono<NightscoutUserDTO>()
                     }
 
-                    userDTO.copy(jdaUser = user).toMono()
+                    userDTO.copy(jdaUser = user, jdaMember = member).toMono()
                 }
                 .singleOrEmpty()
                 .switchIfEmpty { fallback }
@@ -337,8 +333,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         setResponseColor(nsDTO, builder)
 
-        if (userDTO.jdaUser?.avatarUrl != null && displayOptions.contains("avatar") && !short) {
-            builder.setThumbnail(userDTO.jdaUser.avatarUrl)
+        val avatarUrl = userDTO.jdaMember?.effectiveAvatarUrl ?: userDTO.jdaUser?.avatarUrl
+        if (avatarUrl != null && displayOptions.contains("avatar") && !short) {
+            builder.setThumbnail(avatarUrl)
         }
 
         builder.setTimestamp(nsDTO.dateTime)
@@ -455,15 +452,20 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * Gets a [NightscoutUserDTO] for the given user.
      *
      * @param user The user to look up
+     * @param member Optional member object for the [user]
      * @param throwable The exception to throw if the user has not configured their Nightscout
      * @return A [NightscoutUserDTO] instance belonging to the given user
      */
-    private fun getUserDto(user: User, throwable: Throwable = UnconfiguredNightscoutException()): Mono<NightscoutUserDTO> {
+    private fun getUserDto(
+            user: User,
+            member: Member? = null,
+            throwable: Throwable = UnconfiguredNightscoutException()
+    ): Mono<NightscoutUserDTO> {
         return NightscoutDAO.instance.getUser(user.id)
                 .onErrorMap(NoSuchElementException::class) { throwable }
                 .flatMap {
                     if (it.url != null) {
-                        it.copy(jdaUser = user).toMono()
+                        it.copy(jdaUser = user, jdaMember = member).toMono()
                     } else {
                         // throw an exception if the url is blank
                         throwable.toMono()
