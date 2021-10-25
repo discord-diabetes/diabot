@@ -1,49 +1,59 @@
-package com.dongtronic.diabot.data.migration
+package com.dongtronic.diabot.data.migration.redis
 
+import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.data.mongodb.ChannelDAO
 import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.redis.AdminDAO
 import com.dongtronic.diabot.util.logger
+import com.github.cloudyrock.mongock.ChangeLog
+import com.github.cloudyrock.mongock.ChangeSet
 import org.litote.kmongo.contains
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
-class AdminChannelMigrator : Migrator {
-    private val channelDAO = ChannelDAO.instance
-    private val adminRedis = AdminDAO.getInstance()
-    private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
+@Suppress("BlockingMethodInNonBlockingContext")
+@ChangeLog(order = "001")
+class AdminChannelMigrator {
+    private val mongo = ChannelDAO.instance
+    private val redis by lazy { AdminDAO.getInstance() }
+    private val jedis by lazy { Jedis(System.getenv("REDIS_URL")) }
     private val logger = logger()
 
-    override fun needsMigration(): Mono<Boolean> {
+    private fun needsMigration(): Boolean {
+        if (!MigrationManager.canRedisMigrate()) return false
+
         val keys = jedis.keys("*:adminchannels")
 
-        return channelDAO.collection
+        return mongo.collection
                 .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.ADMIN)
                 .toMono()
                 .map {
                     return@map it == 0L || keys.size.toLong() > it
                 }
+                .block()!!
     }
 
-    override fun migrate(): Flux<Long> {
+    @ChangeSet(order = "001", id = "redisAdminChannels", author = "Garlic")
+    fun migrate() {
+        if (!needsMigration()) return
+
         val keys = jedis.keys("*:adminchannels")
 
         logger.info("Got keys $keys")
-        return Flux.fromIterable(keys)
+        Flux.fromIterable(keys)
                 .map {
                     val guildId = it.substringBefore(":")
-                    val channels = adminRedis.listAdminChannels(guildId) ?: mutableListOf()
+                    val channels = redis.listAdminChannels(guildId) ?: mutableListOf()
                     // convert to a pair: guildId<=>listOfAdminChannels
                     it to channels
                 }.flatMap { pair ->
                     val guildId = pair.first.substringBefore(":")
                     return@flatMap pair.second.toFlux().flatMap {
                         // add the ADMIN attribute to each channel
-                        channelDAO.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
-                    }.count()
-                }
+                        mongo.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
+                    }
+                }.blockLast()!!
     }
 }

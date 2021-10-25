@@ -1,58 +1,38 @@
 package com.dongtronic.diabot.data.migration
 
+import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.logger
-import reactor.core.publisher.Flux
+import com.github.cloudyrock.mongock.driver.mongodb.sync.v4.driver.MongoSync4Driver
+import com.github.cloudyrock.standalone.MongockStandalone
+import com.mongodb.client.MongoClients
 
 class MigrationManager {
     private val logger = logger()
-    // lazy init to prevent creating all of the MongoDB connections when this class is initialised
-    private val migrators by lazy {
-        listOf(
-                AdminChannelMigrator(),
-                NightscoutMigrator(),
-                NSChannelMigrator(),
-                ProjectsMigrator(),
-                RewardMigrator(),
-                RewardOptOutMigrator(),
-                UsernamesMigrator()
-        )
-    }
 
     /**
-     * Checks if migration is enabled and starts the data migration process if so.
+     * Starts the data migration process
      */
-    fun migrateIfNecessary() {
-        val migrate = System.getenv()["REDIS_MONGO_MIGRATE"]?.toBoolean() ?: false
-
-        if (migrate) {
-            logger.info("Beginning migration")
-            // block this thread until a completion signal is sent
-            migrateAll().blockLast()
-            logger.info("Migration finished")
-        }
+    fun initialize() {
+        val mongoClient = MongoClients.create(MongoDB.connectionURI)
+        val driver = MongoSync4Driver.withDefaultLock(mongoClient, MongoDB.defaultDatabase)
+        driver.disableTransaction()
+        driver.changeLogRepositoryName = "mongock-changelog"
+        driver.lockRepositoryName = "mongock-lock"
+        MongockStandalone.builder()
+                .setDriver(driver)
+                .addChangeLogsScanPackage("com.dongtronic.diabot.data.migration")
+                .buildRunner()
+                .execute()
     }
 
-    /**
-     * Starts all the migrators.
-     *
-     * @return The result of each migrator
-     */
-    // erroneous warning
-    @Suppress("ReactiveStreamsUnusedPublisher")
-    fun migrateAll(): Flux<Long> {
-        var migration = Flux.empty<Long>()
-        migrators.forEachIndexed { i: Int, migrator: Migrator ->
-            val toMigrate = migrator.checkAndMigrate().doOnNext {
-                logger.info("Migrated $it object(s) from ${migrator::class.simpleName}")
-            }
-
-            migration = if (i == 0) {
-                toMigrate
-            } else {
-                migration.thenMany(toMigrate)
-            }
+    companion object {
+        /**
+         * Check if Redis -> Mongo migration is enabled and that a Redis URL is set in the environment variables.
+         *
+         * @return If Redis migration is possible
+         */
+        fun canRedisMigrate(): Boolean {
+            return System.getenv()["REDIS_MONGO_MIGRATE"]?.toBoolean() == true && System.getenv().containsKey("REDIS_URL")
         }
-
-        return migration
     }
 }

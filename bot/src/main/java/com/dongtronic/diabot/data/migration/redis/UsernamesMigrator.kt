@@ -1,27 +1,34 @@
-package com.dongtronic.diabot.data.migration
+package com.dongtronic.diabot.data.migration.redis
 
+import com.dongtronic.diabot.data.migration.MigrationManager
 import com.dongtronic.diabot.data.mongodb.NameRuleDAO
 import com.dongtronic.diabot.data.mongodb.NameRuleDTO
 import com.dongtronic.diabot.util.logger
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import com.github.cloudyrock.mongock.ChangeLog
+import com.github.cloudyrock.mongock.ChangeSet
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
-class UsernamesMigrator : Migrator {
-    private val redis = com.dongtronic.diabot.data.redis.AdminDAO.getInstance()
+@ChangeLog(order = "007")
+class UsernamesMigrator {
     private val mongo = NameRuleDAO.instance
-    private val jedis: Jedis = Jedis(System.getenv("REDIS_URL"))
+    private val redis by lazy { com.dongtronic.diabot.data.redis.AdminDAO.getInstance() }
+    private val jedis by lazy { Jedis(System.getenv("REDIS_URL")) }
     private val logger = logger()
 
-    override fun needsMigration(): Mono<Boolean> {
+    fun needsMigration(): Boolean {
+        if (!MigrationManager.canRedisMigrate()) return false
+
         return mongo.collection.countDocuments().toMono().map {
             return@map it == 0L || getAllGids().size.toLong() > it
-        }
+        }.block()!!
     }
 
-    override fun migrate(): Flux<Long> {
+    @ChangeSet(order = "001", id = "redisUsernameRules", author = "Garlic")
+    fun migrate() {
+        if (!needsMigration()) return
+
         val dtos = getAllGids().mapNotNull { guildId ->
             val enforcing = redis.getUsernameEnforcementEnabled(guildId)
             val hint = redis.getUsernameHint(guildId)
@@ -42,15 +49,14 @@ class UsernamesMigrator : Migrator {
             )
         }
 
-        return dtos.toFlux()
+        dtos.toFlux()
                 .flatMap { mongo.addGuild(it) }
                 .map { it.wasAcknowledged() }
                 .onErrorContinue { t, u ->
                     logger.warn("Could not import guild username rule: $u", t)
                 }
                 .filter { it }
-                .count()
-                .toFlux()
+                .blockLast()!!
     }
 
     /**

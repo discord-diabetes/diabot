@@ -28,6 +28,11 @@ dependencies {
     implementation 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
     implementation 'org.litote.kmongo:kmongo-async:4.0.3'
 
+    // Database Migrations
+    implementation "com.github.cloudyrock.mongock:mongock-standalone:5.0.1.BETA"
+    implementation "com.github.cloudyrock.mongock:mongodb-sync-v4-driver:5.0.2.BETA"
+    implementation "org.litote.kmongo:kmongo:4.0.3"
+
     // Cache
     implementation 'com.github.ben-manes.caffeine:caffeine:2.8.5'
 
