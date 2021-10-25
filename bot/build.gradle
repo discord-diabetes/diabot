@@ -1,7 +1,8 @@
 dependencies {
     // JDA
+    implementation 'com.github.MinnDevelopment:jda-ktx:1223d5cbb8'
     implementation 'com.jagrosh:jda-utilities:3.0.4'
-    implementation('net.dv8tion:JDA:4.2.0_209') {
+    implementation('net.dv8tion:JDA:4.3.0_277') {
         exclude module: 'opus-java'
     }
 

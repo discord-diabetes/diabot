@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.data.mongodb
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 /**
  * @property quoteId the quote's ID
@@ -38,6 +39,7 @@ data class QuoteDTO(
      *
      * @return a message link pointing to the quote, otherwise `null` if a link cannot be created
      */
+    @JsonIgnore
     fun getMessageLink(): String? {
         if (!hasMessageLink())
             return null
@@ -48,6 +50,6 @@ data class QuoteDTO(
     }
 
     companion object {
-        const val DISCORD_MESSAGE_LINK = "https://discordapp.com/channels/{guild}/{channel}/{message}"
+        const val DISCORD_MESSAGE_LINK = "https://discord.com/channels/{guild}/{channel}/{message}"
     }
 }
