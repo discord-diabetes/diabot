@@ -36,9 +36,9 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
-        val reply: (() -> MessageAction) -> Unit = { msg ->
+        val reply: (() -> MessageAction) -> Unit = { message ->
             if (event.channel.canTalk(event.member)) {
-                msg().queue()
+                message().queue()
             }
         }
 
