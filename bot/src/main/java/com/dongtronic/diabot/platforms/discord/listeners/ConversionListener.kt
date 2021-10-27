@@ -16,72 +16,26 @@ class ConversionListener : ListenerAdapter() {
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
 
-        val channel = event.channel
-
         val message = event.message
         val messageText = message.contentRaw
 
         val separateMatcher = Patterns.separateBgPattern.matcher(messageText)
 
-        var numberString = ""
-
         if (separateMatcher.matches()) {
-            numberString = separateMatcher.group(1)
+            sendResult(separateMatcher.group(1), "", event)
         } else {
             recursiveReading(event, messageText)
         }
-
-        try {
-            if (numberString.contains(',')) {
-                numberString = numberString.replace(',', '.')
-            }
-            val result: ConversionDTO? = BloodGlucoseConverter.convert(numberString, null)
-
-            when {
-                result!!.inputUnit === GlucoseUnit.MMOL -> channel.sendMessage(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl)).queue()
-                result!!.inputUnit === GlucoseUnit.MGDL -> channel.sendMessage(String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol)).queue()
-                else -> {
-                    val reply = arrayOf(
-                            "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
-                            "%s mg/dL is **%s mmol/L**",
-                            "%s mmol/L is **%s mg/dL**").joinToString(
-                            "%n")
-
-                    channel.sendMessage(String.format(reply, numberString, result!!.mmol, numberString,
-                            result.mgdl)).queue()
-                }
-            }
-
-            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if (result.mmol == 6.9 || result.mgdl == 69) {
-                event.message.addReaction("\uD83D\uDE0F").queue()
-            }
-
-            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-            if (result.mmol == 5.5
-                    || result.mmol == 10.0
-                    || result.mgdl == 100) {
-                event.message.addReaction("\uD83D\uDCAF").queue()
-            }
-
-        } catch (ex: IllegalArgumentException) {
-            // Ignored on purpose
-            logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
-        } catch (ex: UnknownUnitException) {
-            // Ignored on purpose
-        }
     }
 
-    private fun recursiveReading(event: GuildMessageReceivedEvent, messageText: String) {
+    private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String) {
         if (event.author.isBot) return
 
-        val channel = event.channel
-
         var matched = false
-        var modifiedMessageText = ""
+        var newMessageText = ""
 
-        val inlineMatcher = Patterns.inlineBgPattern.matcher(messageText)
-        val unitMatcher = Patterns.unitBgPattern.matcher(messageText)
+        val inlineMatcher = Patterns.inlineBgPattern.matcher(previousMessageText)
+        val unitMatcher = Patterns.unitBgPattern.matcher(previousMessageText)
 
         var numberString = ""
         var unitString = ""
@@ -90,25 +44,36 @@ class ConversionListener : ListenerAdapter() {
             numberString = unitMatcher.group(4)
             unitString = unitMatcher.group(5)
             matched = true
-            modifiedMessageText = removeGroup(messageText, unitMatcher, 4)
-        }
-
-        if (inlineMatcher.matches()) {
+            newMessageText = removeGroup(previousMessageText, unitMatcher, 4)
+        }else if (inlineMatcher.matches()) {
             numberString = inlineMatcher.group(1)
             matched = true
-            modifiedMessageText = removeGroup(messageText, inlineMatcher, 1)
+            newMessageText = removeGroup(previousMessageText, inlineMatcher, 1)
         }
 
         if (numberString.isEmpty()) {
             return
         }
 
+        sendResult(numberString, unitString, event)
+
+        if (matched) {
+            recursiveReading(event, newMessageText)
+        }
+    }
+
+    private fun sendResult(originalNumString: String, originalUnitString: String, event: GuildMessageReceivedEvent) {
+        val channel = event.channel
+
+        var numberString = originalNumString
+
         try {
             if (numberString.contains(',')) {
                 numberString = numberString.replace(',', '.')
             }
-            val result: ConversionDTO? = if (unitString.length > 1) {
-                BloodGlucoseConverter.convert(numberString, unitString)
+
+            val result: ConversionDTO? = if (originalUnitString.length > 1) {
+                BloodGlucoseConverter.convert(numberString, originalUnitString)
             } else {
                 BloodGlucoseConverter.convert(numberString, null)
             }
@@ -146,15 +111,10 @@ class ConversionListener : ListenerAdapter() {
         } catch (ex: UnknownUnitException) {
             // Ignored on purpose
         }
-
-        if (matched) {
-            recursiveReading(event, modifiedMessageText)
-        }
-
     }
 
     private fun removeGroup(message: String, m: Matcher, group: Int): String {
-        val start = m.start(group) //message.lastIndexOf(toRemove)
+        val start = m.start(group)
         val end = m.end(group)
         return message.substring(0, start) + message.substring(end)
     }
