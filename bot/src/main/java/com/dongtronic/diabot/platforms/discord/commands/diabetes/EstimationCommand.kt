@@ -53,7 +53,7 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
 
         event.reply(
                 String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
-                        result!!.dcct, result.ifcc, result.original.mgdl, result.original.mmol)
+                        result.dcct, result.ifcc, result.original.mgdl, result.original.mmol)
         )
 
     }
