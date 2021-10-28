@@ -3,26 +3,39 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.SlashCommand
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_A1C
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_AVG
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_UNIT
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_MODE_A1C
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_MODE_AVG
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_NAME
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 
-class EstimationSlashCommand : SlashCommand() {
-    override val commandName: String = ESTIMATE_COMMAND_NAME
+class EstimationSlashCommand : SlashCommand {
+    private val commandModeA1c = "a1c"
+    private val commandModeAverage = "average"
+    private val commandArgA1c = "a1c"
+    private val commandArgUnit = "unit"
+    private val commandArgAvg = "average"
+
+    override val commandName: String = "estimate"
+
+    override fun config(): CommandData {
+        return CommandData(commandName, "Perform A1c and average glucose estimations").addSubcommands(
+                SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
+                        .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
+                        .addOption(OptionType.STRING, commandArgUnit, "Glucose unit (mmol/L, mg/dL)"),
+                SubcommandData(commandModeAverage, "Estimate average glucose from A1c")
+                        .addOption(OptionType.NUMBER, commandArgA1c, "A1c value", true)
+        )
+    }
 
     override fun execute(event: SlashCommandEvent) {
         when (event.subcommandName) {
-            ESTIMATE_COMMAND_MODE_AVG -> estimateAverage(event)
-            ESTIMATE_COMMAND_MODE_A1C -> estimateA1c(event)
+            commandModeAverage -> estimateAverage(event)
+            commandModeA1c -> estimateA1c(event)
         }
     }
 
     private fun estimateAverage(event: SlashCommandEvent) {
-        val input = event.getOption(ESTIMATE_COMMAND_ARG_A1C)!!
+        val input = event.getOption(commandArgA1c)!!
 
         val result = A1cConverter.estimateAverage(input.asString)
 
@@ -33,8 +46,8 @@ class EstimationSlashCommand : SlashCommand() {
     }
 
     private fun estimateA1c(event: SlashCommandEvent) {
-        val inputNumber = event.getOption(ESTIMATE_COMMAND_ARG_AVG)!!
-        val inputUnit = event.getOption(ESTIMATE_COMMAND_ARG_UNIT)
+        val inputNumber = event.getOption(commandArgAvg)!!
+        val inputUnit = event.getOption(commandArgUnit)
 
         val result = A1cConverter.estimateA1c(inputNumber.asString, inputUnit?.asString)
 

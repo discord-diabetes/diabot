@@ -12,37 +12,23 @@ import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGlobalSlashCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_A1C
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_AVG
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_ARG_UNIT
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_MODE_A1C
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_MODE_AVG
-import com.dongtronic.diabot.util.CommandValues.ESTIMATE_COMMAND_NAME
-import com.dongtronic.diabot.util.CommandValues.NIGHTSCOUT_COMMAND_ARG_URL
-import com.dongtronic.diabot.util.CommandValues.NIGHTSCOUT_COMMAND_GROUP_CLEAR
-import com.dongtronic.diabot.util.CommandValues.NIGHTSCOUT_COMMAND_GROUP_SET
-import com.dongtronic.diabot.util.CommandValues.NIGHTSCOUT_COMMAND_MODE_URL
-import com.dongtronic.diabot.util.CommandValues.NIGHTSCOUT_COMMAND_NAME
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.AboutCommand
 import com.jagrosh.jdautilities.examples.command.GuildlistCommand
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.util.*
 import javax.security.auth.login.LoginException
-
 
 object Main {
 
@@ -152,40 +138,27 @@ object Main {
 
     private fun registerSlashCommands(shardManager: ShardManager) {
 
-        shardManager.addEventListener(SlashCommandListener(
-                EstimationSlashCommand()
-        ))
+        val slashCommandListener = SlashCommandListener(
+                EstimationSlashCommand(),
+                NightscoutGlobalSlashCommand()
+        )
 
+        shardManager.addEventListener(slashCommandListener)
+
+        val commandConfigs = slashCommandListener.commands.map { command -> command.config() }.toList()
 
         val jda = shardManager.shards.first()
 
         // Global commands
         jda.updateCommands().queue()
 
-        shardManager.shards.forEach { shard ->
-            shard.awaitReady()
-        }
+        shardManager.shards.forEach(JDA::awaitReady)
 
         val guild = shardManager.getGuildById("646619457694728192")!!
 
-        guild.updateCommands().addCommands(
-                CommandData(ESTIMATE_COMMAND_NAME, "Perform A1c and average glucose estimations").addSubcommands(
-                        SubcommandData(ESTIMATE_COMMAND_MODE_A1C, "Estimate A1c from average glucose")
-                                .addOption(OptionType.NUMBER, ESTIMATE_COMMAND_ARG_AVG, "Average glucose", true)
-                                .addOption(OptionType.STRING, ESTIMATE_COMMAND_ARG_UNIT, "Glucose unit (mmol/L, mg/dL)"),
-                        SubcommandData(ESTIMATE_COMMAND_MODE_AVG, "Estimate average glucose from A1c")
-                                .addOption(OptionType.NUMBER, ESTIMATE_COMMAND_ARG_A1C, "A1c value", true)
-                ),
-                CommandData(NIGHTSCOUT_COMMAND_NAME, "Manage your nightscout settings").addSubcommandGroups(
-                        SubcommandGroupData(NIGHTSCOUT_COMMAND_GROUP_SET, "Set nightscout settings").addSubcommands(
-                                SubcommandData(NIGHTSCOUT_COMMAND_MODE_URL, "Set nightscout url").addOption(OptionType.STRING, NIGHTSCOUT_COMMAND_ARG_URL, "URL of your nightscout instance", true)
-                        ),
-                        SubcommandGroupData(NIGHTSCOUT_COMMAND_GROUP_CLEAR, "Clear nightscout settings").addSubcommands(
-                                SubcommandData(NIGHTSCOUT_COMMAND_MODE_URL, "Clear nightscout url")
-                        )
-                )
-        ).queue()
+        guild.updateCommands().addCommands(commandConfigs).queue()
 
+        shardManager.addEventListener(slashCommandListener)
     }
 
 }

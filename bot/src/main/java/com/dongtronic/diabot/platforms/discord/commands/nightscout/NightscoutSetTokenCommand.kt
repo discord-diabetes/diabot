@@ -1,14 +1,11 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.mongodb.client.result.UpdateResult
-import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
-import reactor.core.publisher.Mono
 
 class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
@@ -36,16 +33,22 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
         }
 
         val token = args.getOrNull(0)
-        setNightscoutToken(event.author, token).subscribe({
-            if (token != null) {
-                event.replySuccess("Set Nightscout token for ${event.author.name}")
-            } else {
+
+        if (token == null) {
+            NightscoutFacade.clearToken(event.author).subscribe({
                 event.replySuccess("Deleted Nightscout token for ${event.author.name}")
-            }
-        }, {
-            logger.warn("Could not set Nightscout token", it)
-            event.replyError("An error occurred while setting Nightscout token for ${event.author.name}")
-        })
+            }, {
+                logger.warn("Could not clear nightscout token", it)
+                event.replyError("An error occurred while clearing Nightscout token for ${event.author.name}")
+            })
+        } else {
+            NightscoutFacade.setToken(event.author, token).subscribe({
+                event.replySuccess("Set Nightscout token for ${event.author.name}")
+            }, {
+                logger.warn("Could not set nightscout token", it)
+                event.replyError("An error occurred while setting Nightscout token for ${event.author.name}")
+            })
+        }
     }
 
     private fun delete(event: CommandEvent) {
@@ -57,9 +60,5 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
         } catch (ex: IllegalStateException) {
             logger.info("Could not delete command message. probably in a DM")
         }
-    }
-
-    private fun setNightscoutToken(user: User, token: String?): Mono<UpdateResult> {
-        return NightscoutDAO.instance.setToken(user.id, token)
     }
 }
