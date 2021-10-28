@@ -5,6 +5,7 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionSlashCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationSlashCommand
@@ -12,7 +13,7 @@ import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGlobalSlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSlashCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
@@ -31,6 +32,7 @@ import java.util.*
 import javax.security.auth.login.LoginException
 
 object Main {
+    private var debug = false
 
     @Throws(LoginException::class)
     @JvmStatic
@@ -63,6 +65,7 @@ object Main {
         // sets the bot prefix
         if (System.getenv("DIABOT_DEBUG") != null) {
             client.setPrefix("dl ")
+            debug = true
         } else {
             client.setPrefix("diabot ")
         }
@@ -140,23 +143,21 @@ object Main {
 
         val slashCommandListener = SlashCommandListener(
                 EstimationSlashCommand(),
-                NightscoutGlobalSlashCommand()
+                NightscoutSlashCommand(),
+                ConversionSlashCommand()
         )
-
-        shardManager.addEventListener(slashCommandListener)
 
         val commandConfigs = slashCommandListener.commands.map { command -> command.config() }.toList()
 
-        val jda = shardManager.shards.first()
-
-        // Global commands
-        jda.updateCommands().queue()
-
-        shardManager.shards.forEach(JDA::awaitReady)
-
-        val guild = shardManager.getGuildById("646619457694728192")!!
-
-        guild.updateCommands().addCommands(commandConfigs).queue()
+        if (debug) {
+            val guildId = System.getenv("HOME_GUILD_ID")
+            shardManager.shards.forEach(JDA::awaitReady)
+            val guild = shardManager.getGuildById(guildId)!!
+            guild.updateCommands().addCommands(commandConfigs).queue()
+        } else {
+            val jda = shardManager.shards.first()
+            jda.updateCommands().addCommands(commandConfigs).queue()
+        }
 
         shardManager.addEventListener(slashCommandListener)
     }

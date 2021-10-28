@@ -36,7 +36,11 @@ object NightscoutFacade {
         return NightscoutDAO.instance.deleteUser(user.id)
     }
 
-    private fun validateNightscoutUrl(url: String): String {
+    fun getUser(user: User): Mono<NightscoutUserDTO> {
+        return NightscoutDAO.instance.getUser(user.id)
+    }
+
+    fun validateNightscoutUrl(url: String): String {
         var finalUrl = url
         if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
             logger.info("Missing scheme in Nightscout URL: $finalUrl, adding https://")

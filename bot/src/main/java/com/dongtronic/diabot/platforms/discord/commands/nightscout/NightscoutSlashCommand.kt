@@ -8,10 +8,11 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 
-class NightscoutGlobalSlashCommand : SlashCommand {
+class NightscoutSlashCommand : SlashCommand {
 
     private val groupNameSet = "set"
     private val groupNameClear = "clear"
+    private val groupNameGet = "get"
     private val commandModeUrl = "url"
     private val commandModeToken = "token"
     private val commandModeAll = "all"
@@ -32,9 +33,13 @@ class NightscoutGlobalSlashCommand : SlashCommand {
                 commandModePrivate -> setPrivate(event)
             }
             groupNameClear -> when (event.subcommandName) {
-                commandModeToken -> NightscoutFacade.clearToken(event.user)
-                commandModeUrl -> NightscoutFacade.clearUrl(event.user)
-                commandModeAll -> NightscoutFacade.clearAll(event.user)
+                commandModeToken -> clearToken(event)
+                commandModeUrl -> clearUrl(event)
+                commandModeAll -> clearAll(event)
+            }
+            groupNameGet -> when(event.subcommandName) {
+                commandModeUrl -> getUrl(event)
+                commandModeToken -> getToken(event)
             }
         }
     }
@@ -59,6 +64,7 @@ class NightscoutGlobalSlashCommand : SlashCommand {
     private fun setPublic(event: SlashCommandEvent) {
         if (!event.isFromGuild) {
             warnGuildOnly(event)
+            return
         }
 
         val public = event.getOption(commandArgPublic)?.asBoolean ?: true
@@ -74,6 +80,7 @@ class NightscoutGlobalSlashCommand : SlashCommand {
     private fun setPrivate(event: SlashCommandEvent) {
         if (!event.isFromGuild) {
             warnGuildOnly(event)
+            return
         }
 
         NightscoutFacade.setPublic(event.user, event.guild!!, false).subscribe({
@@ -81,6 +88,50 @@ class NightscoutGlobalSlashCommand : SlashCommand {
         }, {
             event.reply("There was an error while setting your Nightscout data to private in this server. Please try again later.").setEphemeral(true).queue()
         })
+    }
+
+    private fun clearToken(event: SlashCommandEvent) {
+        NightscoutFacade.clearToken(event.user).subscribe({
+            event.reply("Your nightscout token has been deleted").setEphemeral(true).queue()
+        }, {
+            event.reply("There was an error while removing your Nightscout token. Please try again later.").setEphemeral(true).queue()
+        })
+    }
+
+    private fun clearUrl(event: SlashCommandEvent) {
+        NightscoutFacade.clearUrl(event.user).subscribe({
+            event.reply("Your nightscout URL has been deleted").setEphemeral(true).queue()
+        }, {
+            event.reply("There was an error while removing your Nightscout URL. Please try again later.").setEphemeral(true).queue()
+        })
+    }
+
+    private fun clearAll(event: SlashCommandEvent) {
+        NightscoutFacade.clearAll(event.user).subscribe({
+            event.reply("Your nightscout data has been deleted").setEphemeral(true).queue()
+        }, {
+            event.reply("There was an error while removing your Nightscout data. Please try again later.").setEphemeral(true).queue()
+        })
+    }
+
+    private fun getUrl(event: SlashCommandEvent) {
+        NightscoutFacade.getUser(event.user).subscribe {
+            if (it.url != null) {
+                event.reply("Your configured Nightscout URL is `${it.url}`").setEphemeral(true).queue()
+            } else {
+                event.reply("You do not have a configured Nightscout URL. Use `/nightscout set url` to configure it.").setEphemeral(true).queue()
+            }
+        }
+    }
+
+    private fun getToken(event: SlashCommandEvent) {
+        NightscoutFacade.getUser(event.user).subscribe {
+            if (it.token != null) {
+                event.reply("Your configured Nightscout token is `${it.token}`").setEphemeral(true).queue()
+            } else {
+                event.reply("You do not have a configured Nightscout token. Use `/nightscout set token` to configure it.").setEphemeral(true).queue()
+            }
+        }
     }
 
     private fun warnGuildOnly(event: SlashCommandEvent) {
@@ -102,6 +153,10 @@ class NightscoutGlobalSlashCommand : SlashCommand {
                         SubcommandData(commandModeUrl, "Clear nightscout url"),
                         SubcommandData(commandModeToken, "Clear nightscout token"),
                         SubcommandData(commandModeAll, "Clear all nightscout data")
+                ),
+                SubcommandGroupData(groupNameGet, "Get nightscout settings (private)").addSubcommands(
+                        SubcommandData(commandModeUrl, "Get nightscout URL"),
+                        SubcommandData(commandModeToken, "Get nightscout token")
                 )
         )
     }

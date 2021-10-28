@@ -38,14 +38,14 @@ class ConvertCommand(category: Command.Category) : DiscordCommand(category, null
                 result = BloodGlucoseConverter.convert(args[0], if (args.size == 2) args[1] else null)
 
                 val reply = when {
-                    result!!.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl)
-                    result!!.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol)
+                    result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
+                    result.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
                     else -> {
                         String.format(arrayOf(
                                 "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
                                 "%s mg/dL is **%s mmol/L**",
                                 "%s mmol/L is **%s mg/dL**").joinToString(
-                                "%n"), args[0], result!!.mmol, args[0], result.mgdl)
+                                "%n"), args[0], result.mmol, args[0], result.mgdl)
                     }
                 }
 
