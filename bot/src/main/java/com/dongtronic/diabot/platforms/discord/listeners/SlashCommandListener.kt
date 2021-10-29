@@ -24,7 +24,7 @@ class SlashCommandListener(vararg val commands: SlashCommand) : ListenerAdapter(
     override fun onSlashCommand(event: SlashCommandEvent) {
         val commandClass = commandMap[event.name]
 
-        if (commandClass != null ) {
+        if (commandClass != null) {
             commandClass.execute(event)
         } else {
             event.reply("No class specified for this command. Please open an issue: <https://github.com/reddit-diabetes/diabot>").setEphemeral(true).queue()

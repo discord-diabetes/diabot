@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.commands.SlashCommand
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 class ConversionSlashCommand : SlashCommand {
     private val commandArgGlucose = "glucose"
@@ -16,7 +17,9 @@ class ConversionSlashCommand : SlashCommand {
     override fun config(): CommandData {
         return CommandData(commandName, "Convert blood glucose values between mmol/L and mg/dL")
                 .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
-                .addOption(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                .addOptions(OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                        .addChoice("mmol/L", "mmol/L")
+                        .addChoice("mg/dL", "mg/dL"))
     }
 
     override fun execute(event: SlashCommandEvent) {
