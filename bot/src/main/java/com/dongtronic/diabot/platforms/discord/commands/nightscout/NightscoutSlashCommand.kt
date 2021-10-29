@@ -37,7 +37,7 @@ class NightscoutSlashCommand : SlashCommand {
                 commandModeUrl -> clearUrl(event)
                 commandModeAll -> clearAll(event)
             }
-            groupNameGet -> when(event.subcommandName) {
+            groupNameGet -> when (event.subcommandName) {
                 commandModeUrl -> getUrl(event)
                 commandModeToken -> getToken(event)
             }
@@ -71,7 +71,7 @@ class NightscoutSlashCommand : SlashCommand {
         val visibility = if (public) "public" else "private"
 
         NightscoutFacade.setPublic(event.user, event.guild!!, public).subscribe({
-            event.reply("Your nightscout data was made $visibility in this server").setEphemeral(true).queue()
+            event.reply("Your Nightscout data was made $visibility in this server").setEphemeral(true).queue()
         }, {
             event.reply("There was an error while setting your Nightscout data to $visibility in this server. Please try again later.").setEphemeral(true).queue()
         })
@@ -84,7 +84,7 @@ class NightscoutSlashCommand : SlashCommand {
         }
 
         NightscoutFacade.setPublic(event.user, event.guild!!, false).subscribe({
-            event.reply("Your nightscout data was made private in this server").setEphemeral(true).queue()
+            event.reply("Your Nightscout data was made private in this server").setEphemeral(true).queue()
         }, {
             event.reply("There was an error while setting your Nightscout data to private in this server. Please try again later.").setEphemeral(true).queue()
         })
@@ -92,7 +92,7 @@ class NightscoutSlashCommand : SlashCommand {
 
     private fun clearToken(event: SlashCommandEvent) {
         NightscoutFacade.clearToken(event.user).subscribe({
-            event.reply("Your nightscout token has been deleted").setEphemeral(true).queue()
+            event.reply("Your Nightscout token has been deleted").setEphemeral(true).queue()
         }, {
             event.reply("There was an error while removing your Nightscout token. Please try again later.").setEphemeral(true).queue()
         })
@@ -100,7 +100,7 @@ class NightscoutSlashCommand : SlashCommand {
 
     private fun clearUrl(event: SlashCommandEvent) {
         NightscoutFacade.clearUrl(event.user).subscribe({
-            event.reply("Your nightscout URL has been deleted").setEphemeral(true).queue()
+            event.reply("Your Nightscout URL has been deleted").setEphemeral(true).queue()
         }, {
             event.reply("There was an error while removing your Nightscout URL. Please try again later.").setEphemeral(true).queue()
         })
@@ -108,7 +108,7 @@ class NightscoutSlashCommand : SlashCommand {
 
     private fun clearAll(event: SlashCommandEvent) {
         NightscoutFacade.clearAll(event.user).subscribe({
-            event.reply("Your nightscout data has been deleted").setEphemeral(true).queue()
+            event.reply("Your Nightscout data has been deleted").setEphemeral(true).queue()
         }, {
             event.reply("There was an error while removing your Nightscout data. Please try again later.").setEphemeral(true).queue()
         })
@@ -139,24 +139,24 @@ class NightscoutSlashCommand : SlashCommand {
     }
 
     override fun config(): CommandData {
-        return CommandData(commandName, "Manage your nightscout settings").addSubcommandGroups(
-                SubcommandGroupData(groupNameSet, "Set nightscout settings").addSubcommands(
-                        SubcommandData(commandModeUrl, "Set nightscout url")
-                                .addOption(OptionType.STRING, commandArgUrl, "URL of your nightscout instance", true),
-                        SubcommandData(commandModeToken, "Set nightscout token")
-                                .addOption(OptionType.STRING, commandArgToken, "The authentication token of your nightscout instance", true),
-                        SubcommandData(commandModePublic, "Set nightscout to public in the current server")
-                                .addOption(OptionType.BOOLEAN, commandArgPublic, "Whether to make your nightscout data public. If false, it will be set to private."),
-                        SubcommandData(commandModePrivate, "Set nightscout to private in the current server")
+        return CommandData(commandName, "Manage your Nightscout settings").addSubcommandGroups(
+                SubcommandGroupData(groupNameSet, "Set Nightscout settings").addSubcommands(
+                        SubcommandData(commandModeUrl, "Set Nightscout url")
+                                .addOption(OptionType.STRING, commandArgUrl, "URL of your Nightscout instance", true),
+                        SubcommandData(commandModeToken, "Set Nightscout token")
+                                .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
+                        SubcommandData(commandModePublic, "Set Nightscout to public in the current server")
+                                .addOption(OptionType.BOOLEAN, commandArgPublic, "Whether to make your Nightscout data public. If false, it will be set to private."),
+                        SubcommandData(commandModePrivate, "Set Nightscout to private in the current server")
                 ),
-                SubcommandGroupData(groupNameClear, "Clear nightscout settings").addSubcommands(
-                        SubcommandData(commandModeUrl, "Clear nightscout url"),
-                        SubcommandData(commandModeToken, "Clear nightscout token"),
-                        SubcommandData(commandModeAll, "Clear all nightscout data")
+                SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
+                        SubcommandData(commandModeUrl, "Clear Nightscout url"),
+                        SubcommandData(commandModeToken, "Clear Nightscout token"),
+                        SubcommandData(commandModeAll, "Clear all Nightscout data")
                 ),
-                SubcommandGroupData(groupNameGet, "Get nightscout settings (private)").addSubcommands(
-                        SubcommandData(commandModeUrl, "Get nightscout URL"),
-                        SubcommandData(commandModeToken, "Get nightscout token")
+                SubcommandGroupData(groupNameGet, "Get Nightscout settings (private)").addSubcommands(
+                        SubcommandData(commandModeUrl, "Get Nightscout URL"),
+                        SubcommandData(commandModeToken, "Get Nightscout token")
                 )
         )
     }
