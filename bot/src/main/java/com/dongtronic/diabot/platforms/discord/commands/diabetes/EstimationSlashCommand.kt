@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.commands.SlashCommand
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 
 class EstimationSlashCommand : SlashCommand {
@@ -21,7 +22,9 @@ class EstimationSlashCommand : SlashCommand {
         return CommandData(commandName, "Perform A1c and average glucose estimations").addSubcommands(
                 SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
                         .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
-                        .addOption(OptionType.STRING, commandArgUnit, "Glucose unit (mmol/L, mg/dL)"),
+                        .addOptions(OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                                .addChoice("mmol/L", "mmol/L")
+                                .addChoice("mg/dL", "mg/dL")),
                 SubcommandData(commandModeAverage, "Estimate average glucose from A1c")
                         .addOption(OptionType.NUMBER, commandArgA1c, "A1c value", true)
         )
