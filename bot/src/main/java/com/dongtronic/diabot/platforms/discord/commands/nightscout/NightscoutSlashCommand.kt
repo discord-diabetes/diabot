@@ -5,6 +5,7 @@ import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 
@@ -16,11 +17,12 @@ class NightscoutSlashCommand : SlashCommand {
     private val commandModeUrl = "url"
     private val commandModeToken = "token"
     private val commandModeAll = "all"
-    private val commandModePublic = "public"
-    private val commandModePrivate = "private"
+    private val commandModePrivacy = "privacy"
     private val commandArgUrl = "url"
     private val commandArgToken = "token"
+    private val commandArgPrivacy = "privacy"
     private val commandArgPublic = "public"
+    private val commandArgPrivate = "private"
 
     override val commandName: String = "nightscout"
 
@@ -29,8 +31,7 @@ class NightscoutSlashCommand : SlashCommand {
             groupNameSet -> when (event.subcommandName) {
                 commandModeToken -> setToken(event)
                 commandModeUrl -> setUrl(event)
-                commandModePublic -> setPublic(event)
-                commandModePrivate -> setPrivate(event)
+                commandModePrivacy -> setPrivacy(event)
             }
             groupNameClear -> when (event.subcommandName) {
                 commandModeToken -> clearToken(event)
@@ -61,13 +62,15 @@ class NightscoutSlashCommand : SlashCommand {
         })
     }
 
-    private fun setPublic(event: SlashCommandEvent) {
+    private fun setPrivacy(event: SlashCommandEvent) {
         if (!event.isFromGuild) {
             warnGuildOnly(event)
             return
         }
 
-        val public = event.getOption(commandArgPublic)?.asBoolean ?: true
+        val privacy = event.getOption(commandArgPrivacy)!!.asString
+
+        val public = commandArgPublic == privacy
         val visibility = if (public) "public" else "private"
 
         NightscoutFacade.setPublic(event.user, event.guild!!, public).subscribe({
@@ -145,9 +148,10 @@ class NightscoutSlashCommand : SlashCommand {
                                 .addOption(OptionType.STRING, commandArgUrl, "URL of your Nightscout instance", true),
                         SubcommandData(commandModeToken, "Set Nightscout token")
                                 .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
-                        SubcommandData(commandModePublic, "Set Nightscout to public in the current server")
-                                .addOption(OptionType.BOOLEAN, commandArgPublic, "Whether to make your Nightscout data public. If false, it will be set to private."),
-                        SubcommandData(commandModePrivate, "Set Nightscout to private in the current server")
+                        SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
+                                .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                        .addChoice(commandArgPrivate, commandArgPrivate)
+                                        .addChoice(commandArgPublic, commandArgPublic))
                 ),
                 SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
                         SubcommandData(commandModeUrl, "Clear Nightscout url"),
