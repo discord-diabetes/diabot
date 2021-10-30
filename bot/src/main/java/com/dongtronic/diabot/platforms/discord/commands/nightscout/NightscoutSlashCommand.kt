@@ -18,6 +18,7 @@ class NightscoutSlashCommand : SlashCommand {
     private val commandModeToken = "token"
     private val commandModeAll = "all"
     private val commandModePrivacy = "privacy"
+    private val commandModeGlobalPrivacy = "globalprivacy"
     private val commandArgUrl = "url"
     private val commandArgToken = "token"
     private val commandArgPrivacy = "privacy"
@@ -32,6 +33,7 @@ class NightscoutSlashCommand : SlashCommand {
                 commandModeToken -> setToken(event)
                 commandModeUrl -> setUrl(event)
                 commandModePrivacy -> setPrivacy(event)
+                commandModeGlobalPrivacy -> setGlobalPrivacy(event)
             }
             groupNameClear -> when (event.subcommandName) {
                 commandModeToken -> clearToken(event)
@@ -80,16 +82,20 @@ class NightscoutSlashCommand : SlashCommand {
         })
     }
 
-    private fun setPrivate(event: SlashCommandEvent) {
-        if (!event.isFromGuild) {
-            warnGuildOnly(event)
-            return
+    private fun setGlobalPrivacy(event: SlashCommandEvent) {
+        val privacy = event.getOption(commandArgPrivacy)!!.asString
+
+        val public = commandArgPublic == privacy
+        val visibility = if (public) "public" else "private"
+
+        if (public) {
+            event.reply("You must set your Nightscout data to public on a per-server basis.").setEphemeral(true).queue()
         }
 
-        NightscoutFacade.setPublic(event.user, event.guild!!, false).subscribe({
-            event.reply("Your Nightscout data was made private in this server").setEphemeral(true).queue()
+        NightscoutFacade.setGlobalPublic(event.user, public).subscribe({
+            event.reply("Your Nightscout data has been set to $visibility in all servers").setEphemeral(true).queue()
         }, {
-            event.reply("There was an error while setting your Nightscout data to private in this server. Please try again later.").setEphemeral(true).queue()
+            event.reply("There was an error setting your global Nightscout privacy setting. Please try again later").setEphemeral(true).queue()
         })
     }
 
@@ -151,7 +157,10 @@ class NightscoutSlashCommand : SlashCommand {
                         SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
                                 .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
                                         .addChoice(commandArgPrivate, commandArgPrivate)
-                                        .addChoice(commandArgPublic, commandArgPublic))
+                                        .addChoice(commandArgPublic, commandArgPublic)),
+                        SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
+                                .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                        .addChoice(commandArgPrivate, commandArgPrivate))
                 ),
                 SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
                         SubcommandData(commandModeUrl, "Clear Nightscout url"),

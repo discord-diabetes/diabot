@@ -17,8 +17,7 @@ import kotlin.reflect.KProperty
 
 class NightscoutDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<NightscoutUserDTO>
-            = mongo.getCollection(DiabotCollection.NIGHTSCOUT.getEnv(), NightscoutUserDTO::class.java)
+    val collection: MongoCollection<NightscoutUserDTO> = mongo.getCollection(DiabotCollection.NIGHTSCOUT.getEnv(), NightscoutUserDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -73,8 +72,8 @@ class NightscoutDAO private constructor() {
      * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
      */
     fun deleteUser(userId: String, vararg fields: KProperty<*>): Mono<*> {
-        if (fields.isNullOrEmpty()) {
-            // delete all of the user's data
+        if (fields.isEmpty()) {
+            // delete all the user's data
             return collection.deleteOne(filter(userId)).toMono()
                     .subscribeOn(scheduler)
         }
@@ -104,7 +103,7 @@ class NightscoutDAO private constructor() {
      *
      * @param userId The user ID to change privacy under.
      * @param guildId The guild ID to change privacy under.
-     * @param public Whether or not this guild should be set as public or private.
+     * @param public Whether this guild should be set as public or private.
      * If this is null, the privacy will be toggled instead.
      * @return This user's new privacy setting for the given guild.
      */
@@ -129,6 +128,25 @@ class NightscoutDAO private constructor() {
         return update.flatMap { collection.findOneAndUpdate(userFilter, it, upsertAfter).toMono() }
                 .map { it.publicGuilds.contains(guildId) }
                 .subscribeOn(scheduler)
+    }
+
+    /**
+     * Changes a user's NS privacy settings for all guilds.
+     *
+     * @param userId The user ID to change privacy under.
+     * @param public Whether all guilds should be set as public or private.
+     * @return This user's new global privacy setting
+     */
+    fun changePrivacy(userId: String, public: Boolean): Mono<UpdateResult> {
+        if (!public) {
+            throw IllegalStateException("This method can only be used to set all guilds to private.")
+        }
+
+        val userFilter = filter(userId)
+
+        val update = setValue(NightscoutUserDTO::publicGuilds, emptyList())
+
+        return collection.updateOne(userFilter, update).toMono().subscribeOn(scheduler)
     }
 
     /**

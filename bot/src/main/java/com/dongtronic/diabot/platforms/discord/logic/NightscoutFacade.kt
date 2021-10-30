@@ -24,6 +24,14 @@ object NightscoutFacade {
         return NightscoutDAO.instance.changePrivacy(user.id, guild.id, public)
     }
 
+    fun setGlobalPublic(user: User, public: Boolean): Mono<UpdateResult> {
+        if (!public) {
+            throw IllegalStateException("You can not set all guilds to public at once.")
+        }
+
+        return NightscoutDAO.instance.changePrivacy(user.id, public)
+    }
+
     fun clearToken(user: User): Mono<*> {
         return NightscoutDAO.instance.deleteUser(user.id, NightscoutUserDTO::token)
     }
