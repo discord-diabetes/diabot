@@ -9,6 +9,7 @@ import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionSlash
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationSlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
@@ -20,7 +21,6 @@ import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
-import com.jagrosh.jdautilities.examples.command.AboutCommand
 import com.jagrosh.jdautilities.examples.command.GuildlistCommand
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import java.awt.Color
 import java.util.*
 import javax.security.auth.login.LoginException
 
@@ -78,9 +79,9 @@ object Main {
         // adds commands
         client.addCommands(
                 // command to show information about the bot
-                AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
+                AboutCommand(Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
+                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE, Permission.USE_SLASH_COMMANDS),
 
 
                 // A1c

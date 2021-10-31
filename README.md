@@ -3,7 +3,7 @@
 A diabetes bot for Discord
 
 ## Adding Diabot to your server
-Use [this invite link](https://discordapp.com/oauth2/authorize?client_id=260721031038238720&scope=bot&permissions=403008576&guild_id=0)
+Use [this invite link](https://discordapp.com/oauth2/authorize?client_id=260721031038238720&scope=bot&scope=applications.commands&permissions=403008576&guild_id=0)
 
 ## Administration documentation
 See documentation for admin commands [here](docs/administration.md).
