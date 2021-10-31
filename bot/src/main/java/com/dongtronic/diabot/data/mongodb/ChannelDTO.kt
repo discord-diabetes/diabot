@@ -11,7 +11,6 @@ data class ChannelDTO(
         @JsonEnumDefaultValue
         UNKNOWN,
         ADMIN,
-        NIGHTSCOUT_SHORT,
-        RULES
+        NIGHTSCOUT_SHORT
     }
 }
