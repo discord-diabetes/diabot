@@ -50,7 +50,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 if (cached == null) {
                     logger.debug("Performing network request for endpoint ${request.url.encodedPath}")
                     val networkResponse = chain.proceed(request)
-                    val body = networkResponse.peekBody(1024 * 1024)
+                    val body = networkResponse.peekBody(1024L * 1024L)
                     responseCache[request.toString()] = networkResponse.newBuilder().body(body)
                     networkResponse
                 } else {

@@ -53,7 +53,7 @@ class HelpListener : Consumer<CommandEvent> {
                 // Open the DM channel and send the message
                 event.author.openPrivateChannel().submit()
                         .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
-                        .whenComplete { message: Message?, exc: Throwable? ->
+                        .whenComplete { _: Message?, exc: Throwable? ->
                             if (exc != null) {
                                 // If there's a throwable then assume it failed
                                 sendingError(exc, event)
@@ -77,7 +77,7 @@ class HelpListener : Consumer<CommandEvent> {
 
             // Store the CompletableFuture in the queue so we can cancel it later
             val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
-                    .whenComplete { message: Message?, exc: Throwable? ->
+                    .whenComplete { _: Message?, exc: Throwable? ->
                         if (exc != null) {
                             sendingError(exc, event)
                             // Cancel the other messages in the queue
