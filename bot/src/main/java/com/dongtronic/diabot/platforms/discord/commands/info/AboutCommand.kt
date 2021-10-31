@@ -80,6 +80,7 @@ class AboutCommand(private val color: Color, private val description: String, pr
         name = "about"
         help = "shows info about the bot"
         guildOnly = false
+        @Suppress("UNCHECKED_CAST")
         this.perms = perms as Array<Permission>
         botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
