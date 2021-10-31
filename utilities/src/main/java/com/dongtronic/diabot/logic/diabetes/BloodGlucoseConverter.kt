@@ -2,6 +2,7 @@ package com.dongtronic.diabot.logic.diabetes
 
 import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
+import java.util.*
 
 /**
  * BG conversion logic
@@ -36,11 +37,11 @@ object BloodGlucoseConverter {
     private fun convert(originalValue: Double, unit: String): ConversionDTO {
 
         return when {
-            unit.toUpperCase().contains("MMOL") -> {
+            unit.uppercase().contains("MMOL") -> {
                 val result = originalValue * 18.016
                 ConversionDTO(originalValue, result, GlucoseUnit.MMOL)
             }
-            unit.toUpperCase().contains("MG") -> {
+            unit.uppercase().contains("MG") -> {
                 val result = originalValue / 18.016
                 ConversionDTO(originalValue, result, GlucoseUnit.MGDL)
             }

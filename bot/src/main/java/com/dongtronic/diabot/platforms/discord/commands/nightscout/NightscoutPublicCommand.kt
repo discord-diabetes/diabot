@@ -7,6 +7,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import reactor.core.publisher.Mono
+import java.util.*
 
 class NightscoutPublicCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
     private val nightscoutDAO = NightscoutDAO.instance
@@ -28,7 +29,7 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
             // toggle visibility if no arguments are provided
             nightscoutDAO.changePrivacy(event.author.id, event.guild.id, null)
         } else {
-            val mode = args[0].toUpperCase()
+            val mode = args[0].uppercase()
 
             if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
                 nightscoutDAO.changePrivacy(event.author.id, event.guild.id, true)

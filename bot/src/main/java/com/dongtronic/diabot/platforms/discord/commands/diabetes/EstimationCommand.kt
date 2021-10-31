@@ -8,6 +8,7 @@ import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MMOL
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
+import java.util.*
 
 class EstimationCommand(category: Category) : DiscordCommand(category, null) {
 
@@ -32,7 +33,7 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                 event.replyWarning("Required arguments: `mode` & `value`\nexample: diabot estimate a1c 6.9")
             }
 
-            when (items[0].toUpperCase()) {
+            when (items[0].uppercase()) {
                 "A1C" -> estimateA1c(event)
                 "AVERAGE" -> estimateAverage(event)
                 else -> event.replyError("Unknown mode. Choose either `a1c` or `average`")

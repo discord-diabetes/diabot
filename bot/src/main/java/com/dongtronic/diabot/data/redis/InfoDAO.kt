@@ -3,6 +3,7 @@ package com.dongtronic.diabot.data.redis
 import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
 import redis.clients.jedis.Jedis
+import java.util.*
 
 class InfoDAO private constructor() {
     private var jedis: Jedis? = null
@@ -25,7 +26,7 @@ class InfoDAO private constructor() {
         val projects = listProjects()
 
         projects.forEach { foundProject ->
-            if (foundProject.toUpperCase() == project.toUpperCase()) {
+            if (foundProject.uppercase() == project.uppercase()) {
                 return foundProject
             }
         }
@@ -37,7 +38,7 @@ class InfoDAO private constructor() {
         val projects = listProjects()
 
         projects.forEach { foundProject ->
-            if (foundProject.toUpperCase() == project.toUpperCase()) {
+            if (foundProject.uppercase() == project.uppercase()) {
                 return projects.indexOf(foundProject)
             }
         }

@@ -8,6 +8,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
 import reactor.core.publisher.Mono
+import java.util.*
 
 class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
     companion object {
@@ -45,7 +46,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
 
             // verify options and set
             for (opt in options) {
-                if (!validOptions.contains(opt.toLowerCase())) {
+                if (!validOptions.contains(opt.lowercase())) {
                     event.replyError("Unsupported display option provided (`$opt`), use `diabot nightscout display` to see possible options")
                     return
                 }

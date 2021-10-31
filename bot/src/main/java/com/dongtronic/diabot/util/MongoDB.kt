@@ -15,7 +15,9 @@ import org.litote.kmongo.reactivestreams.find
 import org.litote.kmongo.sample
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.NoSuchElementException
 
 class MongoDB {
     private val clientSettings: MongoClientSettings = MongoClientSettings.builder()
@@ -52,7 +54,7 @@ class MongoDB {
  * @return The value of the key or the default value.
  */
 fun mongoEnv(key: String, default: String? = null): String {
-    val mongoKey = "MONGO_" + key.toUpperCase()
+    val mongoKey = "MONGO_" + key.uppercase()
 
     if (default == null)
         return System.getenv(mongoKey)
