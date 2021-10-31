@@ -10,6 +10,7 @@ import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
 import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.Nightscout
@@ -194,7 +195,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             }
             args.isNotEmpty() && args[0].matches("^https?://.*".toRegex()) -> {
                 // is a URL
-                val url = NightscoutSetUrlCommand.validateNightscoutUrl(args[0])
+                val url = NightscoutFacade.validateNightscoutUrl(args[0])
                 getDataFromDomain(url, event)
             }
             else -> {
