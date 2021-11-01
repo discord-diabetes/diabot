@@ -3,6 +3,7 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -13,6 +14,7 @@ class ConversionApplicationCommand : ApplicationCommand {
     private val commandArgUnit = "unit"
 
     override val commandName: String = "convert"
+    override val buttonIds: Set<String> = emptySet()
 
     override fun config(): CommandData {
         return CommandData(commandName, "Convert blood glucose values between mmol/L and mg/dL")
@@ -41,5 +43,9 @@ class ConversionApplicationCommand : ApplicationCommand {
         }
 
         event.reply(reply).queue()
+    }
+
+    override fun execute(event: ButtonClickEvent) {
+        TODO("Not yet implemented")
     }
 }
