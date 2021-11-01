@@ -5,16 +5,16 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
-import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionSlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
-import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationSlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
@@ -142,13 +142,13 @@ object Main {
 
     private fun registerSlashCommands(shardManager: ShardManager) {
 
-        val slashCommandListener = SlashCommandListener(
-                EstimationSlashCommand(),
-                NightscoutSlashCommand(),
-                ConversionSlashCommand()
+        val applicationCommandListener = ApplicationCommandListener(
+                EstimationApplicationCommand(),
+                NightscoutApplicationCommand(),
+                ConversionApplicationCommand()
         )
 
-        val commandConfigs = slashCommandListener.commands.map { command -> command.config() }.toList()
+        val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()
 
         if (debug) {
             val guildId = System.getenv("HOME_GUILD_ID")
@@ -160,7 +160,7 @@ object Main {
             jda.updateCommands().addCommands(commandConfigs).queue()
         }
 
-        shardManager.addEventListener(slashCommandListener)
+        shardManager.addEventListener(applicationCommandListener)
     }
 
 }

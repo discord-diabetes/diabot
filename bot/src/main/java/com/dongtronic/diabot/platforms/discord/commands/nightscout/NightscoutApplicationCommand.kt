@@ -1,19 +1,23 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
-import com.dongtronic.diabot.platforms.discord.commands.SlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
+import com.dongtronic.diabot.util.logger
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
+import net.dv8tion.jda.api.interactions.components.Button
 
-class NightscoutSlashCommand : SlashCommand {
-
+class NightscoutApplicationCommand : ApplicationCommand {
+    private val logger = logger()
     private val groupNameSet = "set"
     private val groupNameClear = "clear"
     private val groupNameGet = "get"
+    private val groupNameDelete = "delete"
     private val commandModeUrl = "url"
     private val commandModeToken = "token"
     private val commandModeAll = "all"
@@ -24,8 +28,12 @@ class NightscoutSlashCommand : SlashCommand {
     private val commandArgPrivacy = "privacy"
     private val commandArgPublic = "public"
     private val commandArgPrivate = "private"
+    private val commandButtonDeleteConfirm = "nsdeleteyes"
+    private val commandButtonDeleteCancel = "nsdeleteno"
 
     override val commandName: String = "nightscout"
+
+    override val buttonIds: Set<String> = setOf(commandButtonDeleteConfirm, commandButtonDeleteCancel)
 
     override fun execute(event: SlashCommandEvent) {
         when (event.subcommandGroup) {
@@ -38,12 +46,20 @@ class NightscoutSlashCommand : SlashCommand {
             groupNameClear -> when (event.subcommandName) {
                 commandModeToken -> clearToken(event)
                 commandModeUrl -> clearUrl(event)
-                commandModeAll -> clearAll(event)
+                commandModeAll -> confirmDeleteData(event)
             }
             groupNameGet -> when (event.subcommandName) {
                 commandModeUrl -> getUrl(event)
                 commandModeToken -> getToken(event)
             }
+            groupNameDelete -> confirmDeleteData(event)
+        }
+    }
+
+    override fun execute(event: ButtonClickEvent) {
+        when (event.componentId) {
+            commandButtonDeleteConfirm -> deleteData(event)
+            commandButtonDeleteCancel -> cancelDeleteData(event)
         }
     }
 
@@ -115,14 +131,6 @@ class NightscoutSlashCommand : SlashCommand {
         })
     }
 
-    private fun clearAll(event: SlashCommandEvent) {
-        NightscoutFacade.clearAll(event.user).subscribe({
-            event.reply("Your Nightscout data has been deleted").setEphemeral(true).queue()
-        }, {
-            event.reply("There was an error while removing your Nightscout data. Please try again later.").setEphemeral(true).queue()
-        })
-    }
-
     private fun getUrl(event: SlashCommandEvent) {
         NightscoutFacade.getUser(event.user).subscribe {
             if (it.url != null) {
@@ -141,6 +149,27 @@ class NightscoutSlashCommand : SlashCommand {
                 event.reply("You do not have a configured Nightscout token. Use `/nightscout set token` to configure it.").setEphemeral(true).queue()
             }
         }
+    }
+
+    private fun confirmDeleteData(event: SlashCommandEvent) {
+        event.reply("Are you sure you wish to **delete** your Nightscout data?\n**This will remove all your Nightscout settings**")
+                .addActionRow(
+                        Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings"),
+                        Button.secondary(commandButtonDeleteCancel, "Cancel")
+                ).setEphemeral(true).queue()
+    }
+
+    private fun deleteData(event: ButtonClickEvent) {
+        NightscoutFacade.clearAll(event.user).subscribe({
+            event.editMessage("Your Nightscout settings have been deleted").queue()
+        }, {
+            event.editMessage("There was an error while removing your Nightscout settings. Please try again later.").queue()
+            logger.error("Error while deleting Nightscout data", it)
+        })
+    }
+
+    private fun cancelDeleteData(event: ButtonClickEvent) {
+        event.editMessage("Your Nightscout settings were **not** deleted.").queue()
     }
 
     private fun warnGuildOnly(event: SlashCommandEvent) {
