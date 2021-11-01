@@ -38,8 +38,12 @@ class AboutCommand(category: Category, private val color: Color, private val des
         }
 
         val builder = EmbedBuilder()
-        builder.setColor(if (event.guild == null) color else event.guild.selfMember.color)
-        builder.setAuthor("All about " + event.selfUser.name + "!", null, event.selfUser.avatarUrl)
+        if (event.guild == null) {
+            builder.setColor(color)
+        } else {
+            builder.setColor(event.guild.selfMember.color)
+        }
+        builder.setAuthor("All about " + event.selfUser.name + "!", "https://github.com/reddit-diabetes/diabot", event.selfUser.avatarUrl)
         val join = !(event.client.serverInvite == null || event.client.serverInvite.isEmpty())
         val invite = oauthLink!!.isNotEmpty()
 
@@ -76,10 +80,10 @@ class AboutCommand(category: Category, private val color: Color, private val des
         description.append(" ```")
         builder.setDescription(description)
 
-        builder.addField("Stats", """${event.client.totalGuilds} Servers Shard ${event.jda.shardInfo.shardId + 1}/${event.jda.shardInfo.shardTotal}""", true)
+        builder.addField("Stats", """${event.client.totalGuilds} Servers \\n Shard ${event.jda.shardInfo.shardId + 1}/${event.jda.shardInfo.shardTotal}""", true)
 
-        builder.addField("This shard", """${event.jda.users.size} Users ${event.jda.guilds.size} Servers""", true)
-        builder.addField("", """${event.jda.textChannels.size} Text Channels ${event.jda.voiceChannels.size} Voice Channels""", true)
+        builder.addField("This shard", """${event.jda.users.size} Users \\n ${event.jda.guilds.size} Servers""", true)
+        builder.addField("", """${event.jda.textChannels.size} Text Channels \\n ${event.jda.voiceChannels.size} Voice Channels""", true)
         builder.setFooter("Last restart", null)
         builder.setTimestamp(event.client.startTime)
         event.reply(builder.build())
