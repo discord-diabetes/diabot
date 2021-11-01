@@ -273,7 +273,7 @@ class HelpListener : Consumer<CommandEvent> {
         for (command in commands) {
             var categoryName = "Misc"
             try {
-                categoryName = command.category.name
+                categoryName = command.category?.name ?: "Misc"
             } catch (ex: IllegalStateException) {
                 // Ignored on purpose
             }

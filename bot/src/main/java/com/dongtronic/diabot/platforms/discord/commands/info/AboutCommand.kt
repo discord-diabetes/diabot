@@ -1,6 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
-import com.jagrosh.jdautilities.command.Command
+import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
 import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo
 import net.dv8tion.jda.api.EmbedBuilder
@@ -8,11 +8,20 @@ import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 import java.awt.Color
 
-class AboutCommand(private val color: Color, private val description: String, private val features: Array<String>, vararg perms: Permission) : Command() {
+class AboutCommand(category: Category, private val color: Color, private val description: String, private val features: Array<String>, vararg perms: Permission) : DiscordCommand(category, null) {
     private val replacementIcon = "+"
     private val perms: Array<Permission>
     private var oauthLink: String? = null
     private val log = LoggerFactory.getLogger("OAuth2")
+
+    init {
+        this.name = "about"
+        this.help = "About diabot"
+        this.guildOnly = false
+        this.aliases = arrayOf()
+        this.examples = arrayOf()
+        this.children = arrayOf()
+    }
 
     override fun execute(event: CommandEvent) {
         if (oauthLink == null) {
