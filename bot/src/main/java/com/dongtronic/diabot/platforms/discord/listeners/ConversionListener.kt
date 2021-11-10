@@ -45,11 +45,11 @@ class ConversionListener : ListenerAdapter() {
             numberString = unitMatcher.group(4)
             unitString = unitMatcher.group(5)
             matched = true
-            newMessageText = removeGroup(previousMessageText, unitMatcher, 4)
+            newMessageText = removeGroup(previousMessageText, unitMatcher)
         }else if (inlineMatcher.matches()) {
             numberString = inlineMatcher.group(1)
             matched = true
-            newMessageText = removeGroup(previousMessageText, inlineMatcher, 1)
+            newMessageText = removeGroup(previousMessageText, inlineMatcher)
         }
 
         if (numberString.isEmpty()) {
@@ -124,9 +124,10 @@ class ConversionListener : ListenerAdapter() {
 
     }
 
-    private fun removeGroup(message: String, m: Matcher, group: Int): String {
-        val start = m.start(group)
-        val end = m.end(group)
-        return message.substring(0, start) + message.substring(end)
+    private fun removeGroup(message: String, m: Matcher): String {
+//        val start = m.start(group)
+//        val end = m.end(group)
+        return message.replace(m.pattern().toRegex(), "")
+//        return message.substring(0, start) + message.substring(end)
     }
 }
