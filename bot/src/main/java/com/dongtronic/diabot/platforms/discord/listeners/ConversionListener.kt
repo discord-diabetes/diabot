@@ -125,9 +125,6 @@ class ConversionListener : ListenerAdapter() {
     }
 
     private fun removeGroup(message: String, m: Matcher): String {
-//        val start = m.start(group)
-//        val end = m.end(group)
         return message.replace(m.pattern().toRegex(), "")
-//        return message.substring(0, start) + message.substring(end)
     }
 }
