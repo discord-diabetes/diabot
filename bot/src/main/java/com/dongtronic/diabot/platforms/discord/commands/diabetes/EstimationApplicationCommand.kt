@@ -2,14 +2,15 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
-import com.dongtronic.diabot.platforms.discord.commands.SlashCommand
+import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 
-class EstimationSlashCommand : SlashCommand {
+class EstimationApplicationCommand : ApplicationCommand {
     private val commandModeA1c = "a1c"
     private val commandModeAverage = "average"
     private val commandArgA1c = "a1c"
@@ -17,6 +18,7 @@ class EstimationSlashCommand : SlashCommand {
     private val commandArgAvg = "average"
 
     override val commandName: String = "estimate"
+    override val buttonIds: Set<String> = emptySet()
 
     override fun config(): CommandData {
         return CommandData(commandName, "Perform A1c and average glucose estimations").addSubcommands(
@@ -35,6 +37,10 @@ class EstimationSlashCommand : SlashCommand {
             commandModeAverage -> estimateAverage(event)
             commandModeA1c -> estimateA1c(event)
         }
+    }
+
+    override fun execute(event: ButtonClickEvent) {
+        TODO("Not yet implemented")
     }
 
     private fun estimateAverage(event: SlashCommandEvent) {
