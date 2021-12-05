@@ -29,7 +29,7 @@ class AboutCommand(category: Category, private val color: Color, private val des
                 val info = event.jda.retrieveApplicationInfo().complete()
                 if (info.isBotPublic) {
                     info.setRequiredScopes("applications.commands")
-                    info.getInviteUrl(0L, *perms)
+                    info.getInviteUrl(*perms)
                 } else ""
             } catch (e: Exception) {
                 log.error("Could not generate invite link ", e)
