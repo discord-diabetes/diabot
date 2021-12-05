@@ -60,12 +60,12 @@ class AboutCommand(category: Category, private val color: Color, private val des
 
         val description = StringBuilder()
                 .append("Hello! I am **${event.selfUser.name}**, ")
-                .append(description)
+                .append("$description.")
                 .append("\nI was written in Kotlin by **$author**")
-                .append("using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
-                .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA)")
-                .append("\nType `${event.client.textualPrefix} ${event.client.helpWord}` to see my commands!")
-                .append(inviteMessage)
+                .append(" using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
+                .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
+                .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
+                .append(" $inviteMessage.")
                 .append("\n\nSome of my features include: ```css")
 
         for (feature in features) {
