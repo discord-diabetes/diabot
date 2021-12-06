@@ -29,7 +29,7 @@ class AboutCommand(category: Category, private val color: Color, private val des
                 val info = event.jda.retrieveApplicationInfo().complete()
                 if (info.isBotPublic) {
                     info.setRequiredScopes("applications.commands")
-                    info.getInviteUrl(0L, *perms)
+                    info.getInviteUrl(*perms)
                 } else ""
             } catch (e: Exception) {
                 log.error("Could not generate invite link ", e)
@@ -60,12 +60,12 @@ class AboutCommand(category: Category, private val color: Color, private val des
 
         val description = StringBuilder()
                 .append("Hello! I am **${event.selfUser.name}**, ")
-                .append(description)
+                .append("$description.")
                 .append("\nI was written in Kotlin by **$author**")
-                .append("using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
-                .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA)")
-                .append("\nType `${event.client.textualPrefix} ${event.client.helpWord}` to see my commands!")
-                .append(inviteMessage)
+                .append(" using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
+                .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
+                .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
+                .append(" $inviteMessage.")
                 .append("\n\nSome of my features include: ```css")
 
         for (feature in features) {
@@ -80,10 +80,10 @@ class AboutCommand(category: Category, private val color: Color, private val des
         description.append(" ```")
         builder.setDescription(description)
 
-        builder.addField("Stats", """${event.client.totalGuilds} Servers \\n Shard ${event.jda.shardInfo.shardId + 1}/${event.jda.shardInfo.shardTotal}""", true)
+        builder.addField("Stats", "${event.client.totalGuilds} Servers \n Shard ${event.jda.shardInfo.shardId + 1}/${event.jda.shardInfo.shardTotal}", true)
 
-        builder.addField("This shard", """${event.jda.users.size} Users \\n ${event.jda.guilds.size} Servers""", true)
-        builder.addField("", """${event.jda.textChannels.size} Text Channels \\n ${event.jda.voiceChannels.size} Voice Channels""", true)
+        builder.addField("This shard", "${event.jda.users.size} Users \n ${event.jda.guilds.size} Servers", true)
+        builder.addField("", "${event.jda.textChannels.size} Text Channels \n ${event.jda.voiceChannels.size} Voice Channels", true)
         builder.setFooter("Last restart", null)
         builder.setTimestamp(event.client.startTime)
         event.reply(builder.build())
