@@ -4,8 +4,8 @@ import com.dongtronic.diabot.data.ConversionDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class BloodGlucoseConverterTest {
 
@@ -17,7 +17,7 @@ class BloodGlucoseConverterTest {
 
         val expected = ConversionDTO(5.5, 99.0, GlucoseUnit.MMOL)
 
-        Assert.assertEquals(expected, actual)
+        Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -27,7 +27,7 @@ class BloodGlucoseConverterTest {
 
         val expected = ConversionDTO(100.0, 5.6, GlucoseUnit.MGDL)
 
-        Assert.assertEquals(expected, actual)
+        Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -37,7 +37,7 @@ class BloodGlucoseConverterTest {
 
         val expected = ConversionDTO(5.5, 99.0, GlucoseUnit.MMOL)
 
-        Assert.assertEquals(expected, actual)
+        Assertions.assertEquals(expected, actual)
     }
 
     @Test
@@ -47,26 +47,32 @@ class BloodGlucoseConverterTest {
 
         val expected = ConversionDTO(100.0, 5.6, GlucoseUnit.MGDL)
 
-        Assert.assertEquals(expected, actual)
+        Assertions.assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     @Throws(Exception::class)
     fun negative() {
-        BloodGlucoseConverter.convert("-5.5", "mmol")
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            BloodGlucoseConverter.convert("-5.5", "mmol")
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     @Throws(Exception::class)
     fun tooHigh() {
-        BloodGlucoseConverter.convert("1000", "mmol")
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            BloodGlucoseConverter.convert("1000", "mmol")
+        }
     }
 
 
-    @Test(expected = UnknownUnitException::class)
+    @Test
     @Throws(Exception::class)
     fun invalidUnit() {
-        BloodGlucoseConverter.convert("5.5", "what")
+        Assertions.assertThrows(UnknownUnitException::class.java) {
+            BloodGlucoseConverter.convert("5.5", "what")
+        }
     }
 
     @Test
@@ -76,12 +82,14 @@ class BloodGlucoseConverterTest {
 
         val expected = ConversionDTO(27.0, 1.5, 486.0)
 
-        Assert.assertEquals(actual, expected)
+        Assertions.assertEquals(actual, expected)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     @Throws(Exception::class)
     fun noInput() {
-        BloodGlucoseConverter.convert("", "")
+        Assertions.assertThrows(IllegalArgumentException::class.java) {
+            BloodGlucoseConverter.convert("", "")
+        }
     }
 }

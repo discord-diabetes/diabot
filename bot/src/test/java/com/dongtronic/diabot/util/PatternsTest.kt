@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.util
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 class PatternsTest {
 
@@ -12,10 +12,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -24,10 +24,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -36,10 +36,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -48,10 +48,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -60,10 +60,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -72,10 +72,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -84,10 +84,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -96,10 +96,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     /////
@@ -110,10 +110,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -122,10 +122,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -134,10 +134,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -146,10 +146,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -158,10 +158,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -170,10 +170,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -182,10 +182,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -194,10 +194,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -206,10 +206,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -218,10 +218,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -230,10 +230,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -242,10 +242,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -254,10 +254,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5.5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5.5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -266,10 +266,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("5", matcher.group(4))
-        Assert.assertEquals("mmol", matcher.group(5))
+        Assertions.assertEquals("5", matcher.group(4))
+        Assertions.assertEquals("mmol", matcher.group(5))
     }
 
     @Test
@@ -278,10 +278,10 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 
     @Test
@@ -290,9 +290,9 @@ class PatternsTest {
 
         val matcher = Patterns.unitBgPattern.matcher(message)
 
-        Assert.assertTrue(matcher.matches())
+        Assertions.assertTrue(matcher.matches())
 
-        Assert.assertEquals("100.5", matcher.group(4))
-        Assert.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals("100.5", matcher.group(4))
+        Assertions.assertEquals("mg", matcher.group(5))
     }
 }
