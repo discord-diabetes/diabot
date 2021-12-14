@@ -1,298 +1,85 @@
 package com.dongtronic.diabot.util
 
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
 
 class PatternsTest {
 
 
-    @Test
-    fun unitStartNoSpacesMg() {
-        val message = "100mg"
+    @ParameterizedTest
+    @MethodSource("unitBgProvider")
+    fun unitBgPatternTest(data: BgParseData) {
+        val input = data.input
+        val expected = data.expected
+        val result = Patterns.unitBgPattern.matcher(input)
 
-        val matcher = Patterns.unitBgPattern.matcher(message)
+        Assertions.assertTrue(result.matches())
 
-        Assertions.assertTrue(matcher.matches())
+        val actualValue = result.group(4)
+        val actualUnit = result.group(5)
 
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
+        Assertions.assertEquals(expected.value, actualValue)
+        Assertions.assertEquals(expected.unit, actualUnit)
     }
 
-    @Test
-    fun unitStartNoSpacesMmol() {
-        val message = "5.5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartNoSpacesMgDecimal() {
-        val message = "100.5mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartNoSpacesMmolWhole() {
-        val message = "5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartSpacesMg() {
-        val message = "100 mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartSpacesMmol() {
-        val message = "5.5 mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartSpacesMgDecimal() {
-        val message = "100.5 mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun unitStartSpacesMmolWhole() {
-        val message = "5 mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    /////
-
-    @Test
-    fun textStartNoSpacesMg() {
-        val message = "bla bla 100mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNoSpacesMmol() {
-        val message = "bla bla 5.5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNoSpacesMgDecimal() {
-        val message = "bla bla 100.5mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNoSpacesMmolWhole() {
-        val message = "bla bla 5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun textStartSpacesMg() {
-        val message = "bla bla 100 mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartSpacesMmol() {
-        val message = "bla bla 5.5 mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun textStartSpacesMgDecimal() {
-        val message = "bla bla 100.5 mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartSpacesMmolWhole() {
-        val message = "bla bla 5 mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun negativeNoSpacesMmol() {
-        val message = "-5.5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun negativeNoSpacesMmolWhole() {
-        val message = "-5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun negativeNoSpacesMg() {
-        val message = "-100mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun negativeNoSpacesMgDecimal() {
-        val message = "-100.5mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNegativeMmol() {
-        val message = "bla bla -5.5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5.5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNegativeMmolWhole() {
-        val message = "bla bla -5mmol"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("5", matcher.group(4))
-        Assertions.assertEquals("mmol", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNegativeMg() {
-        val message = "bla bla -100mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
-
-    @Test
-    fun textStartNegativeMgDecimal() {
-        val message = "bla bla -100.5mg"
-
-        val matcher = Patterns.unitBgPattern.matcher(message)
-
-        Assertions.assertTrue(matcher.matches())
-
-        Assertions.assertEquals("100.5", matcher.group(4))
-        Assertions.assertEquals("mg", matcher.group(5))
-    }
+    private fun unitBgProvider() = Stream.of(
+            BgParseData(input = "100.5mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "100mg", expected = BgData("100", "mg")),
+            BgParseData(input = "5.5mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "5mmol", expected = BgData("5", "mmol")),
+
+            // spaces
+            BgParseData(input = "100.5 mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "100 mg", expected = BgData("100", "mg")),
+            BgParseData(input = "5.5 mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "5 mmol", expected = BgData("5", "mmol")),
+
+            // text
+            BgParseData(input = "bla bla 100.5mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "bla bla 100mg", expected = BgData("100", "mg")),
+            BgParseData(input = "bla bla 5.5mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "bla bla 5mmol", expected = BgData("5", "mmol")),
+
+            // text + spaces
+            BgParseData(input = "bla bla 100.5 mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "bla bla 100 mg", expected = BgData("100", "mg")),
+            BgParseData(input = "bla bla 5.5 mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "bla bla 5 mmol", expected = BgData("5", "mmol")),
+
+            // negative
+            BgParseData(input = "-100.5mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "-100mg", expected = BgData("100", "mg")),
+            BgParseData(input = "-5.5mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "-5mmol", expected = BgData("5", "mmol")),
+
+            // negative + spaces
+            BgParseData(input = "-100.5 mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "-100 mg", expected = BgData("100", "mg")),
+            BgParseData(input = "-5.5 mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "-5 mmol", expected = BgData("5", "mmol")),
+
+            // negative + text
+            BgParseData(input = "bla bla -100.5mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "bla bla -100mg", expected = BgData("100", "mg")),
+            BgParseData(input = "bla bla -5.5mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "bla bla -5mmol", expected = BgData("5", "mmol")),
+
+            // negative + text + spaces
+            BgParseData(input = "bla bla -100.5 mg", expected = BgData("100.5", "mg")),
+            BgParseData(input = "bla bla -100 mg", expected = BgData("100", "mg")),
+            BgParseData(input = "bla bla -5.5 mmol", expected = BgData("5.5", "mmol")),
+            BgParseData(input = "bla bla -5 mmol", expected = BgData("5", "mmol")),
+    )
+
+    data class BgData(
+            val value: String,
+            val unit: String
+    )
+
+    data class BgParseData(
+            val input: String,
+            val expected: BgData
+    )
 }
