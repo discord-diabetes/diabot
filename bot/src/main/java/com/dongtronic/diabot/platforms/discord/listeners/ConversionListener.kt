@@ -8,7 +8,6 @@ import com.dongtronic.diabot.util.Patterns
 import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import java.util.regex.Matcher
 
 class ConversionListener : ListenerAdapter() {
     private val logger = logger()
@@ -31,35 +30,23 @@ class ConversionListener : ListenerAdapter() {
     private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String): String {
         if (event.author.isBot) return ""
 
+        val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
+        val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
 
-        var matched = false
-        var newMessageText = ""
+        return unitMatches
+                .plus(inlineMatches)
+                .filter { it.groups["value"] != null }
+                .sortedBy { it.range.first }
+                .joinToString("\n") {
+                    val number = it.groups["value"]!!.value
+                    val unit = if (it.groups.size == 3) {
+                        it.groups["unit"]?.value ?: ""
+                    } else {
+                        ""
+                    }
 
-        val inlineMatcher = Patterns.inlineBgPattern.matcher(previousMessageText)
-        val unitMatcher = Patterns.unitBgPattern.matcher(previousMessageText)
-
-        var numberString = ""
-        var unitString = ""
-
-        if (unitMatcher.matches()) {
-            numberString = unitMatcher.group(4)
-            unitString = unitMatcher.group(5)
-            matched = true
-            newMessageText = removeGroup(previousMessageText, unitMatcher)
-        }else if (inlineMatcher.matches()) {
-            numberString = inlineMatcher.group(1)
-            matched = true
-            newMessageText = removeGroup(previousMessageText, inlineMatcher)
-        }
-
-        if (numberString.isEmpty()) {
-            return ""
-        }
-
-        if (matched) {
-            return recursiveReading(event, newMessageText) + getResult(numberString, unitString, event)
-        }
-        return ""
+                    getResult(number, unit, event)
+                }
     }
 
     private fun getResult(originalNumString: String, originalUnitString: String, event: GuildMessageReceivedEvent): String {
@@ -105,7 +92,7 @@ class ConversionListener : ListenerAdapter() {
                 event.message.addReaction("\uD83D\uDCAF").queue()
             }
 
-            return finalMessage + "\n"
+            return finalMessage
 
         } catch (ex: IllegalArgumentException) {
             // Ignored on purpose
@@ -122,9 +109,5 @@ class ConversionListener : ListenerAdapter() {
             channel.sendMessage(message).queue()
         }
 
-    }
-
-    private fun removeGroup(message: String, m: Matcher): String {
-        return message.replace(m.pattern().toRegex(), "")
     }
 }

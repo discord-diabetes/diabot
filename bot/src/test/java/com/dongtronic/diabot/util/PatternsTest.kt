@@ -13,12 +13,10 @@ class PatternsTest {
     fun unitBgPatternTest(data: BgParseData) {
         val input = data.input
         val expected = data.expected
-        val result = Patterns.unitBgPattern.matcher(input)
+        val result = Patterns.unitBgPattern.find(input)!!
 
-        Assertions.assertTrue(result.matches())
-
-        val actualValue = result.group(4)
-        val actualUnit = result.group(5)
+        val actualValue = result.groups["value"]!!.value
+        val actualUnit = result.groups["unit"]!!.value
 
         Assertions.assertEquals(expected.value, actualValue)
         Assertions.assertEquals(expected.unit, actualUnit)
