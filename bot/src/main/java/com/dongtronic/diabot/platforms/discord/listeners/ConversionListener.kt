@@ -37,6 +37,14 @@ class ConversionListener : ListenerAdapter() {
                 .plus(inlineMatches)
                 .filter { it.groups["value"] != null }
                 .sortedBy { it.range.first }
+                .distinctBy {
+                    it.groups["value"]!!.value +
+                            if (it.groups.size == 3) {
+                                it.groups["unit"]?.value ?: ""
+                            } else {
+                                ""
+                            }
+                }
 
         val multipleMatches = sortedMatches.count() > 1
 
