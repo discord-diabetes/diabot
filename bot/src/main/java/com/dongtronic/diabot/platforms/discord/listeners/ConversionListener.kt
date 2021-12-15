@@ -33,30 +33,30 @@ class ConversionListener : ListenerAdapter() {
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
         val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
 
+        val getNumberUnit: (MatchResult) -> (Pair<String, String>) = {
+            it.groups["value"]!!.value to
+                    if (it.groups.size == 3) {
+                        it.groups["unit"]?.value ?: ""
+                    } else {
+                        ""
+                    }
+        }
+
         val sortedMatches = unitMatches
                 .plus(inlineMatches)
                 .filter { it.groups["value"] != null }
                 .sortedBy { it.range.first }
                 .distinctBy {
-                    it.groups["value"]!!.value +
-                            if (it.groups.size == 3) {
-                                it.groups["unit"]?.value ?: ""
-                            } else {
-                                ""
-                            }
+                    val pair = getNumberUnit(it)
+                    pair.first + pair.second
                 }
 
         val multipleMatches = sortedMatches.count() > 1
 
         return sortedMatches.joinToString("\n") {
-            val number = it.groups["value"]!!.value
-            val unit = if (it.groups.size == 3) {
-                it.groups["unit"]?.value ?: ""
-            } else {
-                ""
-            }
+            val resultPair = getNumberUnit(it)
 
-            getResult(number, unit, event, multipleMatches)
+            getResult(resultPair.first, resultPair.second, event, multipleMatches)
         }
     }
 
