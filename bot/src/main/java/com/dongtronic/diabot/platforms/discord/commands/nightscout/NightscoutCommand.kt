@@ -8,6 +8,7 @@ import com.dongtronic.diabot.exceptions.NightscoutDataException
 import com.dongtronic.diabot.exceptions.NightscoutPrivateException
 import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
+import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
@@ -405,15 +406,8 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param response The message to react to.
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
-        // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-        if (dto.glucose!!.mgdl == 69 || dto.glucose!!.mmol == 6.9) {
-            response.addReaction("\uD83D\uDE0F").queue()
-        }
-        // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-        if (dto.glucose!!.mgdl == 100
-                || dto.glucose!!.mmol == 5.5
-                || dto.glucose!!.mmol == 10.0) {
-            response.addReaction("\uD83D\uDCAF").queue()
+        BloodGlucoseConverter.getReactions(dto.glucose!!.mmol, dto.glucose!!.mgdl).forEach {
+            response.addReaction(it).queue()
         }
     }
 
