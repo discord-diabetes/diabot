@@ -50,23 +50,20 @@ class ConversionListener : ListenerAdapter() {
     }
 
     private fun getResult(originalNumString: String, originalUnitString: String, event: GuildMessageReceivedEvent): String {
-
-        var finalMessage = ""
-
-        var numberString = originalNumString
+        val numberString = originalNumString.replace(',', '.')
 
         try {
-            if (numberString.contains(',')) {
-                numberString = numberString.replace(',', '.')
-            }
-
             val result: ConversionDTO = if (originalUnitString.length > 1) {
                 BloodGlucoseConverter.convert(numberString, originalUnitString)
             } else {
                 BloodGlucoseConverter.convert(numberString, null)
             }
 
-            finalMessage += when {
+            BloodGlucoseConverter.getReactions(result).forEach {
+                event.message.addReaction(it).queue()
+            }
+
+            return when {
                 result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
                 result.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
                 else -> {
@@ -79,19 +76,13 @@ class ConversionListener : ListenerAdapter() {
                     String.format(reply, numberString, result.mmol, numberString, result.mgdl)
                 }
             }
-
-            BloodGlucoseConverter.getReactions(result).forEach {
-                event.message.addReaction(it).queue()
-            }
-
-            return finalMessage
-
         } catch (ex: IllegalArgumentException) {
             // Ignored on purpose
             logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
         } catch (ex: UnknownUnitException) {
             // Ignored on purpose
         }
+
         return ""
     }
 
