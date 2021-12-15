@@ -33,23 +33,30 @@ class ConversionListener : ListenerAdapter() {
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
         val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
 
-        return unitMatches
+        val sortedMatches = unitMatches
                 .plus(inlineMatches)
                 .filter { it.groups["value"] != null }
                 .sortedBy { it.range.first }
-                .joinToString("\n") {
-                    val number = it.groups["value"]!!.value
-                    val unit = if (it.groups.size == 3) {
-                        it.groups["unit"]?.value ?: ""
-                    } else {
-                        ""
-                    }
 
-                    getResult(number, unit, event)
-                }
+        val multipleMatches = sortedMatches.count() > 1
+
+        return sortedMatches.joinToString("\n") {
+            val number = it.groups["value"]!!.value
+            val unit = if (it.groups.size == 3) {
+                it.groups["unit"]?.value ?: ""
+            } else {
+                ""
+            }
+
+            getResult(number, unit, event, multipleMatches)
+        }
     }
 
-    private fun getResult(originalNumString: String, originalUnitString: String, event: GuildMessageReceivedEvent): String {
+    private fun getResult(originalNumString: String,
+                          originalUnitString: String,
+                          event: GuildMessageReceivedEvent,
+                          multipleMatches: Boolean = false): String {
+        val separator = if (multipleMatches) "─ " else ""
         val numberString = originalNumString.replace(',', '.')
 
         try {
@@ -64,13 +71,13 @@ class ConversionListener : ListenerAdapter() {
             }
 
             return when {
-                result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
-                result.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
+                result.inputUnit === GlucoseUnit.MMOL -> String.format("$separator%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
+                result.inputUnit === GlucoseUnit.MGDL -> String.format("$separator%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
                 else -> {
                     val reply = arrayOf(
-                            "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
-                            "%s mg/dL is **%s mmol/L**",
-                            "%s mmol/L is **%s mg/dL**").joinToString(
+                            "$separator*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
+                            "┌%s mg/dL is **%s mmol/L**",
+                            "└%s mmol/L is **%s mg/dL**").joinToString(
                             "%n")
 
                     String.format(reply, numberString, result.mmol, numberString, result.mgdl)
