@@ -32,13 +32,11 @@ class ConversionListener : ListenerAdapter() {
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
         val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
 
-        val getNumberUnit: (MatchResult) -> (Pair<String, String>) = {
-            it.groups["value"]!!.value to
-                    if (it.groups.size == 3) {
-                        it.groups["unit"]?.value ?: ""
-                    } else {
-                        ""
-                    }
+        val getNumberUnit: (MatchResult) -> (Pair<String, String?>) = {
+            val number = it.groups["value"]!!.value
+            val unit = kotlin.runCatching { it.groups["unit"]?.value }.getOrNull()
+
+            number to unit
         }
 
         val sortedMatches = unitMatches
