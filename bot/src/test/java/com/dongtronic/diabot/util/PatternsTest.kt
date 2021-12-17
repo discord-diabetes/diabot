@@ -7,13 +7,63 @@ import java.util.stream.Stream
 
 class PatternsTest {
 
+    @ParameterizedTest
+    @MethodSource("inlineBgProvider")
+    fun inlineBgPatternTest(data: BgParseData) {
+        val input = data.input
+        val expected = data.expected
+        val result = Patterns.inlineBgPattern.find(input)
+
+        if (expected == null) {
+            Assertions.assertEquals(null, result)
+            return
+        }
+
+        Assertions.assertNotNull(result)
+
+        // result won't be null here because of the above assertion
+        result!!
+
+        val actualValue = result.groups["value"]!!.value
+
+        Assertions.assertEquals(expected.value, actualValue)
+    }
+
+    private fun inlineBgProvider() = Stream.of(
+            BgParseData(input = "test _100.5_", expected = BgData("100.5")),
+            BgParseData(input = "test _100_", expected = BgData("100")),
+            BgParseData(input = "test _5.5_", expected = BgData("5.5")),
+            BgParseData(input = "test _5_", expected = BgData("5")),
+
+            // invalid
+            BgParseData(input = "test _100.5 mg_", expected = null),
+            BgParseData(input = "test _100 mg_", expected = null),
+            BgParseData(input = "test _5.5 mmol_", expected = null),
+            BgParseData(input = "test _5 mmol_", expected = null),
+
+            // invalid + spaces
+            BgParseData(input = "test _100.5mg_", expected = null),
+            BgParseData(input = "test _100mg_", expected = null),
+            BgParseData(input = "test _5.5mmol_", expected = null),
+            BgParseData(input = "test _5mmol_", expected = null),
+    )
 
     @ParameterizedTest
     @MethodSource("unitBgProvider")
     fun unitBgPatternTest(data: BgParseData) {
         val input = data.input
         val expected = data.expected
-        val result = Patterns.unitBgPattern.find(input)!!
+        val result = Patterns.unitBgPattern.find(input)
+
+        if (expected == null) {
+            Assertions.assertEquals(null, result)
+            return
+        }
+
+        Assertions.assertNotNull(result)
+
+        // result won't be null here because of the above assertion
+        result!!
 
         val actualValue = result.groups["value"]!!.value
         val actualUnit = result.groups["unit"]!!.value
@@ -73,11 +123,11 @@ class PatternsTest {
 
     data class BgData(
             val value: String,
-            val unit: String
+            val unit: String? = null
     )
 
     data class BgParseData(
             val input: String,
-            val expected: BgData
+            val expected: BgData?
     )
 }
