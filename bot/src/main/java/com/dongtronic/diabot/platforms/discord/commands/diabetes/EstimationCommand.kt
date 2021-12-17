@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.platforms.discord.commands.diabetes
 
-import com.dongtronic.diabot.data.A1cDTO
 import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MGDL
@@ -8,7 +7,6 @@ import com.dongtronic.diabot.logic.diabetes.GlucoseUnit.MMOL
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
-import java.util.*
 
 class EstimationCommand(category: Category) : DiscordCommand(category, null) {
 
@@ -23,7 +21,7 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
     }
 
     override fun execute(event: CommandEvent) {
-        if(event.args.isEmpty()) {
+        if (event.args.isEmpty()) {
             event.replyWarning("You didn't give me a value!")
         } else {
             // split the arguments on all whitespaces
@@ -48,9 +46,10 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         val pattern = "[^0-9\\.]"
         val number = items[1].replace(pattern.toRegex(), "")
 
-        val result: A1cDTO?
-
-        result = A1cConverter.estimateAverage(number)
+        val result = A1cConverter.estimateAverage(number).getOrElse {
+            event.replyError("Could not estimate average BG: ${it.message}")
+            return
+        }
 
         event.reply(
                 String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
@@ -63,32 +62,30 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         // split the arguments on all whitespaces
         val items = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        val result: A1cDTO
-
-        try {
-            result = if (items.size == 3) {
-                A1cConverter.estimateA1c(items[1], items[2])
-            } else {
-                A1cConverter.estimateA1c(items[1], null)
-            }
-
-            when (result.original.inputUnit) {
-                MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
-                MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
-                else -> {
-                    //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
-                    val reply = String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)) + String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL))
-                    event.reply(reply)
+        val result = A1cConverter.estimateA1c(items[1], items.getOrNull(2))
+                .getOrElse {
+                    when (it) {
+                        is IllegalArgumentException -> {
+                            event.replyError("Could not estimate A1c: ${it.message}")
+                        }
+                        is UnknownUnitException -> {
+                            event.replyError("I don't know how to convert from " + items[1])
+                        }
+                        else -> {
+                            logger.warn("Unknown error when estimating A1c", it)
+                        }
+                    }
+                    return
                 }
+
+        when (result.original.inputUnit) {
+            MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
+            MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
+            else -> {
+                //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
+                val reply = String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)) + String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL))
+                event.reply(reply)
             }
-
-        } catch (ex: IllegalArgumentException) {
-            // Ignored on purpose
-            logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
-        } catch (ex: UnknownUnitException) {
-            event.replyError("I don't know how to convert from " + items[1])
-            logger.warn("Unknown BG unit " + items[1])
         }
-
     }
 }

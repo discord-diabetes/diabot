@@ -14,6 +14,10 @@ object BloodGlucoseConverter {
      * Currently, the two emojis are:
      * :smirk: - 69 mg/dL or 6.9 mmol/L
      * :100:   - 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+     *
+     * @param conversionDTO BG conversion DTO
+     * @return [Set] of unicode emojis reacting to the given BG
+     * @see [getReactions]
      */
     fun getReactions(conversionDTO: ConversionDTO) = getReactions(conversionDTO.mmol, conversionDTO.mgdl)
 
@@ -23,6 +27,10 @@ object BloodGlucoseConverter {
      * Currently, the two emojis are:
      * :smirk: - 69 mg/dL or 6.9 mmol/L
      * :100:   - 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
+     *
+     * @param mmol BG number in mmol/L
+     * @param mgdl BG number in mg/dL
+     * @return [Set] of unicode emojis reacting to the given BG
      */
     fun getReactions(mmol: Double, mgdl: Int): Set<String> {
         val reactions = mutableSetOf<String>()
@@ -41,13 +49,22 @@ object BloodGlucoseConverter {
         return reactions
     }
 
-    @Throws(UnknownUnitException::class)
-    fun convert(value: String, unit: String?): ConversionDTO {
+    /**
+     * Convert a string blood glucose input into a [ConversionDTO].
+     *
+     * @param value BG number
+     * @param unit Optional: Measurement unit of [value]
+     * @return [ConversionDTO] if successful
+     * @throws IllegalArgumentException if [value] is not numeric
+     * @throws IllegalArgumentException if [value] is not between 0 and 999
+     * @throws UnknownUnitException if [unit] is an unknown BG measurement unit
+     */
+    fun convert(value: String, unit: String?): Result<ConversionDTO> {
         val input = value.toDoubleOrNull()
-                ?: throw IllegalArgumentException("value must be numeric")
+                ?: return Result.failure(IllegalArgumentException("value must be numeric"))
 
         if (input < 0 || input > 999) {
-            throw IllegalArgumentException("value must be between 0 and 999")
+            return Result.failure(IllegalArgumentException("value must be between 0 and 999"))
         }
 
         return if (unit != null && unit.length > 1) {
@@ -57,7 +74,7 @@ object BloodGlucoseConverter {
         }
     }
 
-    private fun convert(originalValue: Double): ConversionDTO {
+    private fun convert(originalValue: Double): Result<ConversionDTO> {
         return when {
             originalValue < 25 -> convert(originalValue, GlucoseUnit.MMOL)
             originalValue > 50 -> convert(originalValue, GlucoseUnit.MGDL)
@@ -65,43 +82,38 @@ object BloodGlucoseConverter {
         }
     }
 
-    @Throws(UnknownUnitException::class)
-    private fun convert(originalValue: Double, unit: String): ConversionDTO {
-
+    private fun convert(originalValue: Double, unit: String): Result<ConversionDTO> {
         return when {
-            unit.uppercase().contains("MMOL") -> {
+            unit.contains("MMOL", true) -> {
                 val result = originalValue * 18.016
-                ConversionDTO(originalValue, result, GlucoseUnit.MMOL)
+                Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MMOL))
             }
-            unit.uppercase().contains("MG") -> {
+            unit.contains("MG", true) -> {
                 val result = originalValue / 18.016
-                ConversionDTO(originalValue, result, GlucoseUnit.MGDL)
+                Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MGDL))
             }
-            else -> throw UnknownUnitException()
+            else -> Result.failure(UnknownUnitException())
         }
     }
 
-    private fun convert(originalValue: Double, unit: GlucoseUnit): ConversionDTO {
-
+    private fun convert(originalValue: Double, unit: GlucoseUnit): Result<ConversionDTO> {
         return when (unit) {
             GlucoseUnit.MMOL -> {
                 val result = originalValue * 18.016
-                ConversionDTO(originalValue, result, GlucoseUnit.MMOL)
+                Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MMOL))
             }
             GlucoseUnit.MGDL -> {
                 val result = originalValue / 18.016
-                ConversionDTO(originalValue, result, GlucoseUnit.MGDL)
+                Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MGDL))
             }
-            GlucoseUnit.AMBIGUOUS -> {
-                return convertAmbiguous(originalValue)
-            }
+            GlucoseUnit.AMBIGUOUS -> convertAmbiguous(originalValue)
         }
     }
 
-    private fun convertAmbiguous(originalValue: Double): ConversionDTO {
+    private fun convertAmbiguous(originalValue: Double): Result<ConversionDTO> {
         val toMgdl = originalValue * 18.016
         val toMmol = originalValue / 18.016
 
-        return ConversionDTO(originalValue, toMmol, toMgdl)
+        return Result.success(ConversionDTO(originalValue, toMmol, toMgdl))
     }
 }
