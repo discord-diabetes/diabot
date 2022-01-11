@@ -29,6 +29,12 @@ class ConversionApplicationCommand : ApplicationCommand {
         val glucoseUnit = event.getOption(commandArgUnit)?.asString
 
         val result = BloodGlucoseConverter.convert(glucoseNumber, glucoseUnit)
+                .getOrElse {
+                    if (it is IllegalArgumentException) {
+                        event.reply("Could not convert: ${it.message}").queue()
+                    }
+                    return
+                }
 
         val reply = when {
             result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)

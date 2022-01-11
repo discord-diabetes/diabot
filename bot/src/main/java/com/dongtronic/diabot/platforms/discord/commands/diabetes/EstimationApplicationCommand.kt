@@ -46,7 +46,10 @@ class EstimationApplicationCommand : ApplicationCommand {
     private fun estimateAverage(event: SlashCommandEvent) {
         val input = event.getOption(commandArgA1c)!!
 
-        val result = A1cConverter.estimateAverage(input.asString)
+        val result = A1cConverter.estimateAverage(input.asString).getOrElse {
+            event.reply("Could not estimate average BG: ${it.message}").queue()
+            return
+        }
 
         event.reply(
                 String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
@@ -59,6 +62,10 @@ class EstimationApplicationCommand : ApplicationCommand {
         val inputUnit = event.getOption(commandArgUnit)
 
         val result = A1cConverter.estimateA1c(inputNumber.asString, inputUnit?.asString)
+                .getOrElse {
+                    event.reply("Could not estimate A1c: ${it.message}").queue()
+                    return
+                }
 
         val message = when (result.original.inputUnit) {
             GlucoseUnit.MMOL -> String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc)

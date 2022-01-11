@@ -20,8 +20,14 @@ allprojects {
         implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${kotlinCoroutinesVersion}"
-        testImplementation group: 'junit', name: 'junit', version: "${junitVersion}"
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitVersion}"
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: "${junitVersion}"
         api group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
+    }
+
+    test {
+        useJUnitPlatform()
+        systemProperty "junit.jupiter.testinstance.lifecycle.default", "per_class"
     }
 
     group = 'com.dongtronic.diabot'

@@ -147,7 +147,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                     // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
                     || (dto.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
                 dto.deltaIsNegative = bgDelta.contains("-")
-                dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units)
+                dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units).getOrNull()
             }
             return@map dto
         }
@@ -190,15 +190,11 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
 
             if (delta.isNotEmpty()) {
-                try {
-                    val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
-                    dto.delta = convertedDelta
-                } catch (e: IllegalArgumentException) {
-                    // invalid delta
-                }
+                val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
+                dto.delta = convertedDelta.getOrNull()
             }
 
-            dto.glucose = convertedBg
+            dto.glucose = convertedBg.getOrThrow()
             dto.deltaIsNegative = delta.contains("-")
             dto.dateTime = Instant.ofEpochMilli(timestamp)
             dto.trend = trend

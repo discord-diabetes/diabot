@@ -2,7 +2,6 @@ package com.dongtronic.diabot.logic.diabetes
 
 import com.dongtronic.diabot.data.A1cDTO
 import com.dongtronic.diabot.data.ConversionDTO
-import com.dongtronic.diabot.exceptions.UnknownUnitException
 
 /**
  * A1c conversion logic
@@ -10,18 +9,33 @@ import com.dongtronic.diabot.exceptions.UnknownUnitException
 object A1cConverter {
     private const val MMOL_TO_MGDL_CONVERSION_FACTOR = 18.016
 
-    @Throws(UnknownUnitException::class)
-    fun estimateA1c(originalValue: String, unit: String?): A1cDTO {
+    /**
+     * Estimate an A1c from a BG value.
+     *
+     * @param originalValue BG number
+     * @param unit Optional: BG unit
+     * @return [A1cDTO] if successful
+     * @see BloodGlucoseConverter.convert
+     */
+    fun estimateA1c(originalValue: String, unit: String?): Result<A1cDTO> {
         val glucoseConversionResult = BloodGlucoseConverter.convert(originalValue, unit)
+                .getOrElse { return Result.failure(it) }
 
-        return estimateA1c(glucoseConversionResult)
+        return Result.success(estimateA1c(glucoseConversionResult))
     }
 
-    fun estimateAverage(originalValue: String): A1cDTO {
+    /**
+     * Estimate an average BG value from an A1c.
+     *
+     * @param originalValue A1c value in either DCCT or IFCC
+     * @return [A1cDTO] if successful
+     * @throws IllegalArgumentException if A1c is not between 0 and 375
+     */
+    fun estimateAverage(originalValue: String): Result<A1cDTO> {
         val a1c = java.lang.Double.valueOf(originalValue)
 
         if (a1c < 0 || a1c > 375) {
-            throw IllegalArgumentException("Given A1c must be between 0 and 375. Is $a1c")
+            return Result.failure(IllegalArgumentException("Given A1c must be between 0 and 375"))
         }
 
         return if (a1c < 25) {
@@ -31,22 +45,24 @@ object A1cConverter {
         }
     }
 
-    private fun estimateAverageDcct(dcct: Double): A1cDTO {
+    private fun estimateAverageDcct(dcct: Double): Result<A1cDTO> {
         val mgdl = convertDcctToMgdl(dcct)
         val ifcc = convertDcctToIfcc(dcct)
 
         val conversion = BloodGlucoseConverter.convert(mgdl.toString(), "mgdl")
+                .getOrElse { return Result.failure(it) }
 
-        return A1cDTO(conversion, dcct, ifcc, 0.0, 0.0)
+        return Result.success(A1cDTO(conversion, dcct, ifcc, 0.0, 0.0))
     }
 
-    private fun estimateAverageIfcc(ifcc: Double): A1cDTO {
+    private fun estimateAverageIfcc(ifcc: Double): Result<A1cDTO> {
         val mgdl = convertIfccToMgdl(ifcc)
         val dcct = convertIfccToDcct(ifcc)
 
         val conversion = BloodGlucoseConverter.convert(mgdl.toString(), "mgdl")
+                .getOrElse { return Result.failure(it) }
 
-        return A1cDTO(conversion, dcct, ifcc, 0.0, 0.0)
+        return Result.success(A1cDTO(conversion, dcct, ifcc, 0.0, 0.0))
     }
 
     private fun estimateA1c(glucose: ConversionDTO): A1cDTO {
