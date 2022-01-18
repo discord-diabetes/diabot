@@ -29,6 +29,8 @@ class ConversionListener : ListenerAdapter() {
     private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String): String {
         if (event.author.isBot) return ""
 
+        val MAX_MATCHES = 5
+
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
         val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
 
@@ -41,6 +43,7 @@ class ConversionListener : ListenerAdapter() {
 
         val sortedMatches = unitMatches
                 .plus(inlineMatches)
+                .take(MAX_MATCHES)
                 .filter { it.groups["value"] != null }
                 .sortedBy { it.range.first }
                 .distinctBy {
