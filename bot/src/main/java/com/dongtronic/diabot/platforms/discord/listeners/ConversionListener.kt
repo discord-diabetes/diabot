@@ -13,13 +13,15 @@ class ConversionListener : ListenerAdapter() {
 
     companion object {
         private const val MAX_MATCHES = 5
+
+        val monospacePattern = Regex("`[^`]+`")
     }
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
 
         val message = event.message
-        val messageText = message.contentRaw
+        val messageText = stripMonospace(message.contentRaw)
 
         val separateMatcher = Patterns.separateBgPattern.matcher(messageText)
 
@@ -89,6 +91,35 @@ class ConversionListener : ListenerAdapter() {
                 String.format(reply, numberString, result.mmol, numberString, result.mgdl)
             }
         }
+    }
+
+    private fun stripMonospace(inputText: String): String {
+        var thisMessage = inputText.replace("\\`", "")
+        thisMessage = monospacePattern.replace(thisMessage, "")
+
+        var inBlock = false
+        val newLines = ArrayList<String>()
+
+        thisMessage.lines().forEach { line ->
+            val thisLine = line.replace("\\`", "")
+
+            if (thisLine.contains("```")) {
+                if (!inBlock) {
+                    // we're starting a new block, ignore everything after the ticks
+                    newLines.add(line.substringBefore("```"))
+                } else {
+                    newLines.add(line.substringAfter("```"))
+                }
+
+                inBlock = !inBlock
+            } else {
+                if (!inBlock) {
+                    newLines.add(thisLine)
+                }
+            }
+        }
+
+        return newLines.joinToString("\n")
     }
 
     private fun sendMessage(message: String, event: GuildMessageReceivedEvent) {
