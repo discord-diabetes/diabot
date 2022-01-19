@@ -11,6 +11,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 class ConversionListener : ListenerAdapter() {
     private val logger = logger()
 
+    companion object {
+        private const val MAX_MATCHES = 5
+    }
+
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
 
@@ -28,8 +32,6 @@ class ConversionListener : ListenerAdapter() {
 
     private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String): String {
         if (event.author.isBot) return ""
-
-        val MAX_MATCHES = 5
 
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
         val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
