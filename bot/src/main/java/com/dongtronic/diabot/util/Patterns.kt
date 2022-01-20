@@ -6,7 +6,7 @@ object Patterns {
     /**
      * Matches BG numbers surrounded by underscores
      */
-    val inlineBgPattern = Regex("""_(?<value>\d{1,3}(?:[.,]\d+)?)_""")
+    val inlineBgPattern = Regex("""\b_(?<value>\d{1,3}(?:[.,]\d+)?)_\b""")
 
     /**
      * Matches a message that is just a BG value, without any extra characters.
