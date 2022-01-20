@@ -82,7 +82,9 @@ class AboutCommand(category: Category, private val color: Color, private val des
 
         builder.addField("Stats", "${event.client.totalGuilds} Servers \n Shard ${event.jda.shardInfo.shardId + 1}/${event.jda.shardInfo.shardTotal}", true)
 
-        builder.addField("This shard", "${event.jda.guilds.size} Servers", true)
+        if (event.jda.shardInfo.shardTotal > 1) {
+            builder.addField("This shard", "${event.jda.guilds.size} Servers", true)
+        }
         builder.addField("", "${event.jda.textChannels.size} Text Channels \n ${event.jda.voiceChannels.size} Voice Channels", true)
         builder.setFooter("Last restart", null)
         builder.setTimestamp(event.client.startTime)
