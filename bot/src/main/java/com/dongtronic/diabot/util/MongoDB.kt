@@ -20,7 +20,9 @@ import org.litote.kmongo.util.KMongoConfiguration
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.awt.Color
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.NoSuchElementException
 
 class MongoDB {
     private val clientSettings: MongoClientSettings = MongoClientSettings.builder()
@@ -29,10 +31,10 @@ class MongoDB {
                 it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
                 it.maxSize(mongoEnv("CONNECTIONS", "30").toInt())
             }
-            .applyConnectionString(ConnectionString(mongoEnv("URI")))
+            .applyConnectionString(ConnectionString(connectionURI))
             .build()
     val client = KMongo.createClient(clientSettings)
-    val database: MongoDatabase = client.getDatabase(mongoEnv("DATABASE", "diabot"))
+    val database: MongoDatabase = client.getDatabase(defaultDatabase)
 
     init {
         val colorModule = SimpleModule()
@@ -44,6 +46,9 @@ class MongoDB {
 
     companion object {
         private var instance: MongoDB? = null
+
+        val connectionURI = mongoEnv("URI")
+        val defaultDatabase = mongoEnv("DATABASE", "diabot")
 
         fun getInstance(): MongoDB {
             if (instance == null) {
@@ -62,7 +67,7 @@ class MongoDB {
  * @return The value of the key or the default value.
  */
 fun mongoEnv(key: String, default: String? = null): String {
-    val mongoKey = "MONGO_" + key.toUpperCase()
+    val mongoKey = "MONGO_" + key.uppercase()
 
     if (default == null)
         return System.getenv(mongoKey)

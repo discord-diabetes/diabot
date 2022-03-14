@@ -1,7 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.data.ConversionDTO
-import com.dongtronic.diabot.exceptions.UnknownUnitException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.util.Patterns
@@ -12,77 +11,122 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 class ConversionListener : ListenerAdapter() {
     private val logger = logger()
 
+    companion object {
+        private const val MAX_MATCHES = 5
+
+        val monospacePattern = Regex("`[^`]+`")
+    }
+
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
 
-        val channel = event.channel
-
         val message = event.message
-        val messageText = message.contentRaw
+        val messageText = stripMonospace(message.contentRaw)
 
-        val inlineMatcher = Patterns.inlineBgPattern.matcher(messageText)
         val separateMatcher = Patterns.separateBgPattern.matcher(messageText)
-        val unitMatcher = Patterns.unitBgPattern.matcher(messageText)
 
-        var numberString = ""
-        var unitString = ""
+        if (separateMatcher.matches()) {
+            sendMessage(getResult(separateMatcher.group(1), null, event), event)
+        } else {
+            sendMessage(recursiveReading(event, messageText), event)
+        }
+    }
 
-        if (unitMatcher.matches()) {
-            numberString = unitMatcher.group(4)
-            unitString = unitMatcher.group(5)
+    private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String): String {
+        if (event.author.isBot) return ""
+
+        val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
+        val unitMatches = Patterns.unitBgPattern.findAll(previousMessageText)
+
+        val getNumberUnit: (MatchResult) -> (Pair<String, String?>) = {
+            val number = it.groups["value"]!!.value
+            val unit = kotlin.runCatching { it.groups["unit"]?.value }.getOrNull()
+
+            number to unit
         }
 
-        if (inlineMatcher.matches()) {
-            numberString = inlineMatcher.group(1)
-        } else if (separateMatcher.matches()) {
-            numberString = separateMatcher.group(1)
+        val sortedMatches = unitMatches
+                .plus(inlineMatches)
+                .take(MAX_MATCHES)
+                .filter { it.groups["value"] != null }
+                .sortedBy { it.range.first }
+                .distinctBy {
+                    val pair = getNumberUnit(it)
+                    pair.first + pair.second
+                }
+
+        val multipleMatches = sortedMatches.count() > 1
+
+        return sortedMatches.joinToString("\n") {
+            val resultPair = getNumberUnit(it)
+
+            getResult(resultPair.first, resultPair.second, event, multipleMatches)
+        }
+    }
+
+    private fun getResult(originalNumString: String,
+                          originalUnitString: String?,
+                          event: GuildMessageReceivedEvent,
+                          multipleMatches: Boolean = false): String {
+        val separator = if (multipleMatches) "─ " else ""
+        val numberString = originalNumString.replace(',', '.')
+
+        val result: ConversionDTO = BloodGlucoseConverter.convert(numberString, originalUnitString)
+                .getOrElse { return "" }
+
+        BloodGlucoseConverter.getReactions(result).forEach {
+            event.message.addReaction(it).queue()
         }
 
-        if (numberString.isEmpty()) {
-            return
-        }
+        return when {
+            result.inputUnit === GlucoseUnit.MMOL -> String.format("$separator%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
+            result.inputUnit === GlucoseUnit.MGDL -> String.format("$separator%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
+            else -> {
+                val reply = arrayOf(
+                        "$separator*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
+                        "┌%s mg/dL is **%s mmol/L**",
+                        "└%s mmol/L is **%s mg/dL**").joinToString(
+                        "%n")
 
-        try {
-            val result: ConversionDTO? = if (unitString.length > 1) {
-                BloodGlucoseConverter.convert(numberString, unitString)
-            } else {
-                BloodGlucoseConverter.convert(numberString, null)
+                String.format(reply, numberString, result.mmol, numberString, result.mgdl)
             }
+        }
+    }
 
-            when {
-                result!!.inputUnit === GlucoseUnit.MMOL -> channel.sendMessage(String.format("%s mmol/L is %s mg/dL", result!!.mmol, result.mgdl)).queue()
-                result!!.inputUnit === GlucoseUnit.MGDL -> channel.sendMessage(String.format("%s mg/dL is %s mmol/L", result!!.mgdl, result.mmol)).queue()
-                else -> {
-                    val reply = arrayOf(
-                            "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
-                            "%s mg/dL is **%s mmol/L**",
-                            "%s mmol/L is **%s mg/dL**").joinToString(
-                            "%n")
+    private fun stripMonospace(inputText: String): String {
+        var thisMessage = inputText.replace("\\`", "")
+        thisMessage = monospacePattern.replace(thisMessage, "")
 
-                    channel.sendMessage(String.format(reply, numberString, result!!.mmol, numberString,
-                            result.mgdl)).queue()
+        var inBlock = false
+        val newLines = ArrayList<String>()
+
+        thisMessage.lines().forEach { line ->
+            val thisLine = line.replace("\\`", "")
+
+            if (thisLine.contains("```")) {
+                if (!inBlock) {
+                    // we're starting a new block, ignore everything after the ticks
+                    newLines.add(line.substringBefore("```"))
+                } else {
+                    newLines.add(line.substringAfter("```"))
+                }
+
+                inBlock = !inBlock
+            } else {
+                if (!inBlock) {
+                    newLines.add(thisLine)
                 }
             }
+        }
 
-            // #20: Reply with :smirk: when value is 69 mg/dL or 6.9 mmol/L
-            if (result.mmol == 6.9 || result.mgdl == 69) {
-                event.message.addReaction("\uD83D\uDE0F").queue()
-            }
+        return newLines.joinToString("\n")
+    }
 
-            // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-            if (result.mmol == 5.5
-                    || result.mmol == 10.0
-                    || result.mgdl == 100) {
-                event.message.addReaction("\uD83D\uDCAF").queue()
-            }
-
-        } catch (ex: IllegalArgumentException) {
-            // Ignored on purpose
-            logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
-        } catch (ex: UnknownUnitException) {
-            // Ignored on purpose
+    private fun sendMessage(message: String, event: GuildMessageReceivedEvent) {
+        val channel = event.channel
+        if (message.isNotEmpty()) {
+            channel.sendMessage(message).queue()
         }
 
     }
-
 }

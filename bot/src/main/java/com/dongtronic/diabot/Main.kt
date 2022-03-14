@@ -5,12 +5,16 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationApplicationCommand
+import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
@@ -18,23 +22,25 @@ import com.dongtronic.diabot.platforms.discord.listeners.*
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
-import com.jagrosh.jdautilities.examples.command.AboutCommand
+import com.jagrosh.jdautilities.examples.command.GuildlistCommand
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
-import net.dv8tion.jda.api.utils.MemberCachePolicy
+import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.cache.CacheFlag
+import java.awt.Color
 import java.util.*
 import javax.security.auth.login.LoginException
 
-
 object Main {
+    private var debug = false
 
     @Throws(LoginException::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        // Migrate data from Redis to MongoDB
-        MigrationManager().migrateIfNecessary()
+        // Database migration
+        MigrationManager().initialize()
 
         val token = System.getenv("DIABOTTOKEN") // token on dokku
 
@@ -46,11 +52,9 @@ object Main {
         val utilitiesCategory = Category("Utilities")
         val infoCategory = Category("Informative")
 
-        // define an eventwaiter, dont forget to add this to the JDABuilder!
-        val waiter = EventWaiter()
-
         // define a command client
         val client = CommandClientBuilder()
+        val waiter = EventWaiter()
 
         // The default is "Type !!help" (or whatver prefix you set)
         client.useDefaultGame()
@@ -63,6 +67,7 @@ object Main {
         // sets the bot prefix
         if (System.getenv("DIABOT_DEBUG") != null) {
             client.setPrefix("dl ")
+            debug = true
         } else {
             client.setPrefix("diabot ")
         }
@@ -72,12 +77,12 @@ object Main {
 
         client.setServerInvite("https://discord.gg/diabetes")
 
-        // adds commands
+        // add commands
         client.addCommands(
                 // command to show information about the bot
-                AboutCommand(java.awt.Color(0, 0, 255), "a diabetes bot",
+                AboutCommand(utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE),
+                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE, Permission.USE_SLASH_COMMANDS),
 
 
                 // A1c
@@ -110,7 +115,9 @@ object Main {
                 AdminCommand(adminCategory),
                 ShutdownCommand(adminCategory),
                 NightscoutAdminCommand(adminCategory),
-                RolesCommand(adminCategory))
+                RolesCommand(adminCategory),
+                GuildlistCommand(waiter)
+        )
 
 
         // Custom help handler
@@ -118,7 +125,7 @@ object Main {
 
         val builtClient = client.build()
 
-        DefaultShardManagerBuilder.createDefault(token)
+        val shardManager = DefaultShardManagerBuilder.createDefault(token)
                 .setEnabledIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS)
                 .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
                 .setShardsTotal(-1) // Let Discord decide how many shards we need
@@ -129,9 +136,33 @@ object Main {
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),
-                        QuoteListener(builtClient)
+                        QuoteListener(builtClient),
                 ).build()
 
+        registerSlashCommands(shardManager)
+    }
+
+    private fun registerSlashCommands(shardManager: ShardManager) {
+
+        val applicationCommandListener = ApplicationCommandListener(
+                EstimationApplicationCommand(),
+                NightscoutApplicationCommand(),
+                ConversionApplicationCommand()
+        )
+
+        val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()
+
+        if (debug) {
+            val guildId = System.getenv("HOME_GUILD_ID")
+            shardManager.shards.forEach(JDA::awaitReady)
+            val guild = shardManager.getGuildById(guildId)!!
+            guild.updateCommands().addCommands(commandConfigs).queue()
+        } else {
+            val jda = shardManager.shards.first()
+            jda.updateCommands().addCommands(commandConfigs).queue()
+        }
+
+        shardManager.addEventListener(applicationCommandListener)
     }
 
 }

@@ -8,6 +8,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
 import reactor.core.publisher.Mono
+import java.util.*
 
 class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
     companion object {
@@ -29,7 +30,6 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
 
     override fun execute(event: CommandEvent) {
         val args = event.args.split("[\\s,]+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val nickname = NicknameUtils.determineAuthorDisplayName(event)
 
         if (args.isEmpty()) {
             event.reply("Possible display options: ${formatOptions()}")
@@ -46,7 +46,7 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
 
             // verify options and set
             for (opt in options) {
-                if (!validOptions.contains(opt.toLowerCase())) {
+                if (!validOptions.contains(opt.lowercase())) {
                     event.replyError("Unsupported display option provided (`$opt`), use `diabot nightscout display` to see possible options")
                     return
                 }
@@ -58,16 +58,18 @@ class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) 
             setNightscoutDisplay(event.author)
         }
 
-        updateDisplay.subscribe({ newOptions ->
-            if (newOptions.any { it == "reset" }) {
-                event.replySuccess("Reset Nightscout display options for $nickname")
-            } else {
-                event.replySuccess("Nightscout display options for $nickname set to: ${formatOptions(newOptions)}")
-            }
-        }, {
-            logger.warn("Error while setting NS display options", it)
-            event.replyError("Could not set Nightscout display options for $nickname")
-        })
+        NicknameUtils.determineAuthorDisplayName(event).subscribe { nickname ->
+            updateDisplay.subscribe({ newOptions ->
+                if (newOptions.any { it == "reset" }) {
+                    event.replySuccess("Reset Nightscout display options for $nickname")
+                } else {
+                    event.replySuccess("Nightscout display options for $nickname set to: ${formatOptions(newOptions)}")
+                }
+            }, {
+                logger.warn("Error while setting NS display options", it)
+                event.replyError("Could not set Nightscout display options for $nickname")
+            })
+        }
     }
 
     private fun setNightscoutDisplay(user: User, vararg options: String): Mono<List<String>> {

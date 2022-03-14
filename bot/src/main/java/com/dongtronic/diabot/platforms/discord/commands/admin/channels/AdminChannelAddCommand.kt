@@ -33,7 +33,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
                 }
 
                 val channelId = args[0]
-                event.jda.getTextChannelById(channelId)
+                event.guild.getTextChannelById(channelId)
                         ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
             } else {
                 event.message.mentionedChannels[0]

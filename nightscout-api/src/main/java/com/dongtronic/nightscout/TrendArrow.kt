@@ -1,5 +1,7 @@
 package com.dongtronic.nightscout
 
+import java.util.*
+
 /**
  * Nightscout BG trend arrows
  */
@@ -18,7 +20,7 @@ enum class TrendArrow(val unicode: String = "") {
 
     companion object {
         fun getTrend(name: String): TrendArrow {
-            val sanitised = name.toUpperCase().replace(' ', '_')
+            val sanitised = name.uppercase().replace(' ', '_')
 
             return values().firstOrNull { it.name == sanitised }
                     ?: throw IllegalArgumentException("Unknown direction $name")

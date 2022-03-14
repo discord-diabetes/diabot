@@ -51,7 +51,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 if (cached == null) {
                     logger.debug("Performing network request for endpoint ${request.url.encodedPath}")
                     val networkResponse = chain.proceed(request)
-                    val body = networkResponse.peekBody(1024 * 1024)
+                    val body = networkResponse.peekBody(1024L * 1024L)
                     responseCache[request.toString()] = networkResponse.newBuilder().body(body)
                     networkResponse
                 } else {
@@ -148,9 +148,11 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 bgDelta = bgsJson.get("bgdelta").asText()
             }
             val newestBg = dto.getNewestEntryOrNull()
-            if (newestBg != null && newestBg.delta == null) {
+            if (newestBg != null && newestBg.delta == null
+                    // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
+                    || (newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
                 val bgBuilder = newestBg.newBuilder()
-                BloodGlucoseConverter.convert(bgDelta, dto.units)?.let {
+                BloodGlucoseConverter.convert(bgDelta, dto.units).onSuccess {
                     bgBuilder.delta(it)
                 }
                 builder.replaceEntry(bgBuilder.build())
@@ -197,12 +199,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 }
 
                 val bgBuilder = BgEntry.Builder()
-                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg")!!)
 
                 if (delta.isNotEmpty()) {
-                    bgBuilder.delta(BloodGlucoseConverter.convert(delta, "mg")!!)
+                    BloodGlucoseConverter.convert(delta, "mg").onSuccess {
+                        bgBuilder.delta(it)
+                    }
                 }
 
+                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg").getOrThrow())
                 bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
                 bgBuilder.trend(trend)
                 dtoBuilder.replaceEntry(bgBuilder.build())

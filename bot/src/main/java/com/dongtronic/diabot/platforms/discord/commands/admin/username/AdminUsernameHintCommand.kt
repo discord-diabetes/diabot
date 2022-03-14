@@ -15,6 +15,7 @@ class AdminUsernameHintCommand(category: Command.Category, parent: Command?) : D
         this.help = "Set or view username enforcement hint"
         this.guildOnly = true
         this.aliases = arrayOf("h", "help")
+        this.userPermissions = this.parent!!.userPermissions
     }
 
     override fun execute(event: CommandEvent) {

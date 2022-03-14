@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.data.mongodb
 
-import com.dongtronic.diabot.data.migration.MongoQuoteConversion
 import com.dongtronic.diabot.util.*
 import com.mongodb.client.model.Filters.and
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -10,6 +9,7 @@ import com.mongodb.client.model.Updates
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import net.dv8tion.jda.api.entities.TextChannel
 import org.bson.conversions.Bson
 import org.litote.kmongo.descending
@@ -37,19 +37,6 @@ class QuoteDAO private constructor() {
         quoteIndexes.createIndex(descending(QuoteDTO::guildId), options).toMono()
                 .subscribeOn(scheduler)
                 .subscribe()
-
-        // Convert IDs stored in the collection from `Long` to `String`
-        MongoQuoteConversion(collection, quoteIndexes).checkAndConvert()
-                .errorOnEmpty()
-                .subscribe({
-                    logger.info("Converted ${it.t1} quote(s) and ${it.t2} quote index(es)!")
-                }, {
-                    if (it is NoSuchElementException) {
-                        logger.info("No quotes needed to be converted")
-                    } else {
-                        logger.warn("Could not convert quotes", it)
-                    }
-                })
     }
 
     /**
@@ -211,6 +198,34 @@ class QuoteDAO private constructor() {
             }
 
             val numOfQuotes = getInstance().quoteAmount(channel.guild.id).block() ?: -1
+            if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
+                channel.sendMessage("Could not create quote as your guild has reached " +
+                        "the max of ${getInstance().maxQuotes} quotes").queue()
+                return false
+            }
+            return true
+        }
+
+        /**
+         * Checks the restrictions for the guild which the channel belongs to.
+         * This awaits the guild quote amount from [quoteAmount].
+         *
+         * @param channel the channel to send messages to
+         * @param warnDisabledGuild whether to send a warning message when the guild is not enabled for quotes
+         * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
+         * @return true if the guild passed restrictions, false if not
+         */
+        suspend fun awaitCheckRestrictions(channel: TextChannel,
+                              warnDisabledGuild: Boolean = false,
+                              checkQuoteLimit: Boolean = true): Boolean {
+            if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
+                if (warnDisabledGuild) {
+                    channel.sendMessage("This guild is not permitted to use the quoting system").queue()
+                }
+                return false
+            }
+
+            val numOfQuotes = getInstance().quoteAmount(channel.guild.id).awaitSingleOrNull() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
                 channel.sendMessage("Could not create quote as your guild has reached " +
                         "the max of ${getInstance().maxQuotes} quotes").queue()

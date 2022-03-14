@@ -33,7 +33,7 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
                 }
 
                 val userId = args[0]
-                event.jda.getUserById(userId)
+                event.guild.getMemberById(userId)?.user
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentionedUsers[0]

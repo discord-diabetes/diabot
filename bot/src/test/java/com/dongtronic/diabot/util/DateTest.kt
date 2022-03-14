@@ -1,7 +1,7 @@
 package com.dongtronic.diabot.util
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import java.sql.Timestamp
 
 class DateTest {
@@ -11,6 +11,6 @@ class DateTest {
         val timestamp = 1539672587884L
         val date = Timestamp(timestamp)
 
-        Assert.assertNotNull(date)
+        Assertions.assertNotNull(date)
     }
 }

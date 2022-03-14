@@ -7,6 +7,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import reactor.core.publisher.Mono
+import java.util.*
 
 class NightscoutPublicCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
     private val nightscoutDAO = NightscoutDAO.instance
@@ -28,7 +29,7 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
             // toggle visibility if no arguments are provided
             nightscoutDAO.changePrivacy(event.author.id, event.guild.id, null)
         } else {
-            val mode = args[0].toUpperCase()
+            val mode = args[0].uppercase()
 
             if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
                 nightscoutDAO.changePrivacy(event.author.id, event.guild.id, true)
@@ -41,13 +42,14 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
     }
 
     fun reply(event: CommandEvent, result: Mono<Boolean>) {
-        val authorNick = NicknameUtils.determineAuthorDisplayName(event)
-        result.subscribe({ public ->
-            val visibility = if (public) "public" else "private"
-            event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
-        }, {
-            event.replyError("Nightscout data for $authorNick could not be changed in **${event.guild.name}**")
-            logger.warn("Could not change Nightscout privacy", it)
-        })
+        NicknameUtils.determineAuthorDisplayName(event).subscribe { authorNick ->
+            result.subscribe({ public ->
+                val visibility = if (public) "public" else "private"
+                event.reply("Nightscout data for $authorNick set to **$visibility** in **${event.guild.name}**")
+            }, {
+                event.replyError("Nightscout data for $authorNick could not be changed in **${event.guild.name}**")
+                logger.warn("Could not change Nightscout privacy", it)
+            })
+        }
     }
 }

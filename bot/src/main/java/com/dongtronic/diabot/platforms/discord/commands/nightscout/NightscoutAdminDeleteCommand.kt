@@ -45,6 +45,7 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
                 }
 
                 val userId = args[0]
+                // this can be left unisolated because this is an owner-only command
                 event.jda.getUserById(userId)
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {

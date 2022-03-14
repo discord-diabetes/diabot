@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 
 class QuoteCommand(category: Category) : DiscordCommand(category, null) {
-    val mentionsRegex = Regex("<@!(?<uid>\\d+)>")
     private val logger = logger()
 
     init {
@@ -53,8 +52,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         }
 
         quote.subscribe({
-            val messageStripped = stripMentions(it.message, event)
-            event.reply(createEmbed(it.copy(message = messageStripped)))
+            event.reply(createEmbed(it))
         }, {
             event.replyError("Could not find any quote")
             if (it !is NoSuchElementException) {
@@ -92,7 +90,12 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun addEmbedFooter(quoteDTO: QuoteDTO, builder: EmbedBuilder): EmbedBuilder {
         val footer = StringBuilder("\n")
-        footer.append("- ").append(quoteDTO.author)
+        if (quoteDTO.authorId != "0") {
+            // adding the author name in parentheses is to work around the @invalid-user bug on mobile
+            footer.append("- <@${quoteDTO.authorId}> (${quoteDTO.author})")
+        } else {
+            footer.append("- ").append(quoteDTO.author)
+        }
 
         quoteDTO.getMessageLink()?.let { jumpLink ->
             val jumpText = "[(Jump)]($jumpLink)"
@@ -119,45 +122,5 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun getRandomQuote(guildId: String, filter: Bson? = null): Mono<QuoteDTO> {
         return QuoteDAO.getInstance().getRandomQuote(guildId, filter)
-    }
-
-    /**
-     * Strips a message of mentions for users inside the guild.
-     * Mentions which reference a user who is not in the guild will not be stripped.
-     *
-     * @param message the message to strip of mentions
-     * @param event command event
-     * @return stripped message
-     */
-    private fun stripMentions(message: String, event: CommandEvent): String {
-        var strippedMessage = message
-        val matches = mentionsRegex.findAll(message)
-        // using `toMap` to remove duplicate mentions
-        val uidMap = matches.mapNotNull {
-            val uid = it.groups["uid"]?.value ?: return@mapNotNull null
-            it.value to uid
-        }.toMap()
-
-        // replace the ids with their real names
-        uidMap.mapValues { resolveNameById(it.value, event) }
-                .forEach { (match, id) ->
-                    if (id.isBlank())
-                        return@forEach
-
-                    strippedMessage = strippedMessage.replace(match, "@$id")
-                }
-
-        return strippedMessage
-    }
-
-    /**
-     * Gets a nickname or account name by a Discord account ID if it is in the same guild
-     *
-     * @param id Discord account ID
-     * @param event command event
-     * @return account name if the id was found in the guild, otherwise blank
-     */
-    private fun resolveNameById(id: String, event: CommandEvent): String {
-        return event.guild.getMemberById(id)?.effectiveName ?: ""
     }
 }

@@ -1,8 +1,11 @@
-package com.dongtronic.diabot.data.migration
+package com.dongtronic.diabot.data.migration.mongodb
 
+import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.data.mongodb.QuoteIndexDTO
 import com.dongtronic.diabot.util.logger
+import com.github.cloudyrock.mongock.ChangeLog
+import com.github.cloudyrock.mongock.ChangeSet
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.bson.BsonType
 import org.bson.conversions.Bson
@@ -12,7 +15,6 @@ import org.litote.kmongo.project
 import org.litote.kmongo.type
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
-import reactor.util.function.Tuple2
 import java.io.Serializable
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -22,8 +24,11 @@ import kotlin.reflect.full.memberProperties
 /**
  * Converts the quotes in MongoDB from `Int64` to `String` for the IDs' data type
  */
-class MongoQuoteConversion(private val quotes: MongoCollection<QuoteDTO>, private val quoteIndexes: MongoCollection<QuoteIndexDTO>) {
+@ChangeLog(order = "008")
+class MongoQuoteConversion {
     private val logger = logger()
+    private val quotes: MongoCollection<QuoteDTO> = QuoteDAO.getInstance().collection
+    private val quoteIndexes: MongoCollection<QuoteIndexDTO> = QuoteDAO.getInstance().quoteIndexes
 
     /**
      * Mongo filter for the old quote index format.
@@ -34,38 +39,23 @@ class MongoQuoteConversion(private val quotes: MongoCollection<QuoteDTO>, privat
     /**
      * Mongo filter for the old quote format.
      */
-    private val oldQuoteFilter: Bson = or(QuoteDTO::authorId type BsonType.INT64,
+    private val oldQuoteFilter: Bson = or(
+            QuoteDTO::authorId type BsonType.INT64,
             QuoteDTO::channelId type BsonType.INT64,
             QuoteDTO::guildId type BsonType.INT64,
             QuoteDTO::messageId type BsonType.INT64,
-            QuoteDTO::quoteId type BsonType.INT64)
+            QuoteDTO::quoteId type BsonType.INT64
+    )
 
     /**
-     * Checks the quotes collection and migrates if there's any documents which need to be converted
-     *
-     * @return A [Tuple2] holding the amount of quotes (`t1`) and quote indexes (`t2`) that were converted.
-     * If there were no documents which needed to be converted then the [Mono] will be empty
+     * Checks the quotes collection and migrates if there's any documents which need to be converted from using Int64 to String
      */
-    fun checkAndConvert(): Mono<Tuple2<Long, Long>> {
-        return needsConversion().flatMap {
-            if (it) {
-                convertQuotes().zipWhen { convertIndexes() }
-            } else {
-                Mono.empty()
-            }
-        }
-    }
+    @ChangeSet(order = "001", id = "quoteIdTypesFromInt64ToString", author = "Garlic")
+    fun checkAndConvert() {
+        val quotes = convertQuotes().block()!!
+        val indexes = convertIndexes().block()!!
 
-    /**
-     * Checks whether conversions are necessary for either the quotes or quote index collections.
-     *
-     * @return True if either the `quotes` or `quote-index` collections need any documents to be converted
-     */
-    fun needsConversion(): Mono<Boolean> {
-        return quotes.countDocuments(oldQuoteFilter).toMono()
-                .zipWhen { quoteIndexes.countDocuments(oldQuoteIndexFilter).toMono() }
-                .doOnNext { logger.debug("Got ${it.t1} quote(s) and ${it.t2} quote index(es) that need conversion") }
-                .map { it.t1 != 0L || it.t2 != 0L }
+        logger.info("Converted $quotes quote(s) and $indexes quote index(es)!")
     }
 
     /**

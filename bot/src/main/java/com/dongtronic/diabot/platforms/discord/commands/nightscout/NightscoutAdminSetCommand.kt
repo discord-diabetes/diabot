@@ -4,7 +4,7 @@ import com.dongtronic.diabot.authorName
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutSetUrlCommand.Companion.validateNightscoutUrl
+import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -44,13 +44,14 @@ class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : 
                 }
 
                 val userId = args[0]
+                // this can be left unisolated because this is an owner-only command
                 event.jda.getUserById(userId)
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentionedUsers[0]
             }
 
-            val url = validateNightscoutUrl(args[1])
+            val url = NightscoutFacade.validateNightscoutUrl(args[1])
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 

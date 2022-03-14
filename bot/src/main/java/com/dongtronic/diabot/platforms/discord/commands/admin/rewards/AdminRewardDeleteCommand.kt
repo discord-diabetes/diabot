@@ -32,7 +32,7 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
                 }
 
                 val roleId = args[0]
-                event.jda.getRoleById(roleId)
+                event.guild.getRoleById(roleId)
                         ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
                 event.message.mentionedRoles[0]
@@ -46,7 +46,7 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
                 }
 
                 val roleId = args[1]
-                event.jda.getRoleById(roleId)
+                event.guild.getRoleById(roleId)
                         ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
                 event.message.mentionedRoles[1]

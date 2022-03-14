@@ -1,39 +1,45 @@
 dependencies {
     // JDA
-    implementation 'com.jagrosh:jda-utilities:3.0.4'
-    implementation('net.dv8tion:JDA:4.2.0_209') {
+    implementation "com.github.MinnDevelopment:jda-ktx:${jdaKtxVersion}"
+    implementation "com.jagrosh:jda-utilities:${jdaUtilitiesVersion}"
+    implementation("net.dv8tion:JDA:${jdaVersion}") {
         exclude module: 'opus-java'
     }
 
     // Logging
-    implementation 'ch.qos.logback:logback-classic:1.0.13'
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
     // Parsing
-    implementation 'com.rometools:rome:1.11.1'
-    implementation 'org.jsoup:jsoup:1.11.3'
+    implementation "com.rometools:rome:${romeVersion}"
+    implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // Apache Commons
-    implementation 'org.apache.commons:commons-lang3:3.8.1'
-    implementation 'commons-configuration:commons-configuration:1.6'
+    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    implementation "commons-configuration:commons-configuration:${commonsConfigurationVersion}"
 
     // Networking
-    implementation 'com.squareup.okhttp3:okhttp:4.8.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0'
+    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
+    implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+    implementation "com.jakewharton.retrofit:retrofit2-reactor-adapter:${retrofitReactorVersion}"
 
     // Database
-    implementation 'redis.clients:jedis:3.3.0'
-    implementation 'org.mongodb:mongodb-driver-reactivestreams:4.0.5'
-    implementation 'org.litote.kmongo:kmongo-async:4.0.3'
+    implementation "redis.clients:jedis:${jedisVersion}"
+    implementation "org.mongodb:mongodb-driver-reactivestreams:${mongodbVersion}"
+    implementation "org.litote.kmongo:kmongo-async:${kmongoVersion}"
+
+    // Database Migrations
+    implementation "com.github.cloudyrock.mongock:mongock-standalone:${mongockRunnerVersion}"
+    implementation "com.github.cloudyrock.mongock:mongodb-sync-v4-driver:${mongockDriverVersion}"
+    implementation "org.litote.kmongo:kmongo:${kmongoVersion}"
 
     // Cache
-    implementation 'com.github.ben-manes.caffeine:caffeine:2.8.5'
+    implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
 
     // Misc
     implementation project(':utilities')
     implementation project(':nightscout-api')
     implementation project(':bg-graph')
-    implementation 'io.projectreactor:reactor-core:3.3.8.RELEASE'
-    implementation 'io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.2.RELEASE'
+    implementation "io.projectreactor:reactor-core:${reactorCoreVersion}"
+    implementation "io.projectreactor.kotlin:reactor-kotlin-extensions:${reactorKotlinVersion}"
 }

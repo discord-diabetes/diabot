@@ -1,5 +1,7 @@
 package com.dongtronic.diabot.util
 
+import java.util.*
+
 enum class DiabotCollection(private val envName: String? = null, private val defaultCollection: String? = null) {
     CHANNELS,
     NAME_RULES,
@@ -16,8 +18,8 @@ enum class DiabotCollection(private val envName: String? = null, private val def
      * @return The collection name to use
      */
     fun getEnv(): String {
-        val env = (envName ?: name).toUpperCase()
-        val collection = (defaultCollection ?: env).toLowerCase().replace('_', '-')
+        val env = (envName ?: name).uppercase()
+        val collection = (defaultCollection ?: env).lowercase().replace('_', '-')
 
         return mongoEnv("${env}_COLLECTION", collection)
     }

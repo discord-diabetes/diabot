@@ -16,7 +16,6 @@ import java.awt.Color
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
-import kotlin.collections.ArrayList
 
 class HelpListener : Consumer<CommandEvent> {
     private val logger = logger()
@@ -53,8 +52,8 @@ class HelpListener : Consumer<CommandEvent> {
             try {
                 // Open the DM channel and send the message
                 event.author.openPrivateChannel().submit()
-                        .thenCompose { it.sendMessage(embedBuilder.build()).submit() }
-                        .whenComplete { message: Message?, exc: Throwable? ->
+                        .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
+                        .whenComplete { _: Message?, exc: Throwable? ->
                             if (exc != null) {
                                 // If there's a throwable then assume it failed
                                 sendingError(exc, event)
@@ -77,8 +76,8 @@ class HelpListener : Consumer<CommandEvent> {
             buildCategoryHelp(categoryBuilder, category)
 
             // Store the CompletableFuture in the queue so we can cancel it later
-            val message = channel.thenCompose { it.sendMessage(categoryBuilder.build()).submit() }
-                    .whenComplete { message: Message?, exc: Throwable? ->
+            val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
+                    .whenComplete { _: Message?, exc: Throwable? ->
                         if (exc != null) {
                             sendingError(exc, event)
                             // Cancel the other messages in the queue
@@ -274,7 +273,7 @@ class HelpListener : Consumer<CommandEvent> {
         for (command in commands) {
             var categoryName = "Misc"
             try {
-                categoryName = command.category.name
+                categoryName = command.category?.name ?: "Misc"
             } catch (ex: IllegalStateException) {
                 // Ignored on purpose
             }
