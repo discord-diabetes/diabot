@@ -173,7 +173,18 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 .find("sgv", operator = MongoOperator.exists)
                 .count(count)
                 .toMap()
-        return service.getEntriesJson(findParam).map { json ->
+        return getSgv(dto, findParam)
+    }
+
+    /**
+     * Fetches a Nightscout's SGV(s) and puts the data in a [NightscoutDTO] instance
+     *
+     * @param dto NS data
+     * @param params The parameters to pass to the Nightscout API
+     * @return The [NightscoutDTO] instance with glucose data (sgv, timestamp, trend, delta)
+     */
+    fun getSgv(dto: NightscoutDTO = NightscoutDTO(), params: Map<String, String> = emptyMap()): Mono<NightscoutDTO> {
+        return service.getEntriesJson(params).map { json ->
             if (json.isEmpty) {
                 throw NoNightscoutDataException()
             }
@@ -182,6 +193,9 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
 
             // Parse JSON and construct response
             json.forEach { entryJson ->
+                // Can't parse without SGV
+                if (!entryJson.has("sgv")) return@forEach
+
                 val sgv = entryJson.path("sgv").asText()
                 val timestamp = entryJson.path("date").asLong()
                 var trend = TrendArrow.NONE
