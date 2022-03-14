@@ -405,7 +405,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param response The message to react to.
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
-        BloodGlucoseConverter.getReactions(dto.getNewestEntry().glucose!!.mmol, dto.getNewestEntry().glucose!!.mgdl).forEach {
+        BloodGlucoseConverter.getReactions(dto.getNewestEntry().glucose.mmol, dto.getNewestEntry().glucose.mgdl).forEach {
             response.addReaction(it).queue()
         }
     }

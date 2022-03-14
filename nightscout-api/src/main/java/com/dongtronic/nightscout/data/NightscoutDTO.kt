@@ -20,7 +20,7 @@ data class NightscoutDTO(
      * @throws NoNightscoutDataException if there is no BG entry available
      */
     fun getNewestEntry(): BgEntry {
-        return entries.maxBy { it.dateTime }
+        return entries.maxByOrNull { it.dateTime }
                 ?: throw NoNightscoutDataException()
     }
 
