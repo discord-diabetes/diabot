@@ -23,8 +23,9 @@ enum class GlucoseUnit(vararg units: String) {
          */
         fun byName(unit: String): GlucoseUnit? {
             return values().firstOrNull { glucoseUnit ->
-                if (glucoseUnit == AMBIGUOUS)
+                if (glucoseUnit == AMBIGUOUS) {
                     return@firstOrNull false
+                }
 
                 glucoseUnit.units.any { name ->
                     name.equals(unit, ignoreCase = true)
