@@ -2,6 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.exceptions.NightscoutFetchException
+import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.graph.BgGraph
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
@@ -57,7 +58,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
         return NightscoutDAO.instance.getUser(sender)
                 .zipWhen { userDTO ->
                     if (userDTO.url == null) {
-                        return@zipWhen Mono.error<NightscoutDTO>(Exception("no url found"))
+                        return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
                     }
 
                     val ns = Nightscout(userDTO.url, userDTO.token)
