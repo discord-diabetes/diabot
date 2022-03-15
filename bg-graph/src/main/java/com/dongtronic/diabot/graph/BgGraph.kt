@@ -71,7 +71,7 @@ class BgGraph(
         val ranges = mutableMapOf<Color, List<BgEntry>>()
 
         readings.forEach {
-            val color = getColour(it.glucose.mgdl, nightscout)
+            val color = getColor(it.glucose.mgdl, nightscout)
 
             ranges.merge(color, listOf(it)) { oldList: List<BgEntry>, newList: List<BgEntry> ->
                 oldList.plus(newList)
@@ -92,19 +92,19 @@ class BgGraph(
             // don't display mmol/l series on the graph since they're less precise compared to mg/dl
             val hidden = unit == GlucoseUnit.MMOL
 
-            ranges.forEach { (rangeColour, entries) ->
+            ranges.forEach { (rangeColor, entries) ->
                 val data = getSeriesData(entries, unit)
-                val colour = if (hidden) Color(0, 0, 0, 0) else rangeColour
+                val color = if (hidden) Color(0, 0, 0, 0) else rangeColor
 
                 val xySeries = addSeries(UUID.randomUUID().toString(), data.keys.toList(), data.values.toList())
 
                 if (settings.plotMode == PlottingStyle.LINE) {
-                    // set the line colour if using line graph
-                    xySeries.lineColor = colour
+                    // set the line color if using line graph
+                    xySeries.lineColor = color
                 }
 
                 xySeries.marker = Circle()
-                xySeries.markerColor = colour
+                xySeries.markerColor = color
 
                 // axis group 0 will be used for creating lines on the graph.
                 // the series which use the preferred glucose unit will then base line creation off the tick labels for this unit
@@ -119,34 +119,34 @@ class BgGraph(
     }
 
     /**
-     * Gets a colour for a BG value (in mg/dL)
+     * Gets a color for a BG value (in mg/dL)
      *
-     * @param mgdl Blood glucose value to get a colour for
+     * @param mgdl Blood glucose value to get a color for
      * @param nightscout Nightscout with bg range data
      * @return [Color] for the given BG value
      */
-    private fun getColour(mgdl: Int, nightscout: NightscoutDTO): Color {
-        // custom colours are not supported in line mode
+    private fun getColor(mgdl: Int, nightscout: NightscoutDTO): Color {
+        // custom colors are not supported in line mode
         val lineGraph = settings.plotMode == PlottingStyle.LINE
 
         return when (settings.theme) {
             GraphTheme.LIGHT -> {
                 when {
-                    lineGraph -> settings.inRangeLightColour
+                    lineGraph -> settings.inRangeLightColor
 
-                    mgdl > nightscout.top -> settings.highLightColour
-                    mgdl < nightscout.bottom -> settings.lowLightColour
-                    else -> settings.inRangeLightColour
+                    mgdl > nightscout.top -> settings.highLightColor
+                    mgdl < nightscout.bottom -> settings.lowLightColor
+                    else -> settings.inRangeLightColor
                 }
             }
 
             GraphTheme.DARK -> {
                 when {
-                    lineGraph -> settings.inRangeDarkColour
+                    lineGraph -> settings.inRangeDarkColor
 
-                    mgdl > nightscout.top -> settings.highDarkColour
-                    mgdl < nightscout.bottom -> settings.lowDarkColour
-                    else -> settings.inRangeDarkColour
+                    mgdl > nightscout.top -> settings.highDarkColor
+                    mgdl < nightscout.bottom -> settings.lowDarkColor
+                    else -> settings.inRangeDarkColor
                 }
             }
         }
