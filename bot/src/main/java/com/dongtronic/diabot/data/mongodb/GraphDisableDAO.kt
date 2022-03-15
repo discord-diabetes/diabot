@@ -7,6 +7,7 @@ import com.mongodb.client.model.IndexOptions
 import com.mongodb.reactivestreams.client.MongoCollection
 import org.litote.kmongo.descending
 import org.litote.kmongo.eq
+import org.litote.kmongo.replaceUpsert
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
@@ -48,15 +49,16 @@ class GraphDisableDAO private constructor() {
      * @return The updated graph status
      */
     fun changeGraphEnabled(guildId: String, enabled: Boolean? = null): Mono<Boolean> {
+        val filter = GraphDisableDTO::guildId eq guildId
         val desiredSetting = enabled?.toMono()
                 // invert the current graph setting as the desired setting to toggle it
                 ?: (getGraphEnabled(guildId).map { !it })
 
         val update = desiredSetting.flatMap { desiredSetting ->
             if (desiredSetting) {
-                collection.deleteOne(GraphDisableDTO::guildId eq guildId).toMono()
+                collection.deleteOne(filter).toMono()
             } else {
-                collection.insertOne(GraphDisableDTO(guildId)).toMono()
+                collection.replaceOne(filter, GraphDisableDTO(guildId), replaceUpsert()).toMono()
             }.map {
                 // give the desired enabled-status as the result
                 desiredSetting
