@@ -1,18 +1,23 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.exceptions.NightscoutFetchException
 import com.dongtronic.diabot.graph.BgGraph
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.EntriesParameters
 import com.dongtronic.nightscout.Nightscout
 import com.dongtronic.nightscout.data.NightscoutDTO
+import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.litote.kmongo.MongoOperator
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import retrofit2.HttpException
+import java.net.UnknownHostException
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.max
@@ -39,8 +44,12 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                 .map { BitmapEncoder.getBitmapBytes(it, BitmapEncoder.BitmapFormat.PNG) }
                 .flatMap { event.channel.sendFile(it, "graph.png").submit().toMono() }
                 .subscribe({}, {
-                    event.reactError()
-                    logger.error("Error generating NS graph for ${event.author}", it)
+                    logger.error("Error generating NS graph for ${event.author}")
+                    if (it is NightscoutFetchException) {
+                        NightscoutCommand.handleGrabError(it.originalException, event, it.userDTO)
+                    } else {
+                        NightscoutCommand.handleError(it, event)
+                    }
                 })
     }
 
@@ -65,7 +74,17 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                             .find("date", startTime, MongoOperator.gte)
                             .count(count)
                             .toMap()
-                    ns.getSgv(params = findParam).flatMap { ns.getSettings(it) }
+                    ns.getSgv(params = findParam)
+                            // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
+                            .onErrorMap({ error ->
+                                error is HttpException
+                                        || error is UnknownHostException
+                                        || error is JsonProcessingException
+                                        || error is NoNightscoutDataException
+                            }, {
+                                NightscoutFetchException(userDTO, it)
+                            })
+                            .flatMap { ns.getSettings(it) }
                 }.map { tuple ->
                     val userDTO = tuple.t1
                     val ns = tuple.t2
