@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
+import com.dongtronic.diabot.data.mongodb.GraphDisableDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.exceptions.NightscoutFetchException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
@@ -41,9 +42,19 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
     }
 
     override fun execute(event: CommandEvent) {
-        getDataSet(event.author.id)
+        val sendGraph = getDataSet(event.author.id)
                 .map { BitmapEncoder.getBitmapBytes(it, BitmapEncoder.BitmapFormat.PNG) }
                 .flatMap { event.channel.sendFile(it, "graph.png").submit().toMono() }
+
+        GraphDisableDAO.instance.getGraphEnabled(event.guild.id)
+                .flatMap {
+                    if (!it) {
+                        event.replyError("Nightscout graphs are disabled in this guild")
+                        Mono.empty()
+                    } else {
+                        sendGraph
+                    }
+                }
                 .subscribe({}, {
                     logger.error("Error generating NS graph for ${event.author}")
                     if (it is NightscoutFetchException) {

@@ -1,9 +1,8 @@
 package com.dongtronic.diabot.util
 
-import java.util.*
-
 enum class DiabotCollection(private val envName: String? = null, private val defaultCollection: String? = null) {
     CHANNELS,
+    GRAPH_DISABLE,
     NAME_RULES,
     NIGHTSCOUT,
     PROJECTS,

@@ -21,7 +21,8 @@ class AdminCommand(category: Command.Category) : DiscordCommand(category, null) 
                 AdminUsernameCommand(category, this),
                 AdminRewardsCommand(category, this),
                 AdminChannelsCommand(category, this),
-                AdminAnnounceCommand(category, this))
+                AdminAnnounceCommand(category, this),
+                AdminGraphCommand(category, this))
     }
 
     override fun execute(event: CommandEvent) {
