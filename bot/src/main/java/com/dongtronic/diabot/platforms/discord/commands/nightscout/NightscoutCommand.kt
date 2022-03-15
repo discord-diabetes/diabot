@@ -419,7 +419,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 }
                 is NightscoutFetchException -> handleGrabError(ex.originalException, event, ex.userDTO)
                 else -> {
-                    event.reactError()
+                    event.replyError("Unexpected error occurred: ${ex.javaClass.simpleName}")
                     logger.warn("Unexpected error: " + ex.message, ex)
                 }
             }
@@ -435,15 +435,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
             when (ex) {
                 is UnknownHostException -> {
-                    event.reactError()
+                    event.replyError("Could not resolve host")
                     logger.info("No host found: ${ex.message}")
                 }
                 is NoNightscoutDataException -> {
-                    event.reactError()
+                    event.replyError("No BG data could be retrieved")
                     logger.info("No nightscout data from ${userDTO.url}")
                 }
                 is JsonProcessingException -> {
-                    event.reactError()
+                    event.replyError("Could not parse JSON")
                     logger.warn("Malformed JSON from ${userDTO.url}")
                 }
                 is HttpException -> {
@@ -458,7 +458,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                             event.replyError("Nightscout data is unreadable due to missing token.")
                         }
                     } else {
-                        event.replyError("Could not connect to Nightscout instance.")
+                        event.replyError("Could not connect to Nightscout instance due to HTTP code ${ex.code()}")
                         logger.warn("Connection status ${ex.code()} from ${userDTO.url}")
                     }
                 }
