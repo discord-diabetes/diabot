@@ -5,8 +5,8 @@ import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutDataException
+import com.dongtronic.diabot.exceptions.NightscoutFetchException
 import com.dongtronic.diabot.exceptions.NightscoutPrivateException
-import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.nameOf
@@ -76,77 +76,6 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         }, {
             handleError(it, event)
         })
-    }
-
-    /**
-     * Handles errors which occur either:
-     * - before fetching data from a Nightscout instance
-     * or
-     * - when replying
-     *
-     * @param ex The error which was thrown
-     * @param event The command event which called this command
-     */
-    private fun handleError(ex: Throwable, event: CommandEvent) {
-        when (ex) {
-            is NightscoutDataException -> {
-                if (ex.message != null) {
-                    event.replyError(ex.message)
-                } else {
-                    event.replyError("Nightscout data could not be read")
-                }
-            }
-            is UnconfiguredNightscoutException -> event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
-            is IllegalArgumentException -> event.reply("Error: " + ex.message)
-            is InsufficientPermissionException -> {
-                logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
-                event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
-            }
-            is UnknownHostException -> {
-                event.reactError()
-                logger.info("No host found: ${ex.message}")
-            }
-            else -> {
-                event.reactError()
-                logger.warn("Unexpected error: " + ex.message, ex)
-            }
-        }
-    }
-
-    /**
-     * Handles errors which occur while grabbing Nightscout data.
-     *
-     * @param ex The [Throwable] which was given
-     * @param event Command event which caused the bot to grab this Nightscout data
-     * @param userDTO The user data which was used for fetching
-     */
-    private fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
-        when (ex) {
-            is NoNightscoutDataException -> {
-                event.reactError()
-                logger.info("No nightscout data from ${userDTO.url}")
-            }
-            is JsonProcessingException -> {
-                event.reactError()
-                logger.warn("Malformed JSON from ${userDTO.url}")
-            }
-            is NightscoutStatusException -> {
-                if (ex.status == 401) {
-                    if (userDTO.jdaUser != null) {
-                        if (userDTO.jdaUser == event.author) {
-                            event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
-                        } else {
-                            event.replyError("Nightscout data for ${event.nameOf(userDTO.jdaUser)} is unreadable due to missing token.")
-                        }
-                    } else {
-                        event.replyError("Nightscout data is unreadable due to missing token.")
-                    }
-                } else {
-                    event.replyError("Could not connect to Nightscout instance.")
-                    logger.warn("Connection status ${ex.status} from ${userDTO.url}")
-                }
-            }
-        }
     }
 
     /**
@@ -275,16 +204,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         .flatMap { api.getPebble(it) }
         ).doFinally {
             api.close()
-        }.onErrorMap(HttpException::class) {
-            NightscoutStatusException(it.code())
-        }.onErrorResume({ error ->
-            error is NightscoutStatusException
+        }.onErrorMap({ error ->
+            error is HttpException
+                    || error is UnknownHostException
                     || error is JsonProcessingException
                     || error is NoNightscoutDataException
         }, {
-            // fallback to `handleGrabError` if the error is any of the above
-            handleGrabError(it, event, userDTO)
-            Mono.empty<NightscoutDTO>()
+            NightscoutFetchException(userDTO, it)
         }).zipWhen { nsDto ->
             // attach a message embed to the NightscoutDTO
             val channelType = event.channelType
@@ -465,5 +391,78 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         throwable.toMono()
                     }
                 }
+    }
+
+    companion object {
+        private val logger = logger()
+
+        /**
+         * Handles errors which occur before attempting to contact the Nightscout instance
+         *
+         * @param ex The error which was thrown
+         * @param event The command event which called this command
+         */
+        fun handleError(ex: Throwable, event: CommandEvent) {
+            when (ex) {
+                is NightscoutDataException -> {
+                    if (ex.message != null) {
+                        event.replyError(ex.message)
+                    } else {
+                        event.replyError("Nightscout data could not be read")
+                    }
+                }
+                is UnconfiguredNightscoutException -> event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
+                is IllegalArgumentException -> event.reply("Error: " + ex.message)
+                is InsufficientPermissionException -> {
+                    logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
+                    event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
+                }
+                is NightscoutFetchException -> handleGrabError(ex.originalException, event, ex.userDTO)
+                else -> {
+                    event.reactError()
+                    logger.warn("Unexpected error: " + ex.message, ex)
+                }
+            }
+        }
+
+        /**
+         * Handles errors which occur while grabbing Nightscout data.
+         *
+         * @param ex The [Throwable] which was given
+         * @param event Command event which caused the bot to grab this Nightscout data
+         * @param userDTO The user data which was used for fetching
+         */
+        fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
+            when (ex) {
+                is UnknownHostException -> {
+                    event.reactError()
+                    logger.info("No host found: ${ex.message}")
+                }
+                is NoNightscoutDataException -> {
+                    event.reactError()
+                    logger.info("No nightscout data from ${userDTO.url}")
+                }
+                is JsonProcessingException -> {
+                    event.reactError()
+                    logger.warn("Malformed JSON from ${userDTO.url}")
+                }
+                is HttpException -> {
+                    if (ex.code() == 401) {
+                        if (userDTO.jdaUser != null) {
+                            if (userDTO.jdaUser == event.author) {
+                                event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
+                            } else {
+                                event.replyError("Nightscout data for ${event.nameOf(userDTO.jdaUser)} is unreadable due to missing token.")
+                            }
+                        } else {
+                            event.replyError("Nightscout data is unreadable due to missing token.")
+                        }
+                    } else {
+                        event.replyError("Could not connect to Nightscout instance.")
+                        logger.warn("Connection status ${ex.code()} from ${userDTO.url}")
+                    }
+                }
+            }
+        }
     }
 }
