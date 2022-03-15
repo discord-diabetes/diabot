@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
 import java.time.Instant
-import kotlin.math.min
+import kotlin.math.max
 
 
 class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null) {
@@ -55,7 +55,7 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
 
                     // calculate the amount of readings there should be.
                     // assume 1 reading every 5 minutes and a minimum of 1 reading
-                    val count = min(time.toMinutes() / 5, 1).toInt()
+                    val count = max(time.toMinutes() / 5, 1).toInt()
                     val startTime = Instant.now()
                             .minus(time)
                             .toEpochMilli()
