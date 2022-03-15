@@ -20,7 +20,9 @@ class NightscoutAdminCommand(category: Command.Category) : DiscordCommand(catego
         this.children = arrayOf(
                 NightscoutAdminSetCommand(category, this),
                 NightscoutAdminDeleteCommand(category, this),
-                NightscoutAdminSimpleCommand(category, this))
+                NightscoutAdminSimpleCommand(category, this),
+                NightscoutAdminGraphCommand(category, this),
+        )
     }
 
     override fun execute(event: CommandEvent) {

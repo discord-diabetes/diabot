@@ -1,13 +1,12 @@
-package com.dongtronic.diabot.platforms.discord.commands.admin
+package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.GraphDisableDAO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.Permission
 
-class AdminGraphCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutAdminGraphCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -18,7 +17,11 @@ class AdminGraphCommand(category: Command.Category, parent: Command?) : DiscordC
         this.aliases = arrayOf("graphing", "graphs", "g")
         this.guildOnly = true
         this.ownerCommand = false
-        this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
+        this.category = category
+        this.examples = arrayOf(
+                this.parent!!.name + " graph",
+                this.parent.name + " graph false"
+        )
     }
 
     override fun execute(event: CommandEvent) {
