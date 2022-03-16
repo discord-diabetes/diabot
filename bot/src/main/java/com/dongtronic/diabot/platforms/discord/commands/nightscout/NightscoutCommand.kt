@@ -74,11 +74,11 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         embed.subscribe({
             logger.debug("Sent Nightscout embed: $it")
         }, {
-            if (it is NightscoutFetchException) {
+            event.reply(if (it is NightscoutFetchException) {
                 handleGrabError(it.originalException, event.author, it.userDTO)
             } else {
                 handleError(it)
-            }
+            })
         })
     }
 
