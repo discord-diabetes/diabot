@@ -58,49 +58,51 @@ class NightscoutGraphCommand(category: Category) : DiscordCommand(category, null
                 .subscribe({}, {
                     logger.error("Error generating NS graph for ${event.author}")
                     if (it is NightscoutFetchException) {
-                        NightscoutCommand.handleGrabError(it.originalException, event, it.userDTO)
+                        NightscoutCommand.handleGrabError(it.originalException, event.author, it.userDTO)
                     } else {
-                        NightscoutCommand.handleError(it, event)
+                        NightscoutCommand.handleError(it)
                     }
                 })
     }
 
-    private fun getDataSet(sender: String, time: Duration = Duration.ofHours(4)): Mono<XYChart> {
-        return NightscoutDAO.instance.getUser(sender)
-                .zipWhen { userDTO ->
-                    if (userDTO.url == null) {
-                        return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
+    companion object {
+        fun getDataSet(senderId: String, time: Duration = Duration.ofHours(4)): Mono<XYChart> {
+            return NightscoutDAO.instance.getUser(senderId)
+                    .zipWhen { userDTO ->
+                        if (userDTO.url == null) {
+                            return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
+                        }
+
+                        val ns = Nightscout(userDTO.url, userDTO.token)
+
+                        // calculate the amount of readings there should be.
+                        // assume 1 reading every 5 minutes and a minimum of 1 reading
+                        val count = max(time.toMinutes() / 5, 1).toInt()
+                        val startTime = Instant.now()
+                                .minus(time)
+                                .toEpochMilli()
+                                .toString()
+                        val findParam = EntriesParameters()
+                                .find("sgv", operator = MongoOperator.exists)
+                                .find("date", startTime, MongoOperator.gte)
+                                .count(count)
+                                .toMap()
+                        ns.getSgv(params = findParam)
+                                // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
+                                .onErrorMap({ error ->
+                                    error is HttpException
+                                            || error is UnknownHostException
+                                            || error is JsonProcessingException
+                                            || error is NoNightscoutDataException
+                                }, {
+                                    NightscoutFetchException(userDTO, it)
+                                })
+                                .flatMap { ns.getSettings(it) }
+                    }.map { tuple ->
+                        val userDTO = tuple.t1
+                        val ns = tuple.t2
+                        BgGraph(userDTO.graphSettings).addEntries(ns)
                     }
-
-                    val ns = Nightscout(userDTO.url, userDTO.token)
-
-                    // calculate the amount of readings there should be.
-                    // assume 1 reading every 5 minutes and a minimum of 1 reading
-                    val count = max(time.toMinutes() / 5, 1).toInt()
-                    val startTime = Instant.now()
-                            .minus(time)
-                            .toEpochMilli()
-                            .toString()
-                    val findParam = EntriesParameters()
-                            .find("sgv", operator = MongoOperator.exists)
-                            .find("date", startTime, MongoOperator.gte)
-                            .count(count)
-                            .toMap()
-                    ns.getSgv(params = findParam)
-                            // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
-                            .onErrorMap({ error ->
-                                error is HttpException
-                                        || error is UnknownHostException
-                                        || error is JsonProcessingException
-                                        || error is NoNightscoutDataException
-                            }, {
-                                NightscoutFetchException(userDTO, it)
-                            })
-                            .flatMap { ns.getSettings(it) }
-                }.map { tuple ->
-                    val userDTO = tuple.t1
-                    val ns = tuple.t2
-                    BgGraph(userDTO.graphSettings).addEntries(ns)
-                }
+        }
     }
 }

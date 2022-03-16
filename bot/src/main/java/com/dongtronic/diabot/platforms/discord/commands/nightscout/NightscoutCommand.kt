@@ -74,7 +74,11 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         embed.subscribe({
             logger.debug("Sent Nightscout embed: $it")
         }, {
-            handleError(it, event)
+            if (it is NightscoutFetchException) {
+                handleGrabError(it.originalException, event.author, it.userDTO)
+            } else {
+                handleError(it)
+            }
         })
     }
 
@@ -400,69 +404,73 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
          * Handles errors which occur before attempting to contact the Nightscout instance
          *
          * @param ex The error which was thrown
-         * @param event The command event which called this command
+         * @return Message to be displayed to the executor of the command
          */
-        fun handleError(ex: Throwable, event: CommandEvent) {
-            when (ex) {
+        fun handleError(ex: Throwable): String {
+            val error = "\uD83D\uDE22"
+
+            val message: String = when (ex) {
                 is NightscoutDataException -> {
                     if (ex.message != null) {
-                        event.replyError(ex.message)
+                        "$error ${ex.message}"
                     } else {
-                        event.replyError("Nightscout data could not be read")
+                        "$error Nightscout data could not be read"
                     }
                 }
-                is UnconfiguredNightscoutException -> event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
-                is IllegalArgumentException -> event.reply("Error: " + ex.message)
+                is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `diabot nightscout set <hostname>`"
+                is IllegalArgumentException -> "Error: ${ex.message}"
                 is InsufficientPermissionException -> {
                     logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
-                    event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
+                    "$error Couldn't perform requested action due to missing permission: `${ex.permission}`"
                 }
-                is NightscoutFetchException -> handleGrabError(ex.originalException, event, ex.userDTO)
                 else -> {
-                    event.replyError("Unexpected error occurred: ${ex.javaClass.simpleName}")
                     logger.warn("Unexpected error: " + ex.message, ex)
+                    "Unexpected error occurred: ${ex.javaClass.simpleName}"
                 }
             }
+
+            return message
         }
 
         /**
          * Handles errors which occur while grabbing Nightscout data.
          *
          * @param ex The [Throwable] which was given
-         * @param event Command event which caused the bot to grab this Nightscout data
          * @param userDTO The user data which was used for fetching
+         * @return Message to be displayed to the executor of the command
          */
-        fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
+        fun handleGrabError(ex: Throwable, author: User, userDTO: NightscoutUserDTO): String {
+            // error/crying emoji
+            var message = "\uD83D\uDE22 "
+
             when (ex) {
                 is UnknownHostException -> {
-                    event.replyError("Could not resolve host")
+                    message += "Could not resolve host"
                     logger.info("No host found: ${ex.message}")
                 }
                 is NoNightscoutDataException -> {
-                    event.replyError("No BG data could be retrieved")
+                    message += "No BG data could be retrieved"
                     logger.info("No nightscout data from ${userDTO.url}")
                 }
                 is JsonProcessingException -> {
-                    event.replyError("Could not parse JSON")
+                    message += "Could not parse JSON"
                     logger.warn("Malformed JSON from ${userDTO.url}")
                 }
                 is HttpException -> {
                     if (ex.code() == 401) {
-                        if (userDTO.jdaUser != null) {
-                            if (userDTO.jdaUser == event.author) {
-                                event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
-                            } else {
-                                event.replyError("Nightscout data for ${event.nameOf(userDTO.jdaUser)} is unreadable due to missing token.")
-                            }
+                        message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {
+                            "Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`"
                         } else {
-                            event.replyError("Nightscout data is unreadable due to missing token.")
+                            "Nightscout data is unreadable due to missing token."
                         }
                     } else {
-                        event.replyError("Could not connect to Nightscout instance due to HTTP code ${ex.code()}")
+                        message += "Could not connect to Nightscout instance due to HTTP code ${ex.code()}"
                         logger.warn("Connection status ${ex.code()} from ${userDTO.url}")
                     }
                 }
             }
+
+            return message
         }
     }
 }

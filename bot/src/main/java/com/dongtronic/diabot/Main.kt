@@ -7,15 +7,12 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
-import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationApplicationCommand
+import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutApplicationCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphCommand
+import com.dongtronic.diabot.platforms.discord.commands.nightscout.*
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
@@ -147,7 +144,8 @@ object Main {
         val applicationCommandListener = ApplicationCommandListener(
                 EstimationApplicationCommand(),
                 NightscoutApplicationCommand(),
-                ConversionApplicationCommand()
+                ConversionApplicationCommand(),
+                NightscoutGraphApplicationCommand(),
         )
 
         val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()
