@@ -10,10 +10,10 @@ allprojects {
     apply plugin: "kotlin"
 
     repositories {
-        jcenter()
         mavenCentral()
         maven { url 'https://m2.dv8tion.net/releases' }
         maven { url 'https://jitpack.io' }
+        maven { url "https://m2.chew.pro/releases" }
     }
 
     dependencies {

@@ -85,7 +85,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = false)) return
 
                 val arguments = cmd.getOrNull(1) ?: ""
-                val commandEvent = CommandEvent(event, arguments, client)
+                val commandEvent = CommandEvent(event, ".", arguments, client)
                 quoteCommand.run(commandEvent)
             }
         }

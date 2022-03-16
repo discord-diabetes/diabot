@@ -2,7 +2,6 @@ package com.dongtronic.diabot.platforms.discord.commands.info
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
@@ -62,7 +61,7 @@ class AboutCommand(category: Category, private val color: Color, private val des
                 .append("Hello! I am **${event.selfUser.name}**, ")
                 .append("$description.")
                 .append("\nI was written in Kotlin by **$author**")
-                .append(" using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
+                .append(" using Chew's [JDA-Utilities fork](https://github.com/Chew/JDA-Chewtils)")
                 .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
                 .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
                 .append(" $inviteMessage.")
