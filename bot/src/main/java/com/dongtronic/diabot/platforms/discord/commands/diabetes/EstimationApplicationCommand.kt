@@ -3,10 +3,11 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 
@@ -21,7 +22,7 @@ class EstimationApplicationCommand : ApplicationCommand {
     override val buttonIds: Set<String> = emptySet()
 
     override fun config(): CommandData {
-        return CommandData(commandName, "Perform A1c and average glucose estimations").addSubcommands(
+        return Commands.slash(commandName, "Perform A1c and average glucose estimations").addSubcommands(
                 SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
                         .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
                         .addOptions(OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
@@ -32,18 +33,18 @@ class EstimationApplicationCommand : ApplicationCommand {
         )
     }
 
-    override fun execute(event: SlashCommandEvent) {
+    override fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandName) {
             commandModeAverage -> estimateAverage(event)
             commandModeA1c -> estimateA1c(event)
         }
     }
 
-    override fun execute(event: ButtonClickEvent) {
+    override fun execute(event: ButtonInteractionEvent) {
         TODO("Not yet implemented")
     }
 
-    private fun estimateAverage(event: SlashCommandEvent) {
+    private fun estimateAverage(event: SlashCommandInteractionEvent) {
         val input = event.getOption(commandArgA1c)!!
 
         val result = A1cConverter.estimateAverage(input.asString).getOrElse {
@@ -57,7 +58,7 @@ class EstimationApplicationCommand : ApplicationCommand {
         ).queue()
     }
 
-    private fun estimateA1c(event: SlashCommandEvent) {
+    private fun estimateA1c(event: SlashCommandInteractionEvent) {
         val inputNumber = event.getOption(commandArgAvg)!!
         val inputUnit = event.getOption(commandArgUnit)
 

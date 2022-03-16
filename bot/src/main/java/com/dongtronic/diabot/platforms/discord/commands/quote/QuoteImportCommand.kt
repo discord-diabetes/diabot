@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.internal.requests.Requester
 import okhttp3.OkHttpClient
@@ -37,7 +37,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
     private val mapper = jacksonObjectMapper()
     private val logger = logger()
     private val pendingRequests = mutableSetOf<User>()
-    private var guildMessages = DirectProcessor.create<GuildMessageReceivedEvent>()
+    private var guildMessages = DirectProcessor.create<MessageReceivedEvent>()
     private var eventListening = false
 
     init {
@@ -268,8 +268,8 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
      * Listens to incoming messages for the interactive mode
      */
     override fun onEvent(event: GenericEvent) {
-        if (event !is GuildMessageReceivedEvent) return
-
+        if (event !is MessageReceivedEvent) return
+        if (!event.isFromGuild) return
         if (event.author.isBot) return
 
         guildMessages.onNext(event)

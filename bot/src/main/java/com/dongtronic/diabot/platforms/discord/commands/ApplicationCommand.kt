@@ -1,22 +1,22 @@
 package com.dongtronic.diabot.platforms.discord.commands
 
 import com.dongtronic.diabot.util.logger
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 interface ApplicationCommand {
     val commandName: String
     val buttonIds: Set<String>
 
-    fun execute(event: SlashCommandEvent)
+    fun execute(event: SlashCommandInteractionEvent)
 
-    fun execute(event: ButtonClickEvent)
+    fun execute(event: ButtonInteractionEvent)
 
     fun config(): CommandData
 
-    fun replyError(event: SlashCommandEvent, exception: Throwable, message: String) {
+    fun replyError(event: SlashCommandInteractionEvent, exception: Throwable, message: String) {
         val reportButton = Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")
 
         if (event.isAcknowledged) {
@@ -27,7 +27,7 @@ interface ApplicationCommand {
         logger().error(exception.message, exception)
     }
 
-    fun replyError(event: ButtonClickEvent, exception: Throwable, message: String) {
+    fun replyError(event: ButtonInteractionEvent, exception: Throwable, message: String) {
         event.editMessage(message).setActionRow(
                 Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")
         ).queue()

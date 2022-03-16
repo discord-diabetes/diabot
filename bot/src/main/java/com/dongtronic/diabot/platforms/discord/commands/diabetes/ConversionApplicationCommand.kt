@@ -3,10 +3,11 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
 class ConversionApplicationCommand : ApplicationCommand {
@@ -17,14 +18,14 @@ class ConversionApplicationCommand : ApplicationCommand {
     override val buttonIds: Set<String> = emptySet()
 
     override fun config(): CommandData {
-        return CommandData(commandName, "Convert blood glucose values between mmol/L and mg/dL")
+        return Commands.slash(commandName, "Convert blood glucose values between mmol/L and mg/dL")
                 .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
                 .addOptions(OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
                         .addChoice("mmol/L", "mmol/L")
                         .addChoice("mg/dL", "mg/dL"))
     }
 
-    override fun execute(event: SlashCommandEvent) {
+    override fun execute(event: SlashCommandInteractionEvent) {
         val glucoseNumber = event.getOption(commandArgGlucose)!!.asString
         val glucoseUnit = event.getOption(commandArgUnit)?.asString
 
@@ -51,7 +52,7 @@ class ConversionApplicationCommand : ApplicationCommand {
         event.reply(reply).queue()
     }
 
-    override fun execute(event: ButtonClickEvent) {
+    override fun execute(event: ButtonInteractionEvent) {
         TODO("Not yet implemented")
     }
 }

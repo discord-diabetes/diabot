@@ -23,6 +23,7 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.GuildlistCommand
+import dev.minn.jda.ktx.injectKTX
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent
@@ -78,7 +79,7 @@ object Main {
                 // command to show information about the bot
                 AboutCommand(utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.MESSAGE_READ, Permission.MESSAGE_WRITE, Permission.NICKNAME_MANAGE, Permission.USE_SLASH_COMMANDS),
+                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.NICKNAME_MANAGE, Permission.USE_APPLICATION_COMMANDS),
 
 
                 // A1c
@@ -123,6 +124,7 @@ object Main {
                 .setEnabledIntents(GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS)
                 .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
                 .setShardsTotal(-1) // Let Discord decide how many shards we need
+                .injectKTX() // Add coroutine event support
                 .addEventListeners(
                         waiter,
                         builtClient,
@@ -131,7 +133,8 @@ object Main {
                         UsernameEnforcementListener(),
                         OhNoListener(),
                         QuoteListener(builtClient),
-                ).build()
+                )
+                .build()
 
         registerSlashCommands(shardManager)
     }

@@ -5,6 +5,7 @@ import com.dongtronic.diabot.logic.nutrition.NutritionixCommunicator
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
+import com.jagrosh.jdautilities.command.CooldownScope
 import net.dv8tion.jda.api.EmbedBuilder
 import reactor.core.scheduler.Schedulers
 

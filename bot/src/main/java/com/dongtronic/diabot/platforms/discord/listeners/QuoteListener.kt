@@ -11,7 +11,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import org.litote.kmongo.eq
@@ -24,20 +24,23 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
     private val speechEmoji = "U+1f4ac"
     private val logger = logger()
 
-    override fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) {
-        if (event.user.isBot) return
+    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+        // todo: blocking call
+        if (event.retrieveUser().complete().isBot) return
+        if (!event.isFromGuild) return
         if (!event.reaction.reactionEmote.isEmoji) return
         if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
-        if (!QuoteDAO.checkRestrictions(event.channel)) return
+        if (!QuoteDAO.checkRestrictions(event.textChannel)) return
 
-        val author = event.member
+        // todo: blocking call
+        val author = event.retrieveMember().complete()
         val guild = event.guild
 
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
         val reply: (() -> MessageAction) -> Unit = { message ->
-            if (event.channel.canTalk(event.member)) {
+            if (event.textChannel.canTalk(author)) {
                 message().queue()
             }
         }
@@ -45,16 +48,16 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.id,
-                    channelId = event.channel.id,
+                    channelId = event.textChannel.id,
                     author = message.author.name,
                     authorId = message.author.id,
                     message = message.contentRaw,
                     messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                reply { event.channel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
+                reply { event.textChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
             }, {
-                reply { event.channel.sendMessage("Could not create quote for message: ${message.id}") }
+                reply { event.textChannel.sendMessage("Could not create quote for message: ${message.id}") }
             })
         }
 

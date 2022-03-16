@@ -5,7 +5,7 @@ import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.util.Patterns
 import com.dongtronic.diabot.util.logger
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class ConversionListener(private val prefix: String) : ListenerAdapter() {
@@ -17,7 +17,7 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         val monospacePattern = Regex("`[^`]+`")
     }
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+    override fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot) return
         if (event.message.contentRaw.startsWith(prefix, true)) return
 
@@ -33,7 +33,7 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         }
     }
 
-    private fun recursiveReading(event: GuildMessageReceivedEvent, previousMessageText: String): String {
+    private fun recursiveReading(event: MessageReceivedEvent, previousMessageText: String): String {
         if (event.author.isBot) return ""
 
         val inlineMatches = Patterns.inlineBgPattern.findAll(previousMessageText)
@@ -67,7 +67,7 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
 
     private fun getResult(originalNumString: String,
                           originalUnitString: String?,
-                          event: GuildMessageReceivedEvent,
+                          event: MessageReceivedEvent,
                           multipleMatches: Boolean = false): String {
         val separator = if (multipleMatches) "─ " else ""
         val numberString = originalNumString.replace(',', '.')
@@ -123,7 +123,7 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         return newLines.joinToString("\n")
     }
 
-    private fun sendMessage(message: String, event: GuildMessageReceivedEvent) {
+    private fun sendMessage(message: String, event: MessageReceivedEvent) {
         val channel = event.channel
         if (message.isNotEmpty()) {
             channel.sendMessage(message).queue()

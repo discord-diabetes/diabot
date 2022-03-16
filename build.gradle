@@ -13,7 +13,7 @@ allprojects {
         mavenCentral()
         maven { url 'https://m2.dv8tion.net/releases' }
         maven { url 'https://jitpack.io' }
-        maven { url "https://m2.chew.pro/releases" }
+        maven { url "https://m2.chew.pro/snapshots" }
     }
 
     dependencies {

@@ -16,10 +16,11 @@ import dev.minn.jda.ktx.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.litote.kmongo.MongoOperator
@@ -38,7 +39,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
     private val logger = logger()
     private val cooldowns = mutableMapOf<String, Long>()
 
-    override fun execute(event: SlashCommandEvent) {
+    override fun execute(event: SlashCommandInteractionEvent) {
         val cooldownSeconds = getCooldown(event.user.id)
         if (cooldownSeconds != null) {
             val plural = if (abs(cooldownSeconds) != 1L) "s" else ""
@@ -107,10 +108,10 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                 .forEach { cooldowns.remove(it.key) }
     }
 
-    override fun execute(event: ButtonClickEvent) {}
+    override fun execute(event: ButtonInteractionEvent) {}
 
     override fun config(): CommandData {
-        return CommandData(commandName, "Generate a graph from Nightscout")
+        return Commands.slash(commandName, "Generate a graph from Nightscout")
                 .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
     }
 

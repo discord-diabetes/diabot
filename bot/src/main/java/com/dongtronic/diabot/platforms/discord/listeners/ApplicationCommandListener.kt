@@ -2,8 +2,8 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.util.logger
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class ApplicationCommandListener(vararg val commands: ApplicationCommand) : ListenerAdapter() {
@@ -32,7 +32,7 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
         }
     }
 
-    override fun onSlashCommand(event: SlashCommandEvent) {
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val commandClass = commandMap[event.name]
 
         if (commandClass != null) {
@@ -43,7 +43,7 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
         }
     }
 
-    override fun onButtonClick(event: ButtonClickEvent) {
+    override fun onButtonInteraction(event: ButtonInteractionEvent) {
         val commandClass = buttonIdMap[event.componentId]
 
         if (commandClass != null) {
