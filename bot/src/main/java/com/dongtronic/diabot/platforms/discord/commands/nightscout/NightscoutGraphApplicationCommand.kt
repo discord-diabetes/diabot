@@ -48,15 +48,16 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
         runBlocking {
             launch {
-                event.deferReply().queue()
                 try {
                     val enabled = !event.isFromGuild
                             || GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
                     if (!enabled) {
-                        event.hook.editOriginal("Nightscout graphs are disabled in this guild").queue()
+                        event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
                         return@launch
                     }
+
+                    event.deferReply(false).queue()
 
                     val chart = getDataSet(event.user.id).awaitSingle()
                     val imageBytes = BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG)
