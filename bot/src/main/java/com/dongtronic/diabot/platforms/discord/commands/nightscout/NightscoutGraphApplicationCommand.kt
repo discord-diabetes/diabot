@@ -48,31 +48,26 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
         runBlocking {
             launch {
-                val hook = event.deferReply().submit()
+                event.deferReply().queue()
                 try {
                     val enabled = !event.isFromGuild
                             || GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
                     if (!enabled) {
-                        hook.await()
-                                .setEphemeral(true)
-                                .editOriginal("Nightscout graphs are disabled in this guild")
-                                .await()
+                        event.hook.editOriginal("Nightscout graphs are disabled in this guild").queue()
                         return@launch
                     }
 
                     val chart = getDataSet(event.user.id).awaitSingle()
                     val imageBytes = BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG)
-                    hook.await().editOriginal(imageBytes, "graph.png").submit().await()
+                    event.hook.editOriginal(imageBytes, "graph.png").submit().await()
                     applyCooldown(event.user.id)
                 } catch (e: Exception) {
                     logger.error("Error generating NS graph for ${event.user}")
                     if (e is NightscoutFetchException) {
-                        hook.await()
-                                .editOriginal(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO))
-                                .queue()
+                        event.hook.editOriginal(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO)).queue()
                     } else {
-                        hook.await().editOriginal(NightscoutCommand.handleError(e)).queue()
+                        event.hook.editOriginal(NightscoutCommand.handleError(e)).queue()
                     }
                 }
             }
