@@ -109,16 +109,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val top = ranges.path("bgTargetTop").asInt()
             val high = ranges.path("bgHigh").asInt()
 
-            val builder = dto.newBuilder()
-
-            builder.title(title)
-            builder.low(low)
-            builder.bottom(bottom)
-            builder.top(top)
-            builder.high(high)
-            builder.units(units)
-
-            return@map builder.build()
+            return@map dto.newBuilder()
+                    .title(title)
+                    .low(low)
+                    .bottom(bottom)
+                    .top(top)
+                    .high(high)
+                    .units(units)
+                    .build()
         }
     }
 
