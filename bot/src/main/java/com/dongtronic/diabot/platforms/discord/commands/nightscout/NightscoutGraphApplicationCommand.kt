@@ -23,6 +23,7 @@ import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.litote.kmongo.MongoOperator
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.onErrorMap
 import retrofit2.HttpException
 import java.net.UnknownHostException
 import java.time.Duration
@@ -104,6 +105,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
     private fun getDataSet(senderId: String, time: Duration = Duration.ofHours(4)): Mono<XYChart> {
         return NightscoutDAO.instance.getUser(senderId)
+                .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
                 .zipWhen { userDTO ->
                     if (userDTO.url == null) {
                         return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
