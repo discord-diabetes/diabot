@@ -5,8 +5,8 @@ import com.dongtronic.diabot.data.mongodb.ChannelDTO
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.data.mongodb.NightscoutUserDTO
 import com.dongtronic.diabot.exceptions.NightscoutDataException
+import com.dongtronic.diabot.exceptions.NightscoutFetchException
 import com.dongtronic.diabot.exceptions.NightscoutPrivateException
-import com.dongtronic.diabot.exceptions.NightscoutStatusException
 import com.dongtronic.diabot.exceptions.UnconfiguredNightscoutException
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.nameOf
@@ -74,79 +74,12 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         embed.subscribe({
             logger.debug("Sent Nightscout embed: $it")
         }, {
-            handleError(it, event)
+            event.reply(if (it is NightscoutFetchException) {
+                handleGrabError(it.originalException, event.author, it.userDTO)
+            } else {
+                handleError(it)
+            })
         })
-    }
-
-    /**
-     * Handles errors which occur either:
-     * - before fetching data from a Nightscout instance
-     * or
-     * - when replying
-     *
-     * @param ex The error which was thrown
-     * @param event The command event which called this command
-     */
-    private fun handleError(ex: Throwable, event: CommandEvent) {
-        when (ex) {
-            is NightscoutDataException -> {
-                if (ex.message != null) {
-                    event.replyError(ex.message)
-                } else {
-                    event.replyError("Nightscout data could not be read")
-                }
-            }
-            is UnconfiguredNightscoutException -> event.reply("Please set your Nightscout hostname using `diabot nightscout set <hostname>`")
-            is IllegalArgumentException -> event.reply("Error: " + ex.message)
-            is InsufficientPermissionException -> {
-                logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
-                event.replyError("Couldn't perform requested action due to missing permission: `${ex.permission}`")
-            }
-            is UnknownHostException -> {
-                event.reactError()
-                logger.info("No host found: ${ex.message}")
-            }
-            else -> {
-                event.reactError()
-                logger.warn("Unexpected error: " + ex.message, ex)
-            }
-        }
-    }
-
-    /**
-     * Handles errors which occur while grabbing Nightscout data.
-     *
-     * @param ex The [Throwable] which was given
-     * @param event Command event which caused the bot to grab this Nightscout data
-     * @param userDTO The user data which was used for fetching
-     */
-    private fun handleGrabError(ex: Throwable, event: CommandEvent, userDTO: NightscoutUserDTO) {
-        when (ex) {
-            is NoNightscoutDataException -> {
-                event.reactError()
-                logger.info("No nightscout data from ${userDTO.url}")
-            }
-            is JsonProcessingException -> {
-                event.reactError()
-                logger.warn("Malformed JSON from ${userDTO.url}")
-            }
-            is NightscoutStatusException -> {
-                if (ex.status == 401) {
-                    if (userDTO.jdaUser != null) {
-                        if (userDTO.jdaUser == event.author) {
-                            event.replyError("Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`")
-                        } else {
-                            event.replyError("Nightscout data for ${event.nameOf(userDTO.jdaUser)} is unreadable due to missing token.")
-                        }
-                    } else {
-                        event.replyError("Nightscout data is unreadable due to missing token.")
-                    }
-                } else {
-                    event.replyError("Could not connect to Nightscout instance.")
-                    logger.warn("Connection status ${ex.status} from ${userDTO.url}")
-                }
-            }
-        }
     }
 
     /**
@@ -275,16 +208,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         .flatMap { api.getPebble(it) }
         ).doFinally {
             api.close()
-        }.onErrorMap(HttpException::class) {
-            NightscoutStatusException(it.code())
-        }.onErrorResume({ error ->
-            error is NightscoutStatusException
+        }.onErrorMap({ error ->
+            error is HttpException
+                    || error is UnknownHostException
                     || error is JsonProcessingException
                     || error is NoNightscoutDataException
         }, {
-            // fallback to `handleGrabError` if the error is any of the above
-            handleGrabError(it, event, userDTO)
-            Mono.empty<NightscoutDTO>()
+            NightscoutFetchException(userDTO, it)
         }).zipWhen { nsDto ->
             // attach a message embed to the NightscoutDTO
             val channelType = event.channelType
@@ -316,13 +246,14 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             short: Boolean,
             builder: EmbedBuilder = EmbedBuilder()
     ): EmbedBuilder {
+        val newest = nsDTO.getNewestEntry()
         val displayOptions = userDTO.displayOptions
 
         if (displayOptions.contains("title")) builder.setTitle(nsDTO.title)
 
         val (mmolString: String, mgdlString: String) = buildGlucoseStrings(nsDTO)
 
-        val trendString = nsDTO.trend.unicode
+        val trendString = newest.trend.unicode
         builder.addField("mmol/L", mmolString, true)
         builder.addField("mg/dL", mgdlString, true)
         if (displayOptions.contains("trend")) builder.addField("trend", trendString, true)
@@ -340,10 +271,10 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             builder.setThumbnail(avatarUrl)
         }
 
-        builder.setTimestamp(nsDTO.dateTime)
+        builder.setTimestamp(newest.dateTime)
         builder.setFooter("measured", "https://github.com/nightscout/cgm-remote-monitor/raw/master/static/images/large.png")
 
-        if (nsDTO.dateTime!!.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
+        if (newest.dateTime.plus(15, ChronoUnit.MINUTES).isBefore(Instant.now())) {
             builder.setDescription("**BG data is more than 15 minutes old**")
         }
 
@@ -357,14 +288,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A pair consisting of mmol/L in the first value and mg/dL in the second value
      */
     private fun buildGlucoseStrings(dto: NightscoutDTO): Pair<String, String> {
+        val newest = dto.getNewestEntry()
         val mmolString: String
         val mgdlString: String
-        if (dto.delta != null) {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), dto.delta!!.mmol.toString(), dto.deltaIsNegative)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), dto.delta!!.mgdl.toString(), dto.deltaIsNegative)
+        if (newest.delta != null) {
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), newest.delta!!.mmol.toString())
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), newest.delta!!.mgdl.toString())
         } else {
-            mmolString = buildGlucoseString(dto.glucose!!.mmol.toString(), "999.0", false)
-            mgdlString = buildGlucoseString(dto.glucose!!.mgdl.toString(), "999.0", false)
+            mmolString = buildGlucoseString(newest.glucose.mmol.toString(), "999.0")
+            mgdlString = buildGlucoseString(newest.glucose.mgdl.toString(), "999.0")
         }
         return Pair(mmolString, mgdlString)
     }
@@ -374,10 +306,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      *
      * @param glucose The glucose value.
      * @param delta The current delta.
-     * @param negative Whether the delta is falling.
      * @return Formatted glucose and delta
      */
-    private fun buildGlucoseString(glucose: String, delta: String, negative: Boolean): String {
+    private fun buildGlucoseString(glucose: String, delta: String): String {
         val builder = StringBuilder()
 
         builder.append(glucose)
@@ -386,9 +317,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             // 999L is placeholder for absent delta
             builder.append(" (")
 
-            if (negative) {
-                builder.append("-")
-            } else {
+            if (!delta.startsWith("-")) {
                 builder.append("+")
             }
 
@@ -406,7 +335,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param response The message to react to.
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
-        BloodGlucoseConverter.getReactions(dto.glucose!!.mmol, dto.glucose!!.mgdl).forEach {
+        BloodGlucoseConverter.getReactions(dto.getNewestEntry().glucose.mmol, dto.getNewestEntry().glucose.mgdl).forEach {
             response.addReaction(it).queue()
         }
     }
@@ -418,7 +347,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param builder Optional: the embed to set colors on.
      */
     private fun setResponseColor(dto: NightscoutDTO, builder: EmbedBuilder = EmbedBuilder()): EmbedBuilder {
-        val glucose = dto.glucose!!.mgdl.toDouble()
+        val glucose = dto.getNewestEntry().glucose.mgdl.toDouble()
 
         if (glucose >= dto.high || glucose <= dto.low) {
             builder.setColor(Color.red)
@@ -466,5 +395,82 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         throwable.toMono()
                     }
                 }
+    }
+
+    companion object {
+        private val logger = logger()
+
+        /**
+         * Handles errors which occur before attempting to contact the Nightscout instance
+         *
+         * @param ex The error which was thrown
+         * @return Message to be displayed to the executor of the command
+         */
+        fun handleError(ex: Throwable): String {
+            val error = "\uD83D\uDE22"
+
+            val message: String = when (ex) {
+                is NightscoutDataException -> {
+                    if (ex.message != null) {
+                        "$error ${ex.message}"
+                    } else {
+                        "$error Nightscout data could not be read"
+                    }
+                }
+                is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `diabot nightscout set <hostname>`"
+                is IllegalArgumentException -> "Error: ${ex.message}"
+                is InsufficientPermissionException -> {
+                    logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
+                    "$error Couldn't perform requested action due to missing permission: `${ex.permission}`"
+                }
+                else -> {
+                    logger.warn("Unexpected error: " + ex.message, ex)
+                    "Unexpected error occurred: ${ex.javaClass.simpleName}"
+                }
+            }
+
+            return message
+        }
+
+        /**
+         * Handles errors which occur while grabbing Nightscout data.
+         *
+         * @param ex The [Throwable] which was given
+         * @param userDTO The user data which was used for fetching
+         * @return Message to be displayed to the executor of the command
+         */
+        fun handleGrabError(ex: Throwable, author: User, userDTO: NightscoutUserDTO): String {
+            // error/crying emoji
+            var message = "\uD83D\uDE22 "
+
+            when (ex) {
+                is UnknownHostException -> {
+                    message += "Could not resolve host"
+                    logger.info("No host found: ${ex.message}")
+                }
+                is NoNightscoutDataException -> {
+                    message += "No BG data could be retrieved"
+                    logger.info("No nightscout data from ${userDTO.url}")
+                }
+                is JsonProcessingException -> {
+                    message += "Could not parse JSON"
+                    logger.warn("Malformed JSON from ${userDTO.url}")
+                }
+                is HttpException -> {
+                    if (ex.code() == 401) {
+                        message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {
+                            "Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`"
+                        } else {
+                            "Nightscout data is unreadable due to missing token."
+                        }
+                    } else {
+                        message += "Could not connect to Nightscout instance due to HTTP code ${ex.code()}"
+                        logger.warn("Connection status ${ex.code()} from ${userDTO.url}")
+                    }
+                }
+            }
+
+            return message
+        }
     }
 }

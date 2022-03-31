@@ -39,6 +39,7 @@ dependencies {
     // Misc
     implementation project(':utilities')
     implementation project(':nightscout-api')
+    implementation project(':bg-graph')
     implementation "io.projectreactor:reactor-core:${reactorCoreVersion}"
     implementation "io.projectreactor.kotlin:reactor-kotlin-extensions:${reactorKotlinVersion}"
 }

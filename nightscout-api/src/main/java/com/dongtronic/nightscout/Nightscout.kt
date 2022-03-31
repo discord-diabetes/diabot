@@ -2,6 +2,7 @@ package com.dongtronic.nightscout
 
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.util.logger
+import com.dongtronic.nightscout.data.BgEntry
 import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -108,14 +109,14 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val top = ranges.path("bgTargetTop").asInt()
             val high = ranges.path("bgHigh").asInt()
 
-            dto.title = title
-            dto.low = low
-            dto.bottom = bottom
-            dto.top = top
-            dto.high = high
-            dto.units = units
-
-            return@map dto
+            return@map dto.newBuilder()
+                    .title(title)
+                    .low(low)
+                    .bottom(bottom)
+                    .top(top)
+                    .high(high)
+                    .units(units)
+                    .build()
         }
     }
 
@@ -128,6 +129,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     fun getPebble(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
         return service.getPebbleJson().map { json ->
             val bgsJson = json.get("bgs")?.get(0)
+            val builder = dto.newBuilder()
 
             if (bgsJson == null) {
                 logger.warn("Failed to get bgs object from pebble Endpoint JSON:\n${json.toPrettyString()}")
@@ -135,71 +137,94 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             }
             var bgDelta = "0"
             if (bgsJson.hasNonNull("cob")) {
-                dto.cob = bgsJson.get("cob").asInt()
+                builder.cob(bgsJson.get("cob").asInt())
             }
             if (bgsJson.hasNonNull("iob")) {
-                dto.iob = bgsJson.get("iob").asText().toFloat()
+                builder.iob(bgsJson.get("iob").asText().toFloat())
             }
             if (bgsJson.hasNonNull("bgdelta")) {
                 bgDelta = bgsJson.get("bgdelta").asText()
             }
-            if (dto.delta == null
+            val newestBg = dto.getNewestEntryOrNull()
+            if (newestBg != null && newestBg.delta == null
                     // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
-                    || (dto.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
-                dto.deltaIsNegative = bgDelta.contains("-")
-                dto.delta = BloodGlucoseConverter.convert(bgDelta.replace("-".toRegex(), ""), dto.units).getOrNull()
+                    || (newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
+                val bgBuilder = newestBg.newBuilder()
+                BloodGlucoseConverter.convert(bgDelta, dto.units).onSuccess {
+                    bgBuilder.delta(it)
+                }
+                builder.replaceEntry(bgBuilder.build())
             }
-            return@map dto
+            return@map builder.build()
         }
     }
 
     /**
-     * Fetches a Nightscout's most recent SGV and puts the data in a [NightscoutDTO] instance
+     * Fetches a Nightscout's most recent SGV(s) and puts the data in a [NightscoutDTO] instance
      *
      * @param dto NS data
-     * @return The [NightscoutDTO] instance with the most recent glucose data (sgv, timestamp, trend, delta)
+     * @param count The amount of SGV entries to retrieve
+     * @return The [NightscoutDTO] instance with recent glucose data (sgv, timestamp, trend, delta)
      */
-    fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO()): Mono<NightscoutDTO> {
+    fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO(), count: Int = 1): Mono<NightscoutDTO> {
         val findParam = EntriesParameters()
                 .find("sgv", operator = MongoOperator.exists)
-                .count(1)
+                .count(count)
                 .toMap()
-        return service.getEntriesJson(findParam).map { json ->
+        return getSgv(dto, findParam)
+    }
+
+    /**
+     * Fetches a Nightscout's SGV(s) and puts the data in a [NightscoutDTO] instance
+     *
+     * @param dto NS data
+     * @param params The parameters to pass to the Nightscout API
+     * @return The [NightscoutDTO] instance with glucose data (sgv, timestamp, trend, delta)
+     */
+    fun getSgv(dto: NightscoutDTO = NightscoutDTO(), params: Map<String, String> = emptyMap()): Mono<NightscoutDTO> {
+        return service.getEntriesJson(params).map { json ->
             if (json.isEmpty) {
                 throw NoNightscoutDataException()
             }
 
+            val dtoBuilder = dto.newBuilder()
+
             // Parse JSON and construct response
-            val jsonObject = json.get(0)
-            val sgv = jsonObject.path("sgv").asText()
-            val timestamp = jsonObject.path("date").asLong()
-            var trend = TrendArrow.NONE
-            val direction: String
-            if (jsonObject.hasNonNull("trend")) {
-                trend = TrendArrow.getTrend(jsonObject.path("trend").asInt())
-            } else if (jsonObject.hasNonNull("direction")) {
-                direction = jsonObject.path("direction").asText()
-                trend = TrendArrow.getTrend(direction)
+            json.forEach { entryJson ->
+                // Can't parse without SGV
+                if (!entryJson.has("sgv")) return@forEach
+
+                val sgv = entryJson.path("sgv").asText()
+                val timestamp = entryJson.path("date").asLong()
+                var trend = TrendArrow.NONE
+                val direction: String
+                if (entryJson.hasNonNull("trend")) {
+                    trend = TrendArrow.getTrend(entryJson.path("trend").asInt())
+                } else if (entryJson.hasNonNull("direction")) {
+                    direction = entryJson.path("direction").asText()
+                    trend = TrendArrow.getTrend(direction)
+                }
+
+                var delta = ""
+                if (entryJson.hasNonNull("delta")) {
+                    delta = entryJson.path("delta").asText()
+                }
+
+                val bgBuilder = BgEntry.Builder()
+
+                if (delta.isNotEmpty()) {
+                    BloodGlucoseConverter.convert(delta, "mg").onSuccess {
+                        bgBuilder.delta(it)
+                    }
+                }
+
+                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg").getOrThrow())
+                bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
+                bgBuilder.trend(trend)
+                dtoBuilder.replaceEntry(bgBuilder.build())
             }
 
-            var delta = ""
-            if (jsonObject.hasNonNull("delta")) {
-                delta = jsonObject.path("delta").asText()
-            }
-
-            val convertedBg = BloodGlucoseConverter.convert(sgv, "mg")
-
-            if (delta.isNotEmpty()) {
-                val convertedDelta = BloodGlucoseConverter.convert(delta.replace("-".toRegex(), ""), "mg")
-                dto.delta = convertedDelta.getOrNull()
-            }
-
-            dto.glucose = convertedBg.getOrThrow()
-            dto.deltaIsNegative = delta.contains("-")
-            dto.dateTime = Instant.ofEpochMilli(timestamp)
-            dto.trend = trend
-
-            return@map dto
+            return@map dtoBuilder.build()
         }
     }
 
