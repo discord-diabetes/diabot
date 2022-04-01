@@ -113,7 +113,8 @@ class BgGraph(
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
 
                 var yAxisMin = 40.0
-                var yAxisMax = max(readings.maxOf { it.glucose.mgdl } + 15.0, 210.0)
+                // add 15 to give extra room
+                var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + 15.0
 
                 if (unit != GlucoseUnit.MGDL) {
                     yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
