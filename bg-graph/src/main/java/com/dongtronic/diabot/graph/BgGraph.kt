@@ -116,8 +116,8 @@ class BgGraph(
                 var yAxisMax = max(readings.maxOf { it.glucose.mgdl + 15 }.toDouble(), 210.0)
 
                 if (unit != GlucoseUnit.MGDL) {
-                    yAxisMin /= 18.0156
-                    yAxisMax /= 18.0156
+                    yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
+                    yAxisMax /= GlucoseUnit.CONVERSION_FACTOR
                 }
 
                 styler.setYAxisMin(xySeries.yAxisGroup, yAxisMin)

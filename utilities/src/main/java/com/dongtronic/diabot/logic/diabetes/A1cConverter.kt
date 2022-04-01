@@ -7,8 +7,6 @@ import com.dongtronic.diabot.data.ConversionDTO
  * A1c conversion logic
  */
 object A1cConverter {
-    private const val MMOL_TO_MGDL_CONVERSION_FACTOR = 18.016
-
     /**
      * Estimate an A1c from a BG value.
      *
@@ -97,11 +95,11 @@ object A1cConverter {
     }
 
     private fun convertMmolToDcct(glucose: Double): Double {
-        return convertMgdlToDcct(glucose * MMOL_TO_MGDL_CONVERSION_FACTOR)
+        return convertMgdlToDcct(glucose * GlucoseUnit.CONVERSION_FACTOR)
     }
 
     private fun convertMmolToIfcc(glucose: Double): Double {
-        return convertMgdlToIfcc(glucose * MMOL_TO_MGDL_CONVERSION_FACTOR)
+        return convertMgdlToIfcc(glucose * GlucoseUnit.CONVERSION_FACTOR)
     }
 
     private fun convertMgdlToDcct(glucose: Double): Double {
