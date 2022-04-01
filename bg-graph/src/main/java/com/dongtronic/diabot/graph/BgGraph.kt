@@ -112,14 +112,16 @@ class BgGraph(
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
 
-                var lowerscale = 40.0
-                var upperscale = max(readings.maxOf { it.glucose.mgdl + 15 }.toDouble(), 210.0)
+                var yAxisMin = 40.0
+                var yAxisMax = max(readings.maxOf { it.glucose.mgdl + 15 }.toDouble(), 210.0)
+
                 if (unit != GlucoseUnit.MGDL) {
-                    lowerscale /= 18.0156
-                    upperscale /= 18.0156
+                    yAxisMin /= 18.0156
+                    yAxisMax /= 18.0156
                 }
-                styler.setYAxisMin(xySeries.yAxisGroup, lowerscale)
-                styler.setYAxisMax(xySeries.yAxisGroup, upperscale)
+
+                styler.setYAxisMin(xySeries.yAxisGroup, yAxisMin)
+                styler.setYAxisMax(xySeries.yAxisGroup, yAxisMax)
             }
         }
     }
