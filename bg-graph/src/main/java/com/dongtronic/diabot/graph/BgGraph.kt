@@ -11,6 +11,7 @@ import java.awt.Color
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.max
 
 class BgGraph(
         private val settings: GraphSettings,
@@ -111,9 +112,17 @@ class BgGraph(
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
 
-                val scale = ScalingUtil.findMinMax(readings, unit)
-                styler.setYAxisMin(xySeries.yAxisGroup, scale.first)
-                styler.setYAxisMax(xySeries.yAxisGroup, scale.second)
+                var yAxisMin = 40.0
+                // add 15 to give extra room
+                var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + 15.0
+
+                if (unit != GlucoseUnit.MGDL) {
+                    yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
+                    yAxisMax /= GlucoseUnit.CONVERSION_FACTOR
+                }
+
+                styler.setYAxisMin(xySeries.yAxisGroup, yAxisMin)
+                styler.setYAxisMax(xySeries.yAxisGroup, yAxisMax)
             }
         }
     }

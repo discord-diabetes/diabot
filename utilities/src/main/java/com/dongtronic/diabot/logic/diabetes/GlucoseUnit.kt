@@ -14,6 +14,8 @@ enum class GlucoseUnit(vararg units: String) {
     val units: List<String> = units.toList()
 
     companion object {
+        const val CONVERSION_FACTOR = 18.0156
+
         /**
          * Attempts to find a [GlucoseUnit] which matches the unit name given.
          * This function does not match [GlucoseUnit.AMBIGUOUS].

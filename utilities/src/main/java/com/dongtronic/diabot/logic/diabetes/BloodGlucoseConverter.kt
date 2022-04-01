@@ -85,11 +85,11 @@ object BloodGlucoseConverter {
     private fun convert(originalValue: Double, unit: String): Result<ConversionDTO> {
         return when {
             unit.contains("MMOL", true) -> {
-                val result = originalValue * 18.016
+                val result = originalValue * GlucoseUnit.CONVERSION_FACTOR
                 Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MMOL))
             }
             unit.contains("MG", true) -> {
-                val result = originalValue / 18.016
+                val result = originalValue / GlucoseUnit.CONVERSION_FACTOR
                 Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MGDL))
             }
             else -> Result.failure(UnknownUnitException())
@@ -99,11 +99,11 @@ object BloodGlucoseConverter {
     private fun convert(originalValue: Double, unit: GlucoseUnit): Result<ConversionDTO> {
         return when (unit) {
             GlucoseUnit.MMOL -> {
-                val result = originalValue * 18.016
+                val result = originalValue * GlucoseUnit.CONVERSION_FACTOR
                 Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MMOL))
             }
             GlucoseUnit.MGDL -> {
-                val result = originalValue / 18.016
+                val result = originalValue / GlucoseUnit.CONVERSION_FACTOR
                 Result.success(ConversionDTO(originalValue, result, GlucoseUnit.MGDL))
             }
             GlucoseUnit.AMBIGUOUS -> convertAmbiguous(originalValue)
@@ -111,8 +111,8 @@ object BloodGlucoseConverter {
     }
 
     private fun convertAmbiguous(originalValue: Double): Result<ConversionDTO> {
-        val toMgdl = originalValue * 18.016
-        val toMmol = originalValue / 18.016
+        val toMgdl = originalValue * GlucoseUnit.CONVERSION_FACTOR
+        val toMmol = originalValue / GlucoseUnit.CONVERSION_FACTOR
 
         return Result.success(ConversionDTO(originalValue, toMmol, toMgdl))
     }
