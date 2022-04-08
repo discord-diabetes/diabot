@@ -138,7 +138,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 .subscribe({
                     event.reply("Plotting style changed to `${it.plotMode.name}`").setEphemeral(true).queue()
                 }, {
-                    event.reply("Could not update plotting style: ${it.javaClass.simpleName}")
+                    replyError(event, it, "Could not update plotting style: ${it.javaClass.simpleName}")
                     logger.warn("Unexpected error when changing graph mode for ${event.user}", it)
                 })
     }
