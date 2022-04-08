@@ -7,6 +7,7 @@ import java.awt.Color
 data class GraphSettings (
         val plotMode: PlottingStyle = PlottingStyle.SCATTER,
         val theme: GraphTheme = GraphTheme.DARK,
+        val hours: Long = 4,
         // for dark theme
         val highDarkColor: Color = Color(255, 140, 0),
         val inRangeDarkColor: Color = Color(0, 203, 255),

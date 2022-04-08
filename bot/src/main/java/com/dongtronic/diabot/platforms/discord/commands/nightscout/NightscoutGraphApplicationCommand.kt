@@ -18,6 +18,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
@@ -47,6 +48,15 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
             return
         }
 
+        val hours = event.getOption("hours")?.asLong
+
+        if (hours != null && (hours < 1 || hours > 24)) {
+            event.reply("The number of hours must be between 1 and 24")
+                    .setEphemeral(true)
+                    .queue()
+            return
+        }
+
         runBlocking {
             launch {
                 try {
@@ -60,7 +70,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
                     event.deferReply(false).queue()
 
-                    val chart = getDataSet(event.user.id).awaitSingle()
+                    val chart = getDataSet(event.user.id, hours).awaitSingle()
                     val imageBytes = BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG)
                     event.hook.editOriginal(imageBytes, "graph.png").submit().await()
                     applyCooldown(event.user.id)
@@ -101,9 +111,10 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
     override fun config(): CommandData {
         return CommandData(commandName, "Generate a graph from Nightscout")
+                .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
     }
 
-    private fun getDataSet(senderId: String, time: Duration = Duration.ofHours(4)): Mono<XYChart> {
+    private fun getDataSet(senderId: String, hours: Long?): Mono<XYChart> {
         return NightscoutDAO.instance.getUser(senderId)
                 .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
                 .zipWhen { userDTO ->
@@ -112,6 +123,9 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                     }
 
                     val ns = Nightscout(userDTO.url, userDTO.token)
+
+                    val time = (hours ?: userDTO.graphSettings.hours)
+                            .let { Duration.ofHours(it) }
 
                     // calculate the amount of readings there should be.
                     // assume 1 reading every 5 minutes and a minimum of 1 reading
