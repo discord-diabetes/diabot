@@ -155,7 +155,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 .map { it.graphSettings.copy(hours = hours) }
                 .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
                 .subscribe({
-                    val plural = if (it.hours == 1L) "s" else ""
+                    val plural = if (it.hours != 1L) "s" else ""
                     event.reply("Your future graphs will now display ${it.hours} hour$plural of data").setEphemeral(true).queue()
                 }, {
                     replyError(event, it, "Could not change the graph hours: ${it.javaClass.simpleName}")
