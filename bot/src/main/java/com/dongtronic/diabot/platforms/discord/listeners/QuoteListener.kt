@@ -38,7 +38,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
         if (!event.isFromGuild) return
         if (!event.reaction.reactionEmote.isEmoji) return
         if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
-        if (!QuoteDAO.checkRestrictions(event.textChannel)) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel)) return
 
         val author = event.retrieveMember().await()
         val guild = event.guild
@@ -47,7 +47,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
          * Replies to the channel only if the reacting user has permission to send messages
          */
         val reply: (() -> MessageAction) -> Unit = { message ->
-            if (event.textChannel.canTalk(author)) {
+            if (event.guildChannel.canTalk(author)) {
                 message().queue()
             }
         }
@@ -55,16 +55,16 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.id,
-                    channelId = event.textChannel.id,
+                    channelId = event.guildChannel.id,
                     author = message.author.name,
                     authorId = message.author.id,
                     message = message.contentRaw,
                     messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                reply { event.textChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
+                reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
             }, {
-                reply { event.textChannel.sendMessage("Could not create quote for message: ${message.id}") }
+                reply { event.guildChannel.sendMessage("Could not create quote for message: ${message.id}") }
             })
         }
 
@@ -92,7 +92,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
             val cmd = fullCommand.split(' ', limit = 2)
 
             if (quoteCommand.isCommandFor(cmd[0])) {
-                if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = false)) return
+                if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = false)) return
 
                 val arguments = cmd.getOrNull(1) ?: ""
                 val commandEvent = CommandEvent(event, ".", arguments, client)

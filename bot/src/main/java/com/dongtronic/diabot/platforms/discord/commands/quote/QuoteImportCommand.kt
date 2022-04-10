@@ -53,7 +53,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
     override fun execute(event: CommandEvent) {
         registerListener(event.jda)
 
-        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true)) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = true)) return
         if (pendingRequests.contains(event.author)) return
         pendingRequests.add(event.author)
 

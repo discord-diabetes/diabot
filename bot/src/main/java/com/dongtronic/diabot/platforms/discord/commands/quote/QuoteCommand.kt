@@ -34,7 +34,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     }
 
     override fun execute(event: CommandEvent) {
-        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
