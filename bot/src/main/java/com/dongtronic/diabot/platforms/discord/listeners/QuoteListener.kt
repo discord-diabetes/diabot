@@ -8,32 +8,39 @@ import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
+import dev.minn.jda.ktx.CoroutineEventListener
+import dev.minn.jda.ktx.await
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageType
+import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.requests.restaction.MessageAction
 import org.litote.kmongo.eq
 import reactor.kotlin.core.publisher.toMono
 import java.util.function.Consumer
 
-class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
+class QuoteListener(private val client: CommandClient) : CoroutineEventListener {
     private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
     // https://emojiguide.org/speech-balloon
     private val speechEmoji = "U+1f4ac"
     private val logger = logger()
 
-    override fun onMessageReactionAdd(event: MessageReactionAddEvent) {
-        // todo: blocking call
-        if (event.retrieveUser().complete().isBot) return
+    override suspend fun onEvent(event: GenericEvent) {
+        when (event) {
+            is MessageReactionAddEvent -> onMessageReactionAdd(event)
+            is MessageReceivedEvent -> onMessageReceived(event)
+        }
+    }
+
+    private suspend fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+        if (event.retrieveUser().await().isBot) return
         if (!event.isFromGuild) return
         if (!event.reaction.reactionEmote.isEmoji) return
         if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
         if (!QuoteDAO.checkRestrictions(event.textChannel)) return
 
-        // todo: blocking call
-        val author = event.retrieveMember().complete()
+        val author = event.retrieveMember().await()
         val guild = event.guild
 
         /**
@@ -75,7 +82,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 })
     }
 
-    override fun onMessageReceived(event: MessageReceivedEvent) {
+    private fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot || !event.isFromGuild) return
 
         val msg = event.message.contentRaw
