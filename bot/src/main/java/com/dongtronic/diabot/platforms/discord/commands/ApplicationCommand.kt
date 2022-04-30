@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands
 
 import com.dongtronic.diabot.util.logger
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -14,7 +15,11 @@ interface ApplicationCommand {
 
     fun execute(event: ButtonInteractionEvent)
 
+    fun execute(event: ModalInteractionEvent): Boolean = false
+
     fun config(): CommandData
+
+    fun generateId(id: String): String = "$commandName:$id"
 
     fun replyError(event: SlashCommandInteractionEvent, exception: Throwable, message: String) {
         val reportButton = Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")
