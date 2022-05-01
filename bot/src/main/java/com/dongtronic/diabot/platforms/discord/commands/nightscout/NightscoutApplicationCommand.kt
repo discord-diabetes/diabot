@@ -36,11 +36,10 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
     private val commandArgHours = "hours"
 
-    private val commandButtonDeleteConfirm = "nsdeleteyes"
-    private val commandButtonDeleteCancel = "nsdeleteno"
-
     override val commandName: String = "nightscout"
-    override val buttonIds: Set<String> = setOf(commandButtonDeleteConfirm, commandButtonDeleteCancel)
+
+    private val commandButtonDeleteConfirm = "nsdeleteyes".generateId()
+    private val commandButtonDeleteCancel = "nsdeleteno".generateId()
 
     override fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandGroup) {
@@ -64,11 +63,13 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
     }
 
-    override fun execute(event: ButtonInteractionEvent) {
+    override fun execute(event: ButtonInteractionEvent): Boolean {
         when (event.componentId) {
             commandButtonDeleteConfirm -> deleteData(event)
             commandButtonDeleteCancel -> cancelDeleteData(event)
+            else -> return false
         }
+        return true
     }
 
     private fun setToken(event: SlashCommandInteractionEvent) {

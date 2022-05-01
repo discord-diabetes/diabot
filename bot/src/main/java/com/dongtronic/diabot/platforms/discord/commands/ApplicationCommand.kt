@@ -9,17 +9,16 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 interface ApplicationCommand {
     val commandName: String
-    val buttonIds: Set<String>
 
     fun execute(event: SlashCommandInteractionEvent)
 
-    fun execute(event: ButtonInteractionEvent)
+    fun execute(event: ButtonInteractionEvent): Boolean = false
 
     fun execute(event: ModalInteractionEvent): Boolean = false
 
     fun config(): CommandData
 
-    fun generateId(id: String): String = "$commandName:$id"
+    fun String.generateId(): String = "$commandName:$this"
 
     fun replyError(event: SlashCommandInteractionEvent, exception: Throwable, message: String) {
         val reportButton = Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")

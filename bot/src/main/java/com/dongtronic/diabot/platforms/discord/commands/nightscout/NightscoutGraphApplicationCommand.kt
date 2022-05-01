@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -35,7 +34,6 @@ import kotlin.math.max
 
 class NightscoutGraphApplicationCommand : ApplicationCommand {
     override val commandName: String = "graph"
-    override val buttonIds: Set<String> = emptySet()
     private val logger = logger()
     private val cooldowns = mutableMapOf<String, Long>()
 
@@ -107,8 +105,6 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
         cooldowns.filter { it.value <= System.currentTimeMillis() }
                 .forEach { cooldowns.remove(it.key) }
     }
-
-    override fun execute(event: ButtonInteractionEvent) {}
 
     override fun config(): CommandData {
         return Commands.slash(commandName, "Generate a graph from Nightscout")
