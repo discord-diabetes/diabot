@@ -66,7 +66,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                     // only add quote if there are no quotes matching the reacted message ID
                     if (error is NoSuchElementException) {
                         event.retrieveMessage().submitMono()
-                                .filter { it.type == MessageType.DEFAULT && !it.author.isBot }
+                                .filter { (it.type == MessageType.DEFAULT || it.type == MessageType.INLINE_REPLY) && !it.author.isBot }
                                 .subscribe(quoteMessage)
                     }
                 })
