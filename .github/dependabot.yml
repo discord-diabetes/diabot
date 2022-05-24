@@ -4,19 +4,3 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "gradle"
-    directory: "/bg-graph"
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "gradle"
-    directory: "/bot"
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "gradle"
-    directory: "/nightscout-api"
-    schedule:
-      interval: "daily"
-  - package-ecosystem: "gradle"
-    directory: "/utilities"
-    schedule:
-      interval: "daily"
