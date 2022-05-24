@@ -32,7 +32,6 @@ allprojects {
     }
 
     group = 'com.dongtronic.diabot'
-    version = '1.14.0'
 
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -93,6 +92,7 @@ shadowJar {
 
 release {
     tagTemplate = 'v$version'
+    failOnPublishNeeded = false
     git {
         requireBranch = 'main'
     }
