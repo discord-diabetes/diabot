@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}"
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
     id 'io.gitlab.arturbosch.detekt' version "${detektVersion}"
-    id 'net.researchgate.release' version "${releaseVersion}"
+    id 'net.researchgate.release' version "${releasePluginVersion}"
 }
 
 allprojects {
