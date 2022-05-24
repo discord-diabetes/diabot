@@ -20,3 +20,13 @@ For an extensive guide see https://chris.beams.io/posts/git-commit/. Here's a TL
 2. Use present tense
 3. Explain *what* and *why*, not *how*
 4. Keep the commit message under 50 characters
+
+# Releases
+Project maintainers may create new releases by using the Gradle release plugin from the `main` branch:
+
+```shell
+gradle release
+```
+
+The plugin will prompt for the release version and new snapshot version, and make the required commits.  
+After this, a draft release will be created on GitHub. Once this is released (un-marked as draft), the new version will be deployed to Heroku.
