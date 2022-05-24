@@ -5,8 +5,6 @@ on:
     branches:
       - main
       - feature/*
-    tags:
-      - "v*.*.*"
   pull_request:
     branches:
       - main
@@ -57,9 +55,3 @@ jobs:
         with:
           name: release
           path: build/libs/diabot.jar
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          files: build/libs/diabot.jar
