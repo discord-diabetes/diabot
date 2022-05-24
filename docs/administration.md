@@ -152,6 +152,7 @@ The `simple` subcommand can force certain channels to only show single-line nigh
 - [Enable simple mode for a channel](#enable-simple-mode-for-a-channel)  
 - [Disable simple mode for a channel](#disable-simple-mode-for-a-channel)  
 - [List all simple mode channels](#list-all-simple-mode-channels)
+- [Toggle `nightscoutgraph` command for guild](#toggle-nightscoutgraph-command-for-guild)
 
 
 #### Set someone else's URL
@@ -176,6 +177,12 @@ Likewise, to disable simple mode for a channel, specify the channel ID:
 #### List all simple mode channels
 To list all simple mode-enabled channels:  
 `diabot nightscoutadmin simple list`
+
+#### Toggle `nightscoutgraph` command for guild
+The `diabot nightscoutgraph` command can be enabled or disabled in the guild:  
+`diabot nightscoutadmin graph [true/false]`  
+
+Not providing `true` or `false` will toggle the enabled status of `nightscoutgraph`.
 
 
 

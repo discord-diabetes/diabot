@@ -1,7 +1,10 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
+import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.graph.PlottingStyle
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
+import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -12,6 +15,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
 import net.dv8tion.jda.api.interactions.components.Button
 
 class NightscoutApplicationCommand : ApplicationCommand {
+    private val logger = logger()
+
     private val groupNameSet = "set"
     private val groupNameClear = "clear"
     private val groupNameGet = "get"
@@ -20,11 +25,20 @@ class NightscoutApplicationCommand : ApplicationCommand {
     private val commandModeAll = "all"
     private val commandModePrivacy = "privacy"
     private val commandModeGlobalPrivacy = "globalprivacy"
+    private val commandModeGraphMode = "graphmode"
+    private val commandModeGraphHours = "graphhours"
     private val commandArgUrl = "url"
     private val commandArgToken = "token"
     private val commandArgPrivacy = "privacy"
     private val commandArgPublic = "public"
     private val commandArgPrivate = "private"
+
+    private val commandArgMode = "mode"
+    private val commandArgScatter = "scatter"
+    private val commandArgLine = "line"
+
+    private val commandArgHours = "hours"
+
     private val commandButtonDeleteConfirm = "nsdeleteyes"
     private val commandButtonDeleteCancel = "nsdeleteno"
 
@@ -38,6 +52,8 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 commandModeUrl -> setUrl(event)
                 commandModePrivacy -> setPrivacy(event)
                 commandModeGlobalPrivacy -> setGlobalPrivacy(event)
+                commandModeGraphMode -> setGraphMode(event)
+                commandModeGraphHours -> setGraphHours(event)
             }
             groupNameClear -> when (event.subcommandName) {
                 commandModeToken -> clearToken(event)
@@ -108,6 +124,43 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }, {
             replyError(event, it, "There was an error setting your global Nightscout privacy setting. Please try again later")
         })
+    }
+
+    private fun setGraphMode(event: SlashCommandEvent) {
+        val mode = event.getOption(commandArgMode)!!.asString
+
+        val plottingStyle = PlottingStyle.values().first { it.name.startsWith(mode, true) }
+
+        NightscoutDAO.instance.getUser(event.user.id)
+                .map { it.graphSettings }
+                .map { it.copy(plotMode = plottingStyle) }
+                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+                .subscribe({
+                    event.reply("Plotting style changed to `${it.plotMode.name}`").setEphemeral(true).queue()
+                }, {
+                    replyError(event, it, "Could not update plotting style: ${it.javaClass.simpleName}")
+                    logger.warn("Unexpected error when changing graph mode for ${event.user}", it)
+                })
+    }
+
+    private fun setGraphHours(event: SlashCommandEvent) {
+        val hours = event.getOption(commandArgHours)!!.asLong
+
+        if (hours < 1 || hours > 24) {
+            event.reply("The number of hours must be between 1 and 24").setEphemeral(true).queue()
+            return
+        }
+
+        NightscoutDAO.instance.getUser(event.user.id)
+                .map { it.graphSettings.copy(hours = hours) }
+                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+                .subscribe({
+                    val plural = if (it.hours != 1L) "s" else ""
+                    event.reply("Your future graphs will now display ${it.hours} hour$plural of data").setEphemeral(true).queue()
+                }, {
+                    replyError(event, it, "Could not change the graph hours: ${it.javaClass.simpleName}")
+                    logger.warn("Unexpected error when changing graph hours for ${event.user}", it)
+                })
     }
 
     private fun clearToken(event: SlashCommandEvent) {
@@ -189,7 +242,14 @@ class NightscoutApplicationCommand : ApplicationCommand {
                                         .addChoice(commandArgPublic, commandArgPublic)),
                         SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
                                 .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                        .addChoice(commandArgPrivate, commandArgPrivate))
+                                        .addChoice(commandArgPrivate, commandArgPrivate)),
+                        SubcommandData(commandModeGraphMode, "Set the plotting style for Nightscout graphs")
+                                .addOptions(OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
+                                        .addChoice(commandArgScatter, commandArgScatter)
+                                        .addChoice(commandArgLine, commandArgLine)),
+                        SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
+                                .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true))
+
                 ),
                 SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
                         SubcommandData(commandModeUrl, "Clear Nightscout url"),
