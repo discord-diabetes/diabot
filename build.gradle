@@ -92,9 +92,9 @@ shadowJar {
 
 release {
     tagTemplate = 'v$version'
-    failOnPublishNeeded = false
     git {
         requireBranch = 'main'
+        signTag = true
     }
 }
 
