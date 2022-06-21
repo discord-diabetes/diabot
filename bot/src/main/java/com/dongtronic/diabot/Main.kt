@@ -34,7 +34,7 @@ import java.util.*
 import javax.security.auth.login.LoginException
 
 object Main {
-    private var debug = false
+    private val debug = System.getenv("DIABOT_DEBUG") != null
 
     @Throws(LoginException::class)
     @JvmStatic
@@ -65,12 +65,8 @@ object Main {
 
 
         // sets the bot prefix
-        if (System.getenv("DIABOT_DEBUG") != null) {
-            client.setPrefix("dl ")
-            debug = true
-        } else {
-            client.setPrefix("diabot ")
-        }
+        val prefix = if (debug) "dl " else "diabot "
+        client.setPrefix(prefix)
 
         client.setOwnerId("189436077793083392") // Cas
         client.setCoOwnerIds("125616270254014464", "319371513159614464") // Adi, Garlic
