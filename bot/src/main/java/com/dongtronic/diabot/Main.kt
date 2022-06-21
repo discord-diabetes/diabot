@@ -127,7 +127,7 @@ object Main {
                 .addEventListeners(
                         waiter,
                         builtClient,
-                        ConversionListener(),
+                        ConversionListener(prefix),
                         RewardListener(),
                         UsernameEnforcementListener(),
                         OhNoListener(),

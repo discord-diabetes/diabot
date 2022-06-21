@@ -8,7 +8,7 @@ import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-class ConversionListener : ListenerAdapter() {
+class ConversionListener(private val prefix: String) : ListenerAdapter() {
     private val logger = logger()
 
     companion object {
@@ -19,6 +19,7 @@ class ConversionListener : ListenerAdapter() {
 
     override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
         if (event.author.isBot) return
+        if (event.message.contentRaw.startsWith(prefix, true)) return
 
         val message = event.message
         val messageText = stripMonospace(message.contentRaw)
