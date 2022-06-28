@@ -27,5 +27,5 @@ jobs:
       - uses: akhileshns/heroku-deploy@v3.12.12
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "diabot-discord"
+          heroku_app_name: ${{secrets.HEROUK_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
