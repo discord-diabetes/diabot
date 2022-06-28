@@ -94,7 +94,7 @@ release {
     tagTemplate = 'v$version'
     git {
         requireBranch = 'main'
-        signTag = false
+        signTag = true
     }
 }
 
