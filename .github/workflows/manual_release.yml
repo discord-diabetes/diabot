@@ -24,5 +24,4 @@ jobs:
           java-version: 11
       - name: Run Gradle release
         run: |
-          chmod +x gradlew
-          ./gradlew release -Prelease.releaseVersion=${{ inputs.version }} -Prelease.newVersion=${{ inputs.snapshot_version }} -Prelease.failOnCommitNeeded=false
+          gradle release -Prelease.releaseVersion=${{ inputs.version }} -Prelease.newVersion=${{ inputs.snapshot_version }} -Prelease.failOnCommitNeeded=false
