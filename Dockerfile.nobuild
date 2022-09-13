@@ -1,0 +1,18 @@
+# This Dockerfile copies an already-built JAR from `./build/libs/diabot.jar` rather than building it
+
+FROM adoptopenjdk/openjdk11:alpine-jre
+
+WORKDIR /app/
+
+RUN apk add --no-cache tini \
+    && addgroup -S diabot -g 1000 \
+    && adduser -S -G diabot -u 1000 diabot
+
+COPY --chown=1000:1000 ./build/libs/diabot.jar ./
+
+# Drop privileges
+USER diabot
+
+ENTRYPOINT ["/sbin/tini", "--"]
+
+CMD ["java", "-jar", "/app/diabot.jar"]
