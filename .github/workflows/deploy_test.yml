@@ -50,7 +50,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
     runs-on: ubuntu-latest
-    environment: discord production
+    environment: discord test
     needs: [ build ]
     steps:
       - uses: actions/checkout@v2
