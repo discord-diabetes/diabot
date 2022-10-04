@@ -54,4 +54,4 @@ jobs:
         with:
           files: build/libs/diabot.jar
           generate_release_notes: true
-          draft: false
+          draft: true
