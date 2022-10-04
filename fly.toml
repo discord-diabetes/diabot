@@ -1,0 +1,7 @@
+app = "diabot-discord"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+image = "ghcr.io/reddit-diabetes/diabot:main"
