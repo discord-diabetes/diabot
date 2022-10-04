@@ -3,7 +3,7 @@ name: Create GitHub release for tag
 on:
   push:
     tags:
-      - "v*.*.*"
+      - '*'
 
 env:
   REGISTRY: ghcr.io
