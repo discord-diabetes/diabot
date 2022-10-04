@@ -4,7 +4,7 @@ FROM adoptopenjdk/openjdk11:alpine-jre
 
 WORKDIR /app/
 
-RUN apk add --no-cache tini \
+RUN apk add --no-cache tini freetype \
     && addgroup -S diabot -g 1000 \
     && adduser -S -G diabot -u 1000 diabot
 
