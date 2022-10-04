@@ -1,4 +1,4 @@
-name: Deploy to Heroku
+name: Deploy to Fly.io
 
 on:
   release:
