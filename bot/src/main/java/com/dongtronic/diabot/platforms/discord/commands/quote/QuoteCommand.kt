@@ -20,7 +20,12 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         this.help = "Gets saved quotes"
         this.guildOnly = true
         this.aliases = arrayOf("q")
-        this.examples = arrayOf("diabot quote", "diabot quote 1337", "diabot quote @Cas")
+        this.examples = arrayOf(
+                "diabot quote",
+                "diabot quote 1337",
+                "diabot quote @Cas",
+                "diabot quote 795873471530926100"
+        )
         this.children = arrayOf(
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
@@ -39,9 +44,16 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                 getRandomQuote(event.guild.id, QuoteDTO::authorId eq member.id)
             }
             args.isNotEmpty() -> {
-                if (args.all { it.toLongOrNull() != null }) {
-                    // may be a quote id
-                    QuoteDAO.getInstance().getQuote(event.guild.id, args[0])
+                val arg = args[0]
+                if (arg.toLongOrNull() != null) {
+                    if (arg.length < 17) {
+                        // the first discord snowflakes were 17 digits long
+                        // assume it's a quote ID if it's less than 17 digits long
+                        QuoteDAO.getInstance().getQuote(event.guild.id, arg)
+                    } else {
+                        // assume it's a user ID otherwise
+                        getRandomQuote(event.guild.id, QuoteDTO::authorId eq arg)
+                    }
                 } else {
                     // may be a username
                     val joined = args.joinToString(" ")
