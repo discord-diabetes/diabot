@@ -7,7 +7,8 @@ FROM adoptopenjdk/openjdk11:alpine-jre
 
 WORKDIR /app/
 
-RUN apk add --no-cache tini freetype \
+# `freetype fontconfig ttf-dejavu` are needed for graph generation
+RUN apk add --no-cache tini freetype fontconfig ttf-dejavu \
     && addgroup -S diabot -g 1000 \
     && adduser -S -G diabot -u 1000 diabot
 
@@ -18,4 +19,4 @@ USER diabot
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD ["java", "-jar", "/app/diabot.jar"]
+CMD ["java", "-Djava.awt.headless=true", "-jar", "/app/diabot.jar"]
