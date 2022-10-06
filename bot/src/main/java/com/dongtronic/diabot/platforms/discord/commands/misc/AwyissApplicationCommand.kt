@@ -3,7 +3,6 @@ package com.dongtronic.diabot.platforms.discord.commands.misc
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.logic.`fun`.Awyisser
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -28,22 +27,20 @@ class AwyissApplicationCommand : ApplicationCommand {
         val stringValue = event.getOption(commandArgValue)!!.asString
         val sfwValue = event.getOption(commandArgSfw)?.asBoolean ?: true
 
-        event.deferReply(true).queue()
+        event.deferReply().queue()
 
         Awyisser.generate(stringValue, sfwValue)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe({ imageUrl ->
                     val imageStream = Base64.decode(imageUrl.removePrefix("data:image/png;base64,"))
-                    event.reply("Awyiss for $stringValue").addFile(imageStream, "awyiss.png").submit()
+                    event.hook.editOriginal(imageStream, "awyiss.png").queue()
                 }, {
                     if (it is RequestStatusException && it.status == 500) {
-                        logger().warn("Encountered server error while generating Awyiss: ${it.message}")
-                        event.reply("Server error occurred.").setEphemeral(true).submit()
+                        replyError(event, it, "Server error occurred.")
                         return@subscribe
                     }
 
-                    logger().warn("Encountered error while generating Awyiss: ${it.message}")
-                    event.reply("Something went wrong: " + it.message).setEphemeral(true).submit()
+                    replyError(event, it, "Something went wrong: " + it.message)
                 })
     }
 

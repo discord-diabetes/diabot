@@ -22,7 +22,7 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
 
             commandMap[command.commandName] = command
 
-            command.buttonIds.forEach{ buttonId ->
+            command.buttonIds.forEach { buttonId ->
                 if (buttonIdMap.containsKey(buttonId)) {
                     throw IllegalStateException("Duplicate application button ID for command ${command.commandName}: $buttonId")
                 }
