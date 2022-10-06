@@ -23,7 +23,7 @@ import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.GuildlistCommand
-import dev.minn.jda.ktx.injectKTX
+import dev.minn.jda.ktx.jdabuilder.injectKTX
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent

@@ -2,8 +2,8 @@ package com.dongtronic.diabot.platforms.discord.utils
 
 import com.dongtronic.diabot.submitMono
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.channel.ChannelType
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 

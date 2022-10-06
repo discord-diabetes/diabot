@@ -12,7 +12,7 @@ import com.dongtronic.nightscout.Nightscout
 import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
-import dev.minn.jda.ktx.await
+import dev.minn.jda.ktx.coroutines.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.utils.FileUpload
 import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.litote.kmongo.MongoOperator
@@ -71,7 +72,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
                     val chart = getDataSet(event.user.id, hours).awaitSingle()
                     val imageBytes = BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG)
-                    event.hook.editOriginal(imageBytes, "graph.png").submit().await()
+                    event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).submit().await()
                     applyCooldown(event.user.id)
                 } catch (e: Exception) {
                     logger.error("Error generating NS graph for ${event.user}")

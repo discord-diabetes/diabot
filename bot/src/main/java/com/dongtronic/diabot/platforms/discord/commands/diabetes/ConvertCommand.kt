@@ -7,6 +7,7 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.entities.emoji.Emoji
 
 class ConvertCommand(category: Command.Category) : DiscordCommand(category, null) {
 
@@ -57,7 +58,7 @@ class ConvertCommand(category: Command.Category) : DiscordCommand(category, null
             event.reply(reply)
 
             BloodGlucoseConverter.getReactions(result).forEach {
-                event.message.addReaction(it).queue()
+                event.message.addReaction(Emoji.fromUnicode(it)).queue()
             }
         }
     }

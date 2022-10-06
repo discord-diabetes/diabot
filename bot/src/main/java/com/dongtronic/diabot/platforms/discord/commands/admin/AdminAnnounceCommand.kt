@@ -5,6 +5,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.apache.commons.lang3.StringUtils
 
 class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
@@ -27,7 +28,7 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
             event.replyError("Please supply at least 2 arguments (channel ID and message)")
             return
         }
-        val channel = if (event.message.mentionedChannels.size == 0) {
+        val channel = if (event.message.mentions.channels.size == 0) {
             if (!StringUtils.isNumeric(args[0])) {
                 throw IllegalArgumentException("Channel ID must be numeric")
             }
@@ -36,10 +37,13 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
             event.guild.getTextChannelById(channelId)
                     ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
         } else {
-            event.message.mentionedChannels[0]
+            val channel = event.message.mentions.channels[0]
+            channel as? TextChannel
+                    ?: throw IllegalArgumentException("Channel `${channel.id}` does not exist")
         }
 
         val message = event.args.substringAfter(' ')
+
 
         channel.sendMessage(message).queue()
 

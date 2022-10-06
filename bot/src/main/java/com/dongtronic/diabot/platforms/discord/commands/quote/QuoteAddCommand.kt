@@ -5,12 +5,12 @@ import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
-import dev.minn.jda.ktx.await
+import dev.minn.jda.ktx.coroutines.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
-import net.dv8tion.jda.api.MessageBuilder
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 
 class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
     private val mentionsRegex = Regex("^<@!?(?<uid>\\d+)>\$")
@@ -82,14 +82,14 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
          * @param jumpUrl Optional jump URL to the quoted message
          * @return A message indicating that a quote was created
          */
-        fun createAddedMessage(quoterMention: String, quoteId: String, jumpUrl: String? = null): Message {
-            val msg = MessageBuilder()
+        fun createAddedMessage(quoterMention: String, quoteId: String, jumpUrl: String? = null): MessageCreateData {
+            val msg = MessageCreateBuilder()
                     // mentions are used here solely for identifying who created the quote, so don't ping for it
-                    .denyMentions(Message.MentionType.USER)
-                    .append("New quote added by $quoterMention as #$quoteId")
+                    .setAllowedMentions(emptyList())
+                    .addContent("New quote added by $quoterMention as #$quoteId")
 
             if (jumpUrl != null)
-                msg.append(" (<$jumpUrl>)")
+                msg.addContent(" (<$jumpUrl>)")
 
             return msg.build()
         }

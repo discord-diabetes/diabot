@@ -20,7 +20,12 @@ import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -106,12 +111,12 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             it.effectiveName.equals(event.args, true)
                     || it.user.name.equals(event.args, true)
         }
-        val mentionedMembers = event.event.message.mentionedMembers
+        val mentionedMembers = event.event.message.mentions.members
 
         val endpoint: Mono<NightscoutUserDTO> = when {
             mentionedMembers.size > 1 ->
                 IllegalArgumentException("Too many mentioned users.").toMono()
-            event.event.message.mentionsEveryone() ->
+            event.event.message.mentions.mentionsEveryone() ->
                 IllegalArgumentException("Cannot handle mentioning everyone.").toMono()
 
             mentionedMembers.size == 1 -> {
@@ -336,7 +341,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun addReactions(dto: NightscoutDTO, response: Message) {
         BloodGlucoseConverter.getReactions(dto.getNewestEntry().glucose.mmol, dto.getNewestEntry().glucose.mgdl).forEach {
-            response.addReaction(it).queue()
+            response.addReaction(Emoji.fromUnicode(it)).queue()
         }
     }
 

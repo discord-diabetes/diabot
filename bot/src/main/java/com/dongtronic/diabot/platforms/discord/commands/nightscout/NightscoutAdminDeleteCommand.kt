@@ -39,7 +39,7 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
                 throw IllegalArgumentException("User ID is required as argument")
             }
 
-            val user = if (event.message.mentionedUsers.size == 0) {
+            val user = if (event.message.mentions.users.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("User ID must be valid")
                 }
@@ -49,7 +49,7 @@ class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?)
                 event.jda.getUserById(userId)
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
-                event.message.mentionedUsers[0]
+                event.message.mentions.users[0]
             }
 
             val userId = user.id

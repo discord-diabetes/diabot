@@ -8,14 +8,16 @@ import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
-import dev.minn.jda.ktx.CoroutineEventListener
-import dev.minn.jda.ktx.await
+import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.events.CoroutineEventListener
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageType
+import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.entities.emoji.UnicodeEmoji
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
-import net.dv8tion.jda.api.requests.restaction.MessageAction
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.litote.kmongo.eq
 import reactor.kotlin.core.publisher.toMono
 import java.util.function.Consumer
@@ -23,7 +25,7 @@ import java.util.function.Consumer
 class QuoteListener(private val client: CommandClient) : CoroutineEventListener {
     private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
     // https://emojiguide.org/speech-balloon
-    private val speechEmoji = "U+1f4ac"
+    private val speechEmoji = Emoji.fromUnicode("U+1f4ac")
     private val logger = logger()
 
     override suspend fun onEvent(event: GenericEvent) {
@@ -36,8 +38,8 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
     private suspend fun onMessageReactionAdd(event: MessageReactionAddEvent) {
         if (event.retrieveUser().await().isBot) return
         if (!event.isFromGuild) return
-        if (!event.reaction.reactionEmote.isEmoji) return
-        if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
+        if (event.reaction.emoji !is UnicodeEmoji) return
+        if (event.reaction.emoji != speechEmoji) return
         if (!QuoteDAO.checkRestrictions(event.guildChannel)) return
 
         val author = event.retrieveMember().await()
@@ -46,7 +48,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
-        val reply: (() -> MessageAction) -> Unit = { message ->
+        val reply: (() -> MessageCreateAction) -> Unit = { message ->
             if (event.guildChannel.canTalk(author)) {
                 message().queue()
             }

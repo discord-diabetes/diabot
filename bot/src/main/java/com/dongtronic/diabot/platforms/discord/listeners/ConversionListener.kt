@@ -5,6 +5,7 @@ import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.util.Patterns
 import com.dongtronic.diabot.util.logger
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
@@ -76,7 +77,7 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
                 .getOrElse { return "" }
 
         BloodGlucoseConverter.getReactions(result).forEach {
-            event.message.addReaction(it).queue()
+            event.message.addReaction(Emoji.fromUnicode(it)).queue()
         }
 
         return when {

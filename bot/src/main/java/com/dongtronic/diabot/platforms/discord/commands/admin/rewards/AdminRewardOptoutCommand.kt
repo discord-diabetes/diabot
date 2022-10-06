@@ -27,7 +27,7 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
                 throw IllegalArgumentException("UserID is required")
             }
 
-            val user = if (event.message.mentionedUsers.size == 0) {
+            val user = if (event.message.mentions.users.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("User ID must be valid")
                 }
@@ -36,7 +36,7 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
                 event.guild.getMemberById(userId)?.user
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
-                event.message.mentionedUsers[0]
+                event.message.mentions.users[0]
             }
 
             val guildId = event.guild.id
