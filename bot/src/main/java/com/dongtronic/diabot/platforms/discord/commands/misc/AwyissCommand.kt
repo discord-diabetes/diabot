@@ -5,9 +5,8 @@ import com.dongtronic.diabot.logic.`fun`.Awyisser
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.EmbedBuilder
+import org.bson.internal.Base64
 import reactor.core.scheduler.Schedulers
-import java.awt.Color
 
 class AwyissCommand(category: Command.Category) : DiscordCommand(category, null) {
 
@@ -25,16 +24,19 @@ class AwyissCommand(category: Command.Category) : DiscordCommand(category, null)
         Awyisser.generate(event.args)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe({ imageUrl ->
-                    val builder = EmbedBuilder()
+//                    val builder = EmbedBuilder()
+//
+//                    builder.setTitle("Awyiss - " + event.args)
+//                    builder.setAuthor(event.author.name)
+//                    builder.setImage(imageUrl)
+//                    builder.setColor(Color.white)
+//
+//                    val embed = builder.build()
 
-                    builder.setTitle("Awyiss - " + event.args)
-                    builder.setAuthor(event.author.name)
-                    builder.setImage(imageUrl)
-                    builder.setColor(Color.white)
+                    val imageStream = Base64.decode(imageUrl.removePrefix("data:image/png;base64,"))
+                    event.channel.sendFile(imageStream, "awyiss.png")
 
-                    val embed = builder.build()
-
-                    event.reply(embed)
+//                    event.reply(embed)
                 }, {
                     if (it is RequestStatusException) {
                         if (it.status == 500) {
