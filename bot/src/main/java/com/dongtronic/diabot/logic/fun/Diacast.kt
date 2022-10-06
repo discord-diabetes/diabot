@@ -13,7 +13,7 @@ object Diacast {
     val episodes: List<SyndEntry>
         @Throws(FeedException::class, IOException::class)
         get() {
-            val feedSource = URL("https://feeds.buzzsprout.com/1777050.rss")
+            val feedSource = URL("https://diacast.cascer1.space/podcast.rss")
             val input = SyndFeedInput()
             val feed = input.build(XmlReader(feedSource))
             return feed.entries
