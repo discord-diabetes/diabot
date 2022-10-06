@@ -28,7 +28,7 @@ class DiacastCommand(category: Command.Category) : DiscordCommand(category, null
             if (args.isNotEmpty() && StringUtils.isNumeric(args[0])) {
                 episodeNumber = Integer.valueOf(args[0])
 
-                //TODO: Refactor episode searching to support season numbers
+                //TODO #178: Refactor episode searching to support season numbers
                 event.replyError("Searching by episode number is temporarily disabled")
                 return
             }
