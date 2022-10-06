@@ -38,7 +38,6 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
         } else {
             val channel = event.message.mentions.channels[0]
             channel as? TextChannel
-                    ?: throw IllegalArgumentException("Channel `${channel.id}` does not exist")
         }
 
         if (channel == null || channel.guild != event.guild) {
