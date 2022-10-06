@@ -20,16 +20,28 @@ If you wish to help pay for diabot hosting and development, you can [sponsor cas
 Any support received will be used to pay for the hosting and improvement of Diabot. This is not a for-profit project.
 
 ## Running Diabot
+
+### As Java application
+
 Development for Diabot is aimed at a Java 11 environment. Diabot may not function correctly when using other version of java.
 
 If you have Gradle installed, you can run the following two commands to quickly start Diabot:
 
-```
+```shell
 gradle stage
 java -jar build/libs/diabot.jar
 ```
 
 For detailed instructions, see [Running Diabot](docs/running.md)
+
+### As Docker container
+Diabot releases are automatically published to the Github Container Registry. So, you can simply launch a new container to get up and running quickly:
+
+```shell
+docker run -e DIABOTTOKEN='token' ghcr.io/reddit-diabetes/diabot:latest
+```
+
+For detailed instructions and information about other environment variables, see [Running Diabot](docs/running.md)
 
 ## Contributing
 Thank you for your interest in contributing to the development of Diabot. 
