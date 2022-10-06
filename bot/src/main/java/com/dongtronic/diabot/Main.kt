@@ -101,7 +101,6 @@ object Main {
 
                 // Fun
                 ExcuseCommand(funCategory),
-                AwyissCommand(funCategory),
                 DiacastCommand(funCategory),
                 OwnerCommand(funCategory),
                 QuoteCommand(funCategory),
@@ -144,6 +143,7 @@ object Main {
                 NightscoutApplicationCommand(),
                 ConversionApplicationCommand(),
                 NightscoutGraphApplicationCommand(),
+                AwyissApplicationCommand()
         )
 
         val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()

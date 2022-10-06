@@ -17,9 +17,13 @@ interface ApplicationCommand {
     fun config(): CommandData
 
     fun replyError(event: SlashCommandEvent, exception: Throwable, message: String) {
-        event.reply(message).addActionRow(
-                Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")
-        ).setEphemeral(true).queue()
+        val reportButton = Button.link("https://github.com/reddit-diabetes/diabot/issues/new?assignees=&labels=bug&template=bug_report.md", "Report bug")
+
+        if (event.isAcknowledged) {
+            event.hook.setEphemeral(true).editOriginal(message).setActionRow(reportButton).queue()
+        } else {
+            event.reply(message).addActionRow(reportButton).setEphemeral(true).queue()
+        }
         logger().error(exception.message, exception)
     }
 
