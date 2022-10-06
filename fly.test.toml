@@ -4,4 +4,4 @@ kill_timeout = 5
 processes = []
 
 [build]
-image = "ghcr.io/reddit-diabetes/diabot:latest"
+image = "ghcr.io/reddit-diabetes/diabot:dev"
