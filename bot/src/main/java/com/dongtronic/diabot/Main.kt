@@ -144,6 +144,7 @@ object Main {
                 NightscoutApplicationCommand(),
                 ConversionApplicationCommand(),
                 NightscoutGraphApplicationCommand(),
+                AwyissApplicationCommand()
         )
 
         val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()
