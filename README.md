@@ -38,8 +38,10 @@ For detailed instructions, see [Running Diabot](docs/running.md)
 Diabot releases are automatically published to the Github Container Registry. So, you can simply launch a new container to get up and running quickly:
 
 ```shell
-
+docker run -e DIABOTTOKEN='token' ghcr.io/reddit-diabetes/diabot:latest
 ```
+
+For detailed instructions and information about other environment variables, see [Running Diabot](docs/running.md)
 
 ## Contributing
 Thank you for your interest in contributing to the development of Diabot. 
