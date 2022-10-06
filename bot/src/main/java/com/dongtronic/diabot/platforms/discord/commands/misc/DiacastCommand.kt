@@ -27,6 +27,10 @@ class DiacastCommand(category: Command.Category) : DiscordCommand(category, null
 
             if (args.isNotEmpty() && StringUtils.isNumeric(args[0])) {
                 episodeNumber = Integer.valueOf(args[0])
+
+                //TODO: Refactor episode searching to support season numbers
+                event.replyError("Searching by episode number is temporarily disabled")
+                return
             }
 
             val episode = Diacast.getEpisode(episodeNumber)
@@ -49,6 +53,7 @@ class DiacastCommand(category: Command.Category) : DiscordCommand(category, null
     private fun buildEpisodeCard(episode: SyndEntry, builder: EmbedBuilder) {
         builder.setTitle(episode.title, episode.link)
         builder.setAuthor("Diacast")
+        builder.setTimestamp(episode.publishedDate.toInstant())
 
         for (element in episode.foreignMarkup) {
             if (element.name == "summary") {

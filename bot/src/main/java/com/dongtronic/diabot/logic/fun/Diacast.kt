@@ -26,7 +26,6 @@ object Diacast {
                 return episodes[0]
             }
 
-
             for (entry in episodes) {
                 for (element in entry.foreignMarkup) {
                     if (element.name == "episode") {
