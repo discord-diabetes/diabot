@@ -35,11 +35,15 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
 
             val channelId = args[0]
             event.guild.getTextChannelById(channelId)
-                    ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
         } else {
             val channel = event.message.mentions.channels[0]
             channel as? TextChannel
                     ?: throw IllegalArgumentException("Channel `${channel.id}` does not exist")
+        }
+
+        if (channel == null || channel.guild != event.guild) {
+            val id = channel?.id ?: args[0]
+            throw IllegalArgumentException("Channel `$id` does not exist")
         }
 
         val message = event.args.substringAfter(' ')
