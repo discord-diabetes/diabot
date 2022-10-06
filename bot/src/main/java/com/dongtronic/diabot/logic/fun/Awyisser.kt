@@ -18,8 +18,8 @@ object Awyisser {
      * Generate Awyiss comic with given input
      * @return URL to the generated image
      */
-    fun generate(input: String): Mono<String> {
-        val requestObject = AwyisserRequestDTO(value = input)
+    fun generate(input: String, sfw: Boolean = true): Mono<String> {
+        val requestObject = AwyisserRequestDTO(value = input, sfw = sfw)
         val jsonRequest = mapper.writeValueAsString(requestObject)
         val mediaType = "application/json".toMediaType()
 
