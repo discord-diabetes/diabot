@@ -101,7 +101,6 @@ object Main {
 
                 // Fun
                 ExcuseCommand(funCategory),
-                AwyissCommand(funCategory),
                 DiacastCommand(funCategory),
                 OwnerCommand(funCategory),
                 QuoteCommand(funCategory),
