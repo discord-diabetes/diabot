@@ -1,4 +1,4 @@
-name: Create Release
+name: Deploy test version
 
 on:
   workflow_dispatch:
