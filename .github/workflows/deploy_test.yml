@@ -46,7 +46,7 @@ jobs:
           file: Dockerfile.nobuild
           context: .
           push: true
-          tags: reddit-diabetes/diabot:dev
+          tags: ghcr.io/reddit-diabetes/diabot:dev
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
     runs-on: ubuntu-latest
