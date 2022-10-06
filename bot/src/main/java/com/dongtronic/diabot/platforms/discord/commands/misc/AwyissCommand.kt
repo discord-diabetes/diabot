@@ -34,7 +34,7 @@ class AwyissCommand(category: Command.Category) : DiscordCommand(category, null)
 //                    val embed = builder.build()
 
                     val imageStream = Base64.decode(imageUrl.removePrefix("data:image/png;base64,"))
-                    event.channel.sendFile(imageStream, "awyiss.png")
+                    event.channel.sendFile(imageStream, "awyiss.png").submit()
 
 //                    event.reply(embed)
                 }, {
