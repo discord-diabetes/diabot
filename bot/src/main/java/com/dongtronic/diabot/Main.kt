@@ -43,6 +43,7 @@ object Main {
             Permission.VIEW_CHANNEL,
             // Text Permissions
             Permission.MESSAGE_SEND,
+            Permission.MESSAGE_SEND_IN_THREADS,
             Permission.MESSAGE_MANAGE,
             Permission.MESSAGE_EMBED_LINKS,
             Permission.MESSAGE_HISTORY,
