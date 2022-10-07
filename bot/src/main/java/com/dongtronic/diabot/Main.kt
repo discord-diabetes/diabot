@@ -140,8 +140,8 @@ object Main {
                         GatewayIntent.DIRECT_MESSAGES,
                         GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.GUILD_MESSAGES,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
                         GatewayIntent.MESSAGE_CONTENT,
-                        GatewayIntent.GUILD_MESSAGE_REACTIONS
                 )
                 .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
                 .setShardsTotal(-1) // Let Discord decide how many shards we need
