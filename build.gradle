@@ -96,8 +96,8 @@ shadowJar {
 release {
     tagTemplate = 'v$version'
     git {
-        requireBranch = 'main'
-        signTag = true
+        requireBranch.set('main')
+        signTag.set(true)
     }
 }
 
