@@ -28,7 +28,7 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
     override fun execute(event: CommandEvent) {
         runBlocking {
             launch {
-                if (!QuoteDAO.awaitCheckRestrictions(event.textChannel, warnDisabledGuild = true)) return@launch
+                if (!QuoteDAO.awaitCheckRestrictions(event.guildChannel, warnDisabledGuild = true)) return@launch
 
                 val match = quoteRegex.find(event.message.contentRaw)
                 if (match == null) {

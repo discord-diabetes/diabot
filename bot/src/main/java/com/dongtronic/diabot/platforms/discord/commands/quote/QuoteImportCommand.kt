@@ -301,7 +301,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
             // looks up the channel name and tries to get its id
             // the channel key can be missing, which is why we need a null check
             val channelId = if (channel != null) {
-                guild?.textChannels?.firstOrNull { it.name == channel }?.id ?: ""
+                guild?.channels?.firstOrNull { it.name == channel }?.id ?: ""
             } else ""
 
             return QuoteDTO(quoteId = id,

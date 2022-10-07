@@ -5,7 +5,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import org.apache.commons.lang3.StringUtils
 
 class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
@@ -34,10 +34,10 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
             }
 
             val channelId = args[0]
-            event.guild.getTextChannelById(channelId)
+            event.guild.getChannelById(GuildMessageChannel::class.java, channelId)
         } else {
             val channel = event.message.mentions.channels[0]
-            channel as? TextChannel
+            channel as? GuildMessageChannel
         }
 
         if (channel == null || channel.guild != event.guild) {
