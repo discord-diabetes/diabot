@@ -79,7 +79,18 @@ object Main {
                 // command to show information about the bot
                 AboutCommand(utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_EMBED_LINKS, Permission.MANAGE_ROLES, Permission.MESSAGE_EXT_EMOJI, Permission.MESSAGE_HISTORY, Permission.MESSAGE_MANAGE, Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND, Permission.NICKNAME_MANAGE, Permission.USE_APPLICATION_COMMANDS),
+                        arrayOf(
+                                Permission.MESSAGE_ADD_REACTION,
+                                Permission.MESSAGE_EMBED_LINKS,
+                                Permission.MANAGE_ROLES,
+                                Permission.MESSAGE_EXT_EMOJI,
+                                Permission.MESSAGE_HISTORY,
+                                Permission.MESSAGE_MANAGE,
+                                Permission.VIEW_CHANNEL,
+                                Permission.MESSAGE_SEND,
+                                Permission.NICKNAME_MANAGE,
+                                Permission.USE_APPLICATION_COMMANDS
+                        )),
 
 
                 // A1c

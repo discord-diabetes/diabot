@@ -7,19 +7,22 @@ import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 import java.awt.Color
 
-class AboutCommand(category: Category, private val color: Color, private val description: String, private val features: Array<String>, vararg perms: Permission) : DiscordCommand(category, null) {
+class AboutCommand(
+        category: Category,
+        private val color: Color,
+        private val description: String,
+        private val features: Array<String>,
+        private val perms: Array<Permission>
+) : DiscordCommand(category, null) {
     private val replacementIcon = "+"
-    private val perms: Array<Permission>
     private var oauthLink: String? = null
     private val log = LoggerFactory.getLogger("OAuth2")
 
     init {
         this.name = "about"
-        this.help = "About diabot"
+        this.help = "Shows info about Diabot"
         this.guildOnly = false
-        this.aliases = arrayOf()
-        this.examples = arrayOf()
-        this.children = arrayOf()
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
     override fun execute(event: CommandEvent) {
@@ -88,14 +91,5 @@ class AboutCommand(category: Category, private val color: Color, private val des
         builder.setFooter("Last restart", null)
         builder.setTimestamp(event.client.startTime)
         event.reply(builder.build())
-    }
-
-    init {
-        name = "about"
-        help = "shows info about the bot"
-        guildOnly = false
-        @Suppress("UNCHECKED_CAST")
-        this.perms = perms as Array<Permission>
-        botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 }
