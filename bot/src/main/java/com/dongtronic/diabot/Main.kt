@@ -36,6 +36,20 @@ import javax.security.auth.login.LoginException
 
 object Main {
     private val debug = System.getenv("DIABOT_DEBUG") != null
+    private val permissions = arrayOf(
+            // General Permissions
+            Permission.MANAGE_ROLES,
+            Permission.NICKNAME_MANAGE,
+            Permission.VIEW_CHANNEL,
+            // Text Permissions
+            Permission.MESSAGE_SEND,
+            Permission.MESSAGE_MANAGE,
+            Permission.MESSAGE_EMBED_LINKS,
+            Permission.MESSAGE_HISTORY,
+            Permission.MESSAGE_EXT_EMOJI,
+            Permission.MESSAGE_ADD_REACTION,
+            Permission.USE_APPLICATION_COMMANDS,
+    )
 
     @Throws(LoginException::class)
     @JvmStatic
@@ -79,18 +93,7 @@ object Main {
                 // command to show information about the bot
                 AboutCommand(utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        arrayOf(
-                                Permission.MESSAGE_ADD_REACTION,
-                                Permission.MESSAGE_EMBED_LINKS,
-                                Permission.MANAGE_ROLES,
-                                Permission.MESSAGE_EXT_EMOJI,
-                                Permission.MESSAGE_HISTORY,
-                                Permission.MESSAGE_MANAGE,
-                                Permission.VIEW_CHANNEL,
-                                Permission.MESSAGE_SEND,
-                                Permission.NICKNAME_MANAGE,
-                                Permission.USE_APPLICATION_COMMANDS
-                        )),
+                        permissions),
 
 
                 // A1c
