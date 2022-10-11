@@ -34,13 +34,13 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
     }
 
     override fun execute(event: CommandEvent) {
-        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
         val quote = when {
-            event.message.mentionedMembers.isNotEmpty() -> {
-                val member = event.message.mentionedMembers.first()
+            event.message.mentions.members.isNotEmpty() -> {
+                val member = event.message.mentions.members.first()
                 getRandomQuote(event.guild.id, QuoteDTO::authorId eq member.id)
             }
             args.isNotEmpty() -> {

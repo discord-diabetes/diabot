@@ -21,7 +21,7 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
     }
 
     override fun execute(event: CommandEvent) {
-        if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
 
         val match = quoteRegex.matchEntire(event.args)
         if (match == null) {

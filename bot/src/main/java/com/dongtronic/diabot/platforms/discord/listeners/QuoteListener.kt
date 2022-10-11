@@ -8,36 +8,48 @@ import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
+import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.events.CoroutineEventListener
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageType
+import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.entities.emoji.UnicodeEmoji
+import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.requests.restaction.MessageAction
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import org.litote.kmongo.eq
 import reactor.kotlin.core.publisher.toMono
 import java.util.function.Consumer
 
-class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
+class QuoteListener(private val client: CommandClient) : CoroutineEventListener {
     private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
     // https://emojiguide.org/speech-balloon
-    private val speechEmoji = "U+1f4ac"
+    private val speechEmoji = Emoji.fromUnicode("U+1f4ac")
     private val logger = logger()
 
-    override fun onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent) {
-        if (event.user.isBot) return
-        if (!event.reaction.reactionEmote.isEmoji) return
-        if (event.reaction.reactionEmote.asCodepoints != speechEmoji) return
-        if (!QuoteDAO.checkRestrictions(event.channel)) return
+    override suspend fun onEvent(event: GenericEvent) {
+        when (event) {
+            is MessageReactionAddEvent -> onMessageReactionAdd(event)
+            is MessageReceivedEvent -> onMessageReceived(event)
+        }
+    }
 
-        val author = event.member
+    private suspend fun onMessageReactionAdd(event: MessageReactionAddEvent) {
+        if (event.retrieveUser().await().isBot) return
+        if (!event.isFromGuild) return
+        if (event.reaction.emoji !is UnicodeEmoji) return
+        if (event.reaction.emoji != speechEmoji) return
+        if (!QuoteDAO.checkRestrictions(event.guildChannel)) return
+
+        val author = event.retrieveMember().await()
         val guild = event.guild
 
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
-        val reply: (() -> MessageAction) -> Unit = { message ->
-            if (event.channel.canTalk(event.member)) {
+        val reply: (() -> MessageCreateAction) -> Unit = { message ->
+            if (event.guildChannel.canTalk(author)) {
                 message().queue()
             }
         }
@@ -45,16 +57,16 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(QuoteDTO(
                     guildId = guild.id,
-                    channelId = event.channel.id,
+                    channelId = event.guildChannel.id,
                     author = message.author.name,
                     authorId = message.author.id,
                     message = message.contentRaw,
                     messageId = message.id
             )).subscribe({
                 message.addReaction(speechEmoji).queue()
-                reply { event.channel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
+                reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
             }, {
-                reply { event.channel.sendMessage("Could not create quote for message: ${message.id}") }
+                reply { event.guildChannel.sendMessage("Could not create quote for message: ${message.id}") }
             })
         }
 
@@ -72,7 +84,7 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
                 })
     }
 
-    override fun onMessageReceived(event: MessageReceivedEvent) {
+    private fun onMessageReceived(event: MessageReceivedEvent) {
         if (event.author.isBot || !event.isFromGuild) return
 
         val msg = event.message.contentRaw
@@ -82,10 +94,10 @@ class QuoteListener(private val client: CommandClient) : ListenerAdapter() {
             val cmd = fullCommand.split(' ', limit = 2)
 
             if (quoteCommand.isCommandFor(cmd[0])) {
-                if (!QuoteDAO.checkRestrictions(event.textChannel, warnDisabledGuild = false)) return
+                if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = false)) return
 
                 val arguments = cmd.getOrNull(1) ?: ""
-                val commandEvent = CommandEvent(event, arguments, client)
+                val commandEvent = CommandEvent(event, ".", arguments, client)
                 quoteCommand.run(commandEvent)
             }
         }

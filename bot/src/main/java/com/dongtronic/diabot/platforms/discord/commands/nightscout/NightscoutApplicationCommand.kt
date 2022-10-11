@@ -5,14 +5,11 @@ import com.dongtronic.diabot.graph.PlottingStyle
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
 import com.dongtronic.diabot.util.logger
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData
-import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.commands.build.*
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 
 class NightscoutApplicationCommand : ApplicationCommand {
     private val logger = logger()
@@ -39,13 +36,12 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
     private val commandArgHours = "hours"
 
-    private val commandButtonDeleteConfirm = "nsdeleteyes"
-    private val commandButtonDeleteCancel = "nsdeleteno"
-
     override val commandName: String = "nightscout"
-    override val buttonIds: Set<String> = setOf(commandButtonDeleteConfirm, commandButtonDeleteCancel)
 
-    override fun execute(event: SlashCommandEvent) {
+    private val commandButtonDeleteConfirm = "nsdeleteyes".generateId()
+    private val commandButtonDeleteCancel = "nsdeleteno".generateId()
+
+    override fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandGroup) {
             groupNameSet -> when (event.subcommandName) {
                 commandModeToken -> setToken(event)
@@ -67,14 +63,16 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
     }
 
-    override fun execute(event: ButtonClickEvent) {
+    override fun execute(event: ButtonInteractionEvent): Boolean {
         when (event.componentId) {
             commandButtonDeleteConfirm -> deleteData(event)
             commandButtonDeleteCancel -> cancelDeleteData(event)
+            else -> return false
         }
+        return true
     }
 
-    private fun setToken(event: SlashCommandEvent) {
+    private fun setToken(event: SlashCommandInteractionEvent) {
         NightscoutFacade.setToken(event.user, event.getOption(commandArgToken)!!.asString).subscribe({
             event.reply("Your Nightscout token was set").setEphemeral(true).queue()
         }, {
@@ -82,7 +80,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun setUrl(event: SlashCommandEvent) {
+    private fun setUrl(event: SlashCommandInteractionEvent) {
         val url = event.getOption(commandArgUrl)!!.asString
         NightscoutFacade.setUrl(event.user, url).subscribe({
             event.reply("Your Nightscout URL was set to $url").setEphemeral(true).queue()
@@ -91,7 +89,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun setPrivacy(event: SlashCommandEvent) {
+    private fun setPrivacy(event: SlashCommandInteractionEvent) {
         if (!event.isFromGuild) {
             warnGuildOnly(event)
             return
@@ -109,7 +107,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun setGlobalPrivacy(event: SlashCommandEvent) {
+    private fun setGlobalPrivacy(event: SlashCommandInteractionEvent) {
         val privacy = event.getOption(commandArgPrivacy)!!.asString
 
         val public = commandArgPublic == privacy
@@ -126,7 +124,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun setGraphMode(event: SlashCommandEvent) {
+    private fun setGraphMode(event: SlashCommandInteractionEvent) {
         val mode = event.getOption(commandArgMode)!!.asString
 
         val plottingStyle = PlottingStyle.values().first { it.name.startsWith(mode, true) }
@@ -143,7 +141,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 })
     }
 
-    private fun setGraphHours(event: SlashCommandEvent) {
+    private fun setGraphHours(event: SlashCommandInteractionEvent) {
         val hours = event.getOption(commandArgHours)!!.asLong
 
         if (hours < 1 || hours > 24) {
@@ -163,7 +161,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 })
     }
 
-    private fun clearToken(event: SlashCommandEvent) {
+    private fun clearToken(event: SlashCommandInteractionEvent) {
         NightscoutFacade.clearToken(event.user).subscribe({
             event.reply("Your Nightscout token has been deleted").setEphemeral(true).queue()
         }, {
@@ -171,7 +169,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun clearUrl(event: SlashCommandEvent) {
+    private fun clearUrl(event: SlashCommandInteractionEvent) {
         NightscoutFacade.clearUrl(event.user).subscribe({
             event.reply("Your Nightscout URL has been deleted").setEphemeral(true).queue()
         }, {
@@ -179,7 +177,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun getUrl(event: SlashCommandEvent) {
+    private fun getUrl(event: SlashCommandInteractionEvent) {
         NightscoutFacade.getUser(event.user).subscribe {
             if (it.url != null) {
                 event.reply("Your configured Nightscout URL is `${it.url}`").setEphemeral(true).queue()
@@ -189,7 +187,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
     }
 
-    private fun getToken(event: SlashCommandEvent) {
+    private fun getToken(event: SlashCommandInteractionEvent) {
         NightscoutFacade.getUser(event.user).subscribe {
             if (it.token != null) {
                 event.reply("Your configured Nightscout token is `${it.token}`").setEphemeral(true).queue()
@@ -199,7 +197,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
     }
 
-    private fun confirmDeleteData(event: SlashCommandEvent) {
+    private fun confirmDeleteData(event: SlashCommandInteractionEvent) {
         event.reply("Are you sure you wish to **delete** your Nightscout settings?\n**This will remove all your Nightscout settings**")
                 .addActionRow(
                         Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings"),
@@ -207,7 +205,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 ).setEphemeral(true).queue()
     }
 
-    private fun deleteData(event: ButtonClickEvent) {
+    private fun deleteData(event: ButtonInteractionEvent) {
         NightscoutFacade.clearAll(event.user).subscribe({
             event.editMessage("Your Nightscout settings have been deleted").setActionRow(
                     Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
@@ -218,19 +216,19 @@ class NightscoutApplicationCommand : ApplicationCommand {
         })
     }
 
-    private fun cancelDeleteData(event: ButtonClickEvent) {
+    private fun cancelDeleteData(event: ButtonInteractionEvent) {
         event.editMessage("Your Nightscout settings were **not** deleted.").setActionRow(
                 Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
                 Button.secondary(commandButtonDeleteCancel, "Cancel").asDisabled()
         ).queue()
     }
 
-    private fun warnGuildOnly(event: SlashCommandEvent) {
+    private fun warnGuildOnly(event: SlashCommandInteractionEvent) {
         event.reply("You must use this command in a server").setEphemeral(true).queue()
     }
 
     override fun config(): CommandData {
-        return CommandData(commandName, "Manage your Nightscout settings").addSubcommandGroups(
+        return Commands.slash(commandName, "Manage your Nightscout settings").addSubcommandGroups(
                 SubcommandGroupData(groupNameSet, "Set Nightscout settings").addSubcommands(
                         SubcommandData(commandModeUrl, "Set Nightscout url")
                                 .addOption(OptionType.STRING, commandArgUrl, "URL of your Nightscout instance", true),

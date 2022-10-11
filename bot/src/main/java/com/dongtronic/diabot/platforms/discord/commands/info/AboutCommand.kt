@@ -2,25 +2,27 @@ package com.dongtronic.diabot.platforms.discord.commands.info
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
-import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
 import org.slf4j.LoggerFactory
 import java.awt.Color
 
-class AboutCommand(category: Category, private val color: Color, private val description: String, private val features: Array<String>, vararg perms: Permission) : DiscordCommand(category, null) {
+class AboutCommand(
+        category: Category,
+        private val color: Color,
+        private val description: String,
+        private val features: Array<String>,
+        private val perms: Array<Permission>
+) : DiscordCommand(category, null) {
     private val replacementIcon = "+"
-    private val perms: Array<Permission>
     private var oauthLink: String? = null
     private val log = LoggerFactory.getLogger("OAuth2")
 
     init {
         this.name = "about"
-        this.help = "About diabot"
+        this.help = "Shows info about Diabot"
         this.guildOnly = false
-        this.aliases = arrayOf()
-        this.examples = arrayOf()
-        this.children = arrayOf()
+        this.botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 
     override fun execute(event: CommandEvent) {
@@ -62,7 +64,7 @@ class AboutCommand(category: Category, private val color: Color, private val des
                 .append("Hello! I am **${event.selfUser.name}**, ")
                 .append("$description.")
                 .append("\nI was written in Kotlin by **$author**")
-                .append(" using ${JDAUtilitiesInfo.AUTHOR}'s [Commands Extension](${JDAUtilitiesInfo.GITHUB})")
+                .append(" using Chew's [JDA-Utilities fork](https://github.com/Chew/JDA-Chewtils)")
                 .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
                 .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
                 .append(" $inviteMessage.")
@@ -89,14 +91,5 @@ class AboutCommand(category: Category, private val color: Color, private val des
         builder.setFooter("Last restart", null)
         builder.setTimestamp(event.client.startTime)
         event.reply(builder.build())
-    }
-
-    init {
-        name = "about"
-        help = "shows info about the bot"
-        guildOnly = false
-        @Suppress("UNCHECKED_CAST")
-        this.perms = perms as Array<Permission>
-        botPermissions = arrayOf(Permission.MESSAGE_EMBED_LINKS)
     }
 }

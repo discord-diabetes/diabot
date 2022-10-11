@@ -27,7 +27,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
                 throw IllegalArgumentException("Channel ID is required")
             }
 
-            val channel = if (event.message.mentionedChannels.size == 0) {
+            val channel = if (event.message.mentions.channels.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("Channel ID must be numeric")
                 }
@@ -36,7 +36,7 @@ class AdminChannelAddCommand(category: Category, parent: Command?) : DiscordComm
                 event.guild.getTextChannelById(channelId)
                         ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
             } else {
-                event.message.mentionedChannels[0]
+                event.message.mentions.channels[0]
             }
 
             ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.ADMIN)

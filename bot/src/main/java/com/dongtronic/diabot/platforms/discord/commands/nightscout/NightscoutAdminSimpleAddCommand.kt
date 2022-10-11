@@ -37,7 +37,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
                 return
             }
 
-            val channel = if (event.message.mentionedChannels.size == 0) {
+            val channel = if (event.message.mentions.channels.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("Channel ID must be numeric")
                 }
@@ -46,7 +46,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
                 event.guild.getTextChannelById(channelId)
                         ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
             } else {
-                event.message.mentionedChannels[0]
+                event.message.mentions.channels[0]
             }
 
             logger.info("Adding channel ${channel.id} as short channel for ${event.guild.id}")

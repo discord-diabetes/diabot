@@ -5,14 +5,15 @@ import com.dongtronic.diabot.data.mongodb.RewardsDTO
 import com.dongtronic.diabot.util.logger
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 class RewardListener : ListenerAdapter() {
     private val logger = logger()
 
-    override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+    override fun onMessageReceived(event: MessageReceivedEvent) {
+        if (!event.isFromGuild) return
         if (!event.guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) return
         if (event.author.isBot) return
 

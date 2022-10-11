@@ -26,7 +26,7 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
                 throw IllegalArgumentException("UserID is required")
             }
 
-            val user = if (event.message.mentionedMembers.size == 0) {
+            val user = if (event.message.mentions.members.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("User ID must be valid")
                 }
@@ -35,7 +35,7 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
                 event.guild.getMemberById(userId)
                         ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
-                event.message.mentionedMembers[0]
+                event.message.mentions.members[0]
             }
 
             val guildId = event.guild.id

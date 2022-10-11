@@ -10,7 +10,7 @@ import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import org.bson.conversions.Bson
 import org.litote.kmongo.descending
 import org.litote.kmongo.eq
@@ -187,7 +187,7 @@ class QuoteDAO private constructor() {
          * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
          * @return true if the guild passed restrictions, false if not
          */
-        fun checkRestrictions(channel: TextChannel,
+        fun checkRestrictions(channel: GuildMessageChannel,
                               warnDisabledGuild: Boolean = false,
                               checkQuoteLimit: Boolean = true): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
@@ -215,9 +215,9 @@ class QuoteDAO private constructor() {
          * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
          * @return true if the guild passed restrictions, false if not
          */
-        suspend fun awaitCheckRestrictions(channel: TextChannel,
-                              warnDisabledGuild: Boolean = false,
-                              checkQuoteLimit: Boolean = true): Boolean {
+        suspend fun awaitCheckRestrictions(channel: GuildMessageChannel,
+                                           warnDisabledGuild: Boolean = false,
+                                           checkQuoteLimit: Boolean = true): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
                 if (warnDisabledGuild) {
                     channel.sendMessage("This guild is not permitted to use the quoting system").queue()

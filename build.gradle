@@ -10,10 +10,10 @@ allprojects {
     apply plugin: "kotlin"
 
     repositories {
-        jcenter()
         mavenCentral()
         maven { url 'https://m2.dv8tion.net/releases' }
         maven { url 'https://jitpack.io' }
+        maven { url "https://m2.chew.pro/snapshots" }
     }
 
     dependencies {
@@ -42,6 +42,9 @@ allprojects {
         //noinspection GrUnresolvedAccess
         kotlinOptions {
             jvmTarget = "11"
+            freeCompilerArgs = [
+                    "-Xjvm-default=all"
+            ]
         }
     }
 
@@ -93,8 +96,8 @@ shadowJar {
 release {
     tagTemplate = 'v$version'
     git {
-        requireBranch = 'main'
-        signTag = true
+        requireBranch.set('main')
+        signTag.set(true)
     }
 }
 

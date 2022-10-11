@@ -26,7 +26,7 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
                 throw IllegalArgumentException("Required and reward role IDs are required")
             }
 
-            val requiredRole = if (event.message.mentionedRoles.size == 0) {
+            val requiredRole = if (event.message.mentions.roles.size == 0) {
                 if (!StringUtils.isNumeric(args[0])) {
                     throw IllegalArgumentException("Role ID must be numeric")
                 }
@@ -35,12 +35,12 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
                 event.guild.getRoleById(roleId)
                         ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
-                event.message.mentionedRoles[0]
+                event.message.mentions.roles[0]
             }
 
             val requiredId = requiredRole.id
 
-            val rewardRole = if (event.message.mentionedRoles.size == 0) {
+            val rewardRole = if (event.message.mentions.roles.size == 0) {
                 if (!StringUtils.isNumeric(args[1])) {
                     throw IllegalArgumentException("Role ID must be numeric")
                 }
@@ -49,7 +49,7 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
                 event.guild.getRoleById(roleId)
                         ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
-                event.message.mentionedRoles[1]
+                event.message.mentions.roles[1]
             }
 
             val rewardId = rewardRole.id
