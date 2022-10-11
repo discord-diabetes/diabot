@@ -98,7 +98,7 @@ release {
     git {
         requireBranch.set('main')
         signTag.set(true)
-        ignoredSnapshotDependencies.set(listOf("pw.chew:jda-chewtils"))
+        ignoredSnapshotDependencies = [ "pw.chew:jda-chewtils" ]
     }
 }
 
