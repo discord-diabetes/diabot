@@ -98,6 +98,7 @@ release {
     git {
         requireBranch.set('main')
         signTag.set(true)
+        ignoredSnapshotDependencies = ["pw.chew:jda-chewtils:2.0-SNAPSHOT"]
     }
 }
 
