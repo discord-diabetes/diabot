@@ -89,6 +89,9 @@ object Main {
 
         client.setServerInvite("https://discord.gg/diabetes")
 
+        // application commands are handled outside this library, so tell it not to upsert commands
+        client.setManualUpsert(true)
+
         // add commands
         client.addCommands(
                 // command to show information about the bot
