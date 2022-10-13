@@ -179,9 +179,15 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      *
      * @param dto NS data
      * @param params The parameters to pass to the Nightscout API
+     * @param throwOnConversion Whether a SGV conversion failure should throw the error. If false, the entry will be
+     * excluded.
      * @return The [NightscoutDTO] instance with glucose data (sgv, timestamp, trend, delta)
      */
-    fun getSgv(dto: NightscoutDTO = NightscoutDTO(), params: Map<String, String> = emptyMap()): Mono<NightscoutDTO> {
+    fun getSgv(
+            dto: NightscoutDTO = NightscoutDTO(),
+            params: Map<String, String> = emptyMap(),
+            throwOnConversion: Boolean = true,
+    ): Mono<NightscoutDTO> {
         return service.getEntriesJson(params).map { json ->
             if (json.isEmpty) {
                 throw NoNightscoutDataException()
@@ -218,7 +224,13 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                     }
                 }
 
-                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg").getOrThrow())
+                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg").getOrElse {
+                    if (throwOnConversion) {
+                        throw it
+                    } else {
+                        return@forEach
+                    }
+                })
                 bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
                 bgBuilder.trend(trend)
                 dtoBuilder.replaceEntry(bgBuilder.build())
