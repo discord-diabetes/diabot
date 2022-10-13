@@ -137,7 +137,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                             .find("date", startTime, MongoOperator.gte)
                             .count(count)
                             .toMap()
-                    ns.getSgv(params = findParam)
+                    ns.getSgv(params = findParam, throwOnConversion = false)
                             // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
                             .onErrorMap({ error ->
                                 error is HttpException
