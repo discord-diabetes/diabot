@@ -166,7 +166,7 @@ class QuoteDAO private constructor() {
                 .returnDocument(ReturnDocument.AFTER)
 
         return quoteIndexes.findOneAndUpdate(
-            QuoteIndexDTO::guildId eq guildId,
+                QuoteIndexDTO::guildId eq guildId,
                 Updates.inc("quoteIndex", 1L), options
         )
                 .toMono()
@@ -193,11 +193,9 @@ class QuoteDAO private constructor() {
          * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
          * @return true if the guild passed restrictions, false if not
          */
-        fun checkRestrictions(
-            channel: GuildMessageChannel,
+        fun checkRestrictions(channel: GuildMessageChannel,
                               warnDisabledGuild: Boolean = false,
-                              checkQuoteLimit: Boolean = true
-        ): Boolean {
+                              checkQuoteLimit: Boolean = true): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
                 if (warnDisabledGuild) {
                     channel.sendMessage("This guild is not permitted to use the quoting system").queue()
@@ -208,8 +206,8 @@ class QuoteDAO private constructor() {
             val numOfQuotes = getInstance().quoteAmount(channel.guild.id).block() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
                 channel.sendMessage(
-                    "Could not create quote as your guild has reached " +
-                        "the max of ${getInstance().maxQuotes} quotes"
+                        "Could not create quote as your guild has reached " +
+                                "the max of ${getInstance().maxQuotes} quotes"
                 ).queue()
                 return false
             }
@@ -226,9 +224,9 @@ class QuoteDAO private constructor() {
          * @return true if the guild passed restrictions, false if not
          */
         suspend fun awaitCheckRestrictions(
-            channel: GuildMessageChannel,
-                                           warnDisabledGuild: Boolean = false,
-                                           checkQuoteLimit: Boolean = true
+                channel: GuildMessageChannel,
+                warnDisabledGuild: Boolean = false,
+                checkQuoteLimit: Boolean = true
         ): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
                 if (warnDisabledGuild) {
@@ -240,8 +238,8 @@ class QuoteDAO private constructor() {
             val numOfQuotes = getInstance().quoteAmount(channel.guild.id).awaitSingleOrNull() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
                 channel.sendMessage(
-                    "Could not create quote as your guild has reached " +
-                        "the max of ${getInstance().maxQuotes} quotes"
+                        "Could not create quote as your guild has reached " +
+                                "the max of ${getInstance().maxQuotes} quotes"
                 ).queue()
                 return false
             }

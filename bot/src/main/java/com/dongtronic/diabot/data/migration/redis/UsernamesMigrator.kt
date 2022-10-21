@@ -35,9 +35,9 @@ class UsernamesMigrator {
             val pattern = redis.getUsernamePattern(guildId)
 
             // if all the data is useless then skip this guild
-            if (!enforcing &&
-                    hint.isNullOrEmpty() &&
-                    pattern.isNullOrEmpty()
+            if (!enforcing
+                    && hint.isNullOrEmpty()
+                    && pattern.isNullOrEmpty()
             ) {
                 return@mapNotNull null
             }

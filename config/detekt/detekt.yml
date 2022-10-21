@@ -269,6 +269,8 @@ formatting:
   active: true
   android: false
   autoCorrect: true
+  Wrapping:
+    active: false
   AnnotationOnSeparateLine:
     active: false
     autoCorrect: false
@@ -353,7 +355,7 @@ formatting:
     active: true
     autoCorrect: false
   ParameterListWrapping:
-    active: true
+    active: false
     autoCorrect: false
     indentSize: 4
     maxLineLength: 140
