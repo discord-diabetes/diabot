@@ -6,6 +6,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
+import java.net.URL
 
 class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
 
@@ -24,19 +25,26 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
     override fun execute(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if(args.isEmpty()) {
+        if (args.isEmpty()) {
             event.replyError("nightscout URL is required")
             return
         }
 
         NightscoutFacade.setUrl(event.author, args[0]).subscribe({
+            val urlParams = getUrlParams(args[0])
+            val token = urlParams["token"]
+            if (token != null) {
+                NightscoutFacade.setToken(event.author, token).subscribe({
+                    event.replySuccess("Set Nightscout URL and token for ${event.author.name}")
+                }, {
+                    logger.warn("Could not set nightscout token", it)
+                })
+            }
             event.reply("Set Nightscout URL for ${event.author.name}")
         }, {
             logger.warn("Could not set NS URL", it)
-            if (it is IllegalArgumentException)
-                event.replyError(it.message)
-            else
-                event.replyError("Could not set URL")
+            if (it is IllegalArgumentException) event.replyError(it.message)
+            else event.replyError("Could not set URL")
         })
 
         try {
@@ -47,5 +55,19 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
         } catch (ex: IllegalStateException) {
             logger.info("Could not delete command message. probably in a DM")
         }
+    }
+
+    private fun getUrlParams(urlString: String): HashMap<String, String> {
+        val url = URL(urlString)
+        val query: String = url.query
+        val params = HashMap<String, String>()
+        val strParams = query.split("&")
+        for (param in strParams) {
+            val queryElement = param.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val name = queryElement[0]
+            val value = queryElement[1]
+            params[name] = value
+        }
+        return params
     }
 }
