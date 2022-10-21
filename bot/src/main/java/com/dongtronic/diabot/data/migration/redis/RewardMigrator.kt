@@ -74,7 +74,7 @@ class RewardMigrator {
             }
         }
 
-        // convert all of the rewards to RewardsDTO
+        // convert all the rewards to RewardsDTO
         return mutableRewardMap.map { RewardsDTO(guildId, it.key, it.value) }
     }
 }

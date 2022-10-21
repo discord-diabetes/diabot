@@ -21,8 +21,8 @@ import kotlin.reflect.KProperty
 
 class NameRuleDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<NameRuleDTO>
-            = mongo.getCollection(DiabotCollection.NAME_RULES.getEnv(), NameRuleDTO::class.java)
+    val collection: MongoCollection<NameRuleDTO> =
+            mongo.getCollection(DiabotCollection.NAME_RULES.getEnv(), NameRuleDTO::class.java)
 
     private val ruleCache: Cache<String, NameRuleDTO> = Caffeine.newBuilder()
             .expireAfterAccess(240, TimeUnit.MINUTES)
@@ -48,8 +48,9 @@ class NameRuleDAO private constructor() {
      */
     fun getGuild(guildId: String): Mono<NameRuleDTO> {
         val cached = ruleCache.getIfPresent(guildId)
-        if (cached != null)
+        if (cached != null) {
             return cached.toMono()
+        }
 
         return collection.findOne(filter(guildId))
                 .subscribeOn(scheduler)
@@ -73,15 +74,15 @@ class NameRuleDAO private constructor() {
 
     /**
      * Deletes stored name enforcement data belonging to the given guild.
-     * If no properties are given, all of the guild's rules will be deleted from the database.
+     * If no properties are given, all the guild's rules will be deleted from the database.
      *
      * @param guildId The guild's ID.
-     * @param fields Which fields to delete. If this is not provided then all of the guild's data will be deleted.
+     * @param fields Which fields to delete. If this is not provided then all the guild's data will be deleted.
      * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
      * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
      */
-    fun deleteGuild(guildId: String, vararg fields: KProperty<*>): Mono<*> {
-        if (fields.isNullOrEmpty()) {
+    private fun deleteGuild(guildId: String, vararg fields: KProperty<*>): Mono<*> {
+        if (fields.isEmpty()) {
             // delete all of the guild's data
             return collection.deleteOne(filter(guildId)).toMono()
                     .subscribeOn(scheduler)
@@ -108,8 +109,10 @@ class NameRuleDAO private constructor() {
             return deleteGuild(guildId, NameRuleDTO::pattern).ofType(UpdateResult::class.java)
         }
 
-        return collection.updateOne(filter(guildId),
-                setValue(NameRuleDTO::pattern, pattern), upsert())
+        return collection.updateOne(
+            filter(guildId),
+                setValue(NameRuleDTO::pattern, pattern), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
                 .doOnNext { ruleCache.invalidate(guildId) }
@@ -128,8 +131,10 @@ class NameRuleDAO private constructor() {
             return deleteGuild(guildId, NameRuleDTO::hintMessage).ofType(UpdateResult::class.java)
         }
 
-        return collection.updateOne(filter(guildId),
-                setValue(NameRuleDTO::hintMessage, hintMessage), upsert())
+        return collection.updateOne(
+            filter(guildId),
+                setValue(NameRuleDTO::hintMessage, hintMessage), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
                 .doOnNext { ruleCache.invalidate(guildId) }
@@ -148,8 +153,10 @@ class NameRuleDAO private constructor() {
             return deleteGuild(guildId, NameRuleDTO::enforce).ofType(UpdateResult::class.java)
         }
 
-        return collection.updateOne(filter(guildId),
-                setValue(NameRuleDTO::enforce, enforce), upsert())
+        return collection.updateOne(
+            filter(guildId),
+                setValue(NameRuleDTO::enforce, enforce), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
                 .doOnNext { ruleCache.invalidate(guildId) }

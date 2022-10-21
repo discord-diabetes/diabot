@@ -60,8 +60,8 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
         runBlocking {
             launch {
                 try {
-                    val enabled = !event.isFromGuild
-                            || GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
+                    val enabled = !event.isFromGuild ||
+                            GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
                     if (!enabled) {
                         event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
@@ -92,7 +92,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
         // find time difference, then convert ms -> s
         return time?.let {
-            (abs(it - System.currentTimeMillis())) / 1000
+            abs(it - System.currentTimeMillis()) / 1000
         }
     }
 
@@ -140,10 +140,10 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                     ns.getSgv(params = findParam, throwOnConversion = false)
                             // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
                             .onErrorMap({ error ->
-                                error is HttpException
-                                        || error is UnknownHostException
-                                        || error is JsonProcessingException
-                                        || error is NoNightscoutDataException
+                                error is HttpException ||
+                                        error is UnknownHostException ||
+                                        error is JsonProcessingException ||
+                                        error is NoNightscoutDataException
                             }, {
                                 NightscoutFetchException(userDTO, it)
                             })

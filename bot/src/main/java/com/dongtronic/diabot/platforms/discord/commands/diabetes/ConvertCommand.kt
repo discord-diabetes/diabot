@@ -5,11 +5,10 @@ import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.emoji.Emoji
 
-class ConvertCommand(category: Command.Category) : DiscordCommand(category, null) {
+class ConvertCommand(category: Category) : DiscordCommand(category, null) {
 
     private val logger = logger()
 
@@ -47,11 +46,16 @@ class ConvertCommand(category: Command.Category) : DiscordCommand(category, null
                 result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
                 result.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
                 else -> {
-                    String.format(arrayOf(
+                    String.format(
+                        arrayOf(
                             "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
                             "%s mg/dL is **%s mmol/L**",
-                            "%s mmol/L is **%s mg/dL**").joinToString(
-                            "%n"), args[0], result.mmol, args[0], result.mgdl)
+                            "%s mmol/L is **%s mg/dL**"
+                        ).joinToString(
+                            "%n"
+                        ),
+                                args[0], result.mmol, args[0], result.mgdl
+                    )
                 }
             }
 

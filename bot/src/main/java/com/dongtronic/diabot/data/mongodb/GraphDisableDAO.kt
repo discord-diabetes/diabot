@@ -14,8 +14,8 @@ import reactor.kotlin.core.publisher.toMono
 
 class GraphDisableDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<GraphDisableDTO>
-            = mongo.getCollection(DiabotCollection.GRAPH_DISABLE.getEnv(), GraphDisableDTO::class.java)
+    val collection: MongoCollection<GraphDisableDTO> =
+            mongo.getCollection(DiabotCollection.GRAPH_DISABLE.getEnv(), GraphDisableDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -52,7 +52,7 @@ class GraphDisableDAO private constructor() {
         val filter = GraphDisableDTO::guildId eq guildId
         val desiredSetting = enabled?.toMono()
                 // invert the current graph setting as the desired setting to toggle it
-                ?: (getGraphEnabled(guildId).map { !it })
+                ?: getGraphEnabled(guildId).map { !it }
 
         val update = desiredSetting.flatMap { desiredSetting ->
             if (desiredSetting) {

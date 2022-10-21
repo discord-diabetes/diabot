@@ -69,9 +69,11 @@ class NutritionCommand(category: Category) : DiscordCommand(category, null) {
                             404 -> {
                                 event.replyError("Couldn't find any food matching your request in the food database")
                             }
+
                             401 -> {
                                 event.replyError("Rate limit reached, please try again tomorrow")
                             }
+
                             else -> {
                                 event.replyError("Couldn't communicate with nutrition database. Please try again later.")
                             }

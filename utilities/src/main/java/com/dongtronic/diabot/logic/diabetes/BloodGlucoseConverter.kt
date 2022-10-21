@@ -40,9 +40,10 @@ object BloodGlucoseConverter {
         }
 
         // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
-        if (mmol == 5.5
-                || mmol == 10.0
-                || mgdl == 100) {
+        if (mmol == 5.5 ||
+                mmol == 10.0 ||
+                mgdl == 100
+        ) {
             reactions.add("\uD83D\uDCAF")
         }
 

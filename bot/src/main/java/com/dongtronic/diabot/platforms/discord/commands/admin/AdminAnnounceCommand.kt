@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel
 import org.apache.commons.lang3.StringUtils
 
-class AdminAnnounceCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminAnnounceCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -46,7 +46,6 @@ class AdminAnnounceCommand(category: Command.Category, parent: Command?) : Disco
         }
 
         val message = event.args.substringAfter(' ')
-
 
         channel.sendMessage(message).queue()
 

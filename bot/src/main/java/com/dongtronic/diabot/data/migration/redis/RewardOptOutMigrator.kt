@@ -40,7 +40,7 @@ class RewardOptOutMigrator {
     }
 
     /**
-     * Gets all of the guilds who have users opted-out for rewards
+     * Gets all the guilds who have users opted-out for rewards
      */
     private fun getAllRewardOptOuts(): List<RewardOptOutsDTO> {
         return jedis.keys("*:rewardoptouts")

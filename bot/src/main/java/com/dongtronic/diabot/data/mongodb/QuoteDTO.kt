@@ -41,8 +41,9 @@ data class QuoteDTO(
      */
     @JsonIgnore
     fun getMessageLink(): String? {
-        if (!hasMessageLink())
+        if (!hasMessageLink()) {
             return null
+        }
 
         return DISCORD_MESSAGE_LINK.replace("{guild}", guildId)
                 .replace("{channel}", channelId)

@@ -7,7 +7,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 
-class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardDeleteCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -64,6 +64,4 @@ class AdminRewardDeleteCommand(category: Command.Category, parent: Command?) : D
             event.replyError(ex.message)
         }
     }
-
-
 }

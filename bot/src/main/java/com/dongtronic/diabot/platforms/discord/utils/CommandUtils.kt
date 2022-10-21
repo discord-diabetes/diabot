@@ -15,7 +15,7 @@ object CommandUtils {
                 .flatMap {
                     return@flatMap if (!it) {
                         event.replyError("This command can only be executed in an admin channel")
-                        Mono.empty<Boolean>()
+                        Mono.empty()
                     } else {
                         it.toMono()
                     }

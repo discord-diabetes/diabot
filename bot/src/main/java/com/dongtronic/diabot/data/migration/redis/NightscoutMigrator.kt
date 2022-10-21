@@ -36,10 +36,11 @@ class NightscoutMigrator {
             val public = getPublicGuilds(userId).toList()
 
             // if all of their data is empty then skip them
-            if (url == null
-                    && token == null
-                    && display.isNullOrEmpty()
-                    && public.isNullOrEmpty()) {
+            if (url == null &&
+                    token == null &&
+                    display.isEmpty() &&
+                    public.isEmpty()
+            ) {
                 return@mapNotNull null
             }
 

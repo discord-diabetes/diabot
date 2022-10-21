@@ -64,9 +64,9 @@ data class NightscoutDTO(
             this.title = dto.title
         }
 
-        fun addEntry(vararg entries: BgEntry) = apply { this.entries.addAll(entries) }
+        private fun addEntry(vararg entries: BgEntry) = apply { this.entries.addAll(entries) }
 
-        fun removeEntry(vararg entries: BgEntry) = apply { this.entries.removeAll(entries) }
+        private fun removeEntry(vararg entries: BgEntry) = apply { this.entries.removeAll(entries.toSet()) }
 
         /**
          * Adds or replaces a BG entry in the set of entries

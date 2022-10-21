@@ -34,18 +34,16 @@ fun <T> RestAction<T>.submitMono(): Mono<T> {
     return submit().toMono()
 }
 
-@Suppress("ReactiveStreamsUnusedPublisher")
 fun <T, U : Any> Flux<T>.mapNotNull(transform: (T) -> U?): Flux<U> {
     return this.flatMap {
         val result = transform.invoke(it)
-        return@flatMap result?.toMono() ?: Flux.empty<U>()
+        return@flatMap result?.toMono() ?: Flux.empty()
     }
 }
 
-@Suppress("ReactiveStreamsUnusedPublisher")
 fun <T, U : Any> Flux<T>.flatMapNotNull(transform: (T) -> Publisher<U>?): Flux<U> {
     return this.flatMap {
         val result = transform.invoke(it)
-        return@flatMap result?.toMono() ?: Flux.empty<U>()
+        return@flatMap result?.toMono() ?: Flux.empty()
     }
 }

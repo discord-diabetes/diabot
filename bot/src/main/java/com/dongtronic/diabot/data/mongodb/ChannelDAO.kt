@@ -18,8 +18,8 @@ import reactor.kotlin.core.publisher.toMono
 
 class ChannelDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<ChannelDTO>
-            = mongo.getCollection(DiabotCollection.CHANNELS.getEnv(), ChannelDTO::class.java)
+    val collection: MongoCollection<ChannelDTO> =
+            mongo.getCollection(DiabotCollection.CHANNELS.getEnv(), ChannelDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -32,7 +32,7 @@ class ChannelDAO private constructor() {
     }
 
     /**
-     * Gets all of the channel objects stored in the database for a guild.
+     * Gets all the channel objects stored in the database for a guild.
      *
      * @param guildId The guild's ID
      * @return [ChannelDTO]s for this guild
@@ -125,8 +125,9 @@ class ChannelDAO private constructor() {
 
         fun filter(channelId: String, guildId: String? = null): Bson {
             var filter = ChannelDTO::channelId eq channelId
-            if (guildId != null)
+            if (guildId != null) {
                 filter = and(filter, filterGuild(guildId))
+            }
 
             return filter
         }

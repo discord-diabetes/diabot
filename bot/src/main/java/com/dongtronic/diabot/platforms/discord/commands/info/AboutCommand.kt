@@ -1,10 +1,11 @@
 package com.dongtronic.diabot.platforms.discord.commands.info
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
+import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import org.slf4j.LoggerFactory
+import net.dv8tion.jda.api.exceptions.AccountTypeException
 import java.awt.Color
 
 class AboutCommand(
@@ -16,7 +17,7 @@ class AboutCommand(
 ) : DiscordCommand(category, null) {
     private val replacementIcon = "+"
     private var oauthLink: String? = null
-    private val log = LoggerFactory.getLogger("OAuth2")
+    private val logger = logger()
 
     init {
         this.name = "about"
@@ -33,8 +34,8 @@ class AboutCommand(
                     info.setRequiredScopes("applications.commands")
                     info.getInviteUrl(*perms)
                 } else ""
-            } catch (e: Exception) {
-                log.error("Could not generate invite link ", e)
+            } catch (e: AccountTypeException) {
+                logger.warn("Logged in as normal user", e)
                 ""
             }
         }
@@ -50,15 +51,18 @@ class AboutCommand(
         val invite = oauthLink!!.isNotEmpty()
 
         val inviteMessage = if (join && invite) {
-            "Join my server [`here`](${event.client.serverInvite}), or [`invite`](${oauthLink}) me to your server"
+            "Join my server [`here`](${event.client.serverInvite}), or [`invite`]($oauthLink) me to your server"
         } else if (join) {
             "Join my server [`here`](${event.client.serverInvite})"
         } else if (invite) {
-            "Please [`invite`](${oauthLink}) me to your server"
+            "Please [`invite`]($oauthLink) me to your server"
         } else ""
 
-
-        val author = if (event.jda.getUserById(event.client.ownerId) == null) "<@" + event.client.ownerId + ">" else event.jda.getUserById(event.client.ownerId)!!.name
+        val author = if (event.jda.getUserById(event.client.ownerId) == null) {
+            "<@" + event.client.ownerId + ">"
+        } else {
+            event.jda.getUserById(event.client.ownerId)!!.name
+        }
 
         val description = StringBuilder()
                 .append("Hello! I am **${event.selfUser.name}**, ")

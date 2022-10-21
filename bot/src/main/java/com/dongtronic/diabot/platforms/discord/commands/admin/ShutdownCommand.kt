@@ -2,13 +2,12 @@ package com.dongtronic.diabot.platforms.discord.commands.admin
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
 /**
  * @author John Grosh (jagrosh)
  */
-class ShutdownCommand(category: Command.Category) : DiscordCommand(category, null) {
+class ShutdownCommand(category: Category) : DiscordCommand(category, null) {
 
     init {
         this.name = "shutdown"
@@ -37,5 +36,4 @@ class ShutdownCommand(category: Command.Category) : DiscordCommand(category, nul
 
         private val logger = logger()
     }
-
 }

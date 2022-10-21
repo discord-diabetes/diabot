@@ -8,9 +8,8 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.User
 import reactor.core.publisher.Mono
-import java.util.*
 
-class NightscoutSetDisplayCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutSetDisplayCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
     companion object {
         val enabledOptions = arrayOf("title", "trend", "cob", "iob", "avatar")
         val validOptions = enabledOptions.plus(arrayOf("simple", "none"))

@@ -19,7 +19,8 @@ class InfoCommand(category: Category) : DiscordCommand(category, null) {
         this.children = arrayOf(
                 InfoSetCommand(category, this),
                 InfoListCommand(category, this),
-                InfoDeleteCommand(category, this))
+                InfoDeleteCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
@@ -40,7 +41,7 @@ class InfoCommand(category: Category) : DiscordCommand(category, null) {
             event.reply(builder.build())
         }, {
             if (it is NoSuchElementException) {
-                 event.replyError("Could not find project info for ${args[0]}")
+                event.replyError("Could not find project info for ${args[0]}")
             } else {
                 logger.warn("Could not retrieve project info", it)
                 event.replyError(it.message)
