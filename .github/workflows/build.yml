@@ -32,7 +32,7 @@ jobs:
 
       - uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: ${{ github.workspace }}/merge.sarif
+          sarif_file: ${{ github.workspace }}/build/reports/detekt/merge.sarif
           checkout_path: ${{ github.workspace }}
 
   build:
