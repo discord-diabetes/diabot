@@ -7,7 +7,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 
-class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutSetTokenCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -56,9 +56,12 @@ class NightscoutSetTokenCommand(category: Command.Category, parent: Command?) : 
             event.message.delete().reason("privacy").queue()
         } catch (ex: InsufficientPermissionException) {
             logger.info("Could not remove command message due to missing permission: ${ex.permission}")
-            event.replyError("Could not remove command message due to missing `${ex.permission}` permission. Please remove the message yourself to protect your privacy.")
+            event.replyError(
+                "Could not remove command message due to missing `${ex.permission}` " +
+                    "permission. Please remove the message yourself to protect your privacy."
+            )
         } catch (ex: IllegalStateException) {
-            logger.info("Could not delete command message. probably in a DM")
+            logger.info("Could not delete command message. probably in a DM", ex)
         }
     }
 }

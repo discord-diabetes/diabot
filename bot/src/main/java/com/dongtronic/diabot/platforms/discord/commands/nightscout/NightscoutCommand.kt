@@ -52,7 +52,10 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         this.arguments = "Partial Nightscout url (part before .herokuapp.com)"
         this.guildOnly = false
         this.aliases = arrayOf("ns", "bg", "bs")
-        this.examples = arrayOf("diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com", "diabot ns @SomeUser#1234", "diabot ns public false")
+        this.examples = arrayOf(
+            "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
+                "diabot ns @SomeUser#1234", "diabot ns public false"
+        )
         this.children = arrayOf(
                 NightscoutSetUrlCommand(category, this),
                 NightscoutDeleteCommand(category, this),
@@ -79,11 +82,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         embed.subscribe({
             logger.debug("Sent Nightscout embed: $it")
         }, {
-            event.reply(if (it is NightscoutFetchException) {
-                handleGrabError(it.originalException, event.author, it.userDTO)
-            } else {
-                handleError(it)
-            })
+            event.reply(
+                    if (it is NightscoutFetchException) {
+                        handleGrabError(it.originalException, event.author, it.userDTO)
+                    } else {
+                        handleError(it)
+                    }
+            )
         })
     }
 
@@ -108,14 +113,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
         val namedMembers = event.event.guild.members.filter {
-            it.effectiveName.equals(event.args, true)
-                    || it.user.name.equals(event.args, true)
+            it.effectiveName.equals(event.args, true) ||
+                    it.user.name.equals(event.args, true)
         }
         val mentionedMembers = event.event.message.mentions.members
 
         val endpoint: Mono<NightscoutUserDTO> = when {
             mentionedMembers.size > 1 ->
                 IllegalArgumentException("Too many mentioned users.").toMono()
+
             event.event.message.mentions.mentionsEveryone() ->
                 IllegalArgumentException("Cannot handle mentioning everyone.").toMono()
 
@@ -132,11 +138,13 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                             }
                         }
             }
+
             args.isNotEmpty() && args[0].matches("^https?://.*".toRegex()) -> {
                 // is a URL
                 val url = NightscoutFacade.validateNightscoutUrl(args[0])
                 getDataFromDomain(url, event)
             }
+
             else -> {
                 // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
                 val member = namedMembers.getOrNull(0)
@@ -214,10 +222,10 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         ).doFinally {
             api.close()
         }.onErrorMap({ error ->
-            error is HttpException
-                    || error is UnknownHostException
-                    || error is JsonProcessingException
-                    || error is NoNightscoutDataException
+            error is HttpException ||
+                    error is UnknownHostException ||
+                    error is JsonProcessingException ||
+                    error is NoNightscoutDataException
         }, {
             NightscoutFetchException(userDTO, it)
         }).zipWhen { nsDto ->
@@ -242,7 +250,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @param nsDTO The Nightscout data to build a response off of
      * @param userDTO The owner of the [NightscoutDTO] data
      * @param short Whether to exclude the user avatar from this embed
-     * @param builder Optional: the embed to build off of
+     * @param builder Optional: the embed to build on
      * @return The embed which was created
      */
     private fun buildResponse(
@@ -356,13 +364,28 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
         if (glucose >= dto.high || glucose <= dto.low) {
             builder.setColor(Color.red)
-        } else if (glucose >= dto.top && glucose < dto.high || glucose > dto.low && glucose <= dto.bottom) {
+        } else if (glucoseIsOrange(glucose, dto)) {
             builder.setColor(Color.orange)
         } else {
             builder.setColor(Color.green)
         }
 
         return builder
+    }
+
+    /**
+     * Return true if the glucose is in the orange rendering range.
+     */
+    private fun glucoseIsOrange(glucose: Double, dto: NightscoutDTO): Boolean {
+        if (glucose >= dto.top && glucose < dto.high) {
+            return true
+        }
+
+        if (glucose > dto.low && glucose <= dto.bottom) {
+            return true
+        }
+
+        return false
     }
 
     /**
@@ -422,12 +445,14 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                         "$error Nightscout data could not be read"
                     }
                 }
+
                 is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `diabot nightscout set <hostname>`"
                 is IllegalArgumentException -> "Error: ${ex.message}"
                 is InsufficientPermissionException -> {
                     logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
                     "$error Couldn't perform requested action due to missing permission: `${ex.permission}`"
                 }
+
                 else -> {
                     logger.warn("Unexpected error: " + ex.message, ex)
                     "Unexpected error occurred: ${ex.javaClass.simpleName}"
@@ -453,14 +478,17 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                     message += "Could not resolve host"
                     logger.info("No host found: ${ex.message}")
                 }
+
                 is NoNightscoutDataException -> {
                     message += "No BG data could be retrieved"
                     logger.info("No nightscout data from ${userDTO.url}")
                 }
+
                 is JsonProcessingException -> {
                     message += "Could not parse JSON"
                     logger.warn("Malformed JSON from ${userDTO.url}")
                 }
+
                 is HttpException -> {
                     if (ex.code() == 401) {
                         message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {

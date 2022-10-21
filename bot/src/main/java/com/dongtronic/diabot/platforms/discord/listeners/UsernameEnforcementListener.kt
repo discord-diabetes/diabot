@@ -12,11 +12,10 @@ class UsernameEnforcementListener : ListenerAdapter() {
     private val logger = logger()
 
     override fun onGuildMemberUpdateNickname(event: GuildMemberUpdateNicknameEvent) {
-        val prevNick = event.oldNickname ?: event.user.name
-        val newNick = event.newNickname ?: event.user.name
+        val newNickname = event.newNickname ?: event.user.name
 
         NameRuleDAO.instance.getGuild(event.guild.id).subscribe({
-            enforceRules(newNick, it, event)
+            enforceRules(newNickname, it, event)
         }, {
             if (it !is NoSuchElementException) {
                 logger.warn("Could not access name rules for ${event.guild.id}")
@@ -52,13 +51,19 @@ class UsernameEnforcementListener : ListenerAdapter() {
         }
 
         val message = when {
-            (event is GuildMemberUpdateNicknameEvent) -> "You just changed your username in **${event.guild.name}** to $username. \n" +
-                    "However, your new username does not match our naming rules. Please update your username to something that matches these rules: \n" +
+            event is GuildMemberUpdateNicknameEvent ->
+                "You just changed your username in **${event.guild.name}** to $username. \n" +
+                    "However, your new username does not match our naming rules. Please update your username to " +
+                        "something that matches these rules: \n" +
                     rules.hintMessage
-            (event is GuildMemberJoinEvent) -> "Thank you for joining **${event.guild.name}**. \n" +
+
+            event is GuildMemberJoinEvent ->
+                "Thank you for joining **${event.guild.name}**. \n" +
                     "We have some guidelines regarding usernames so everyone can easily type your name. " +
-                    "Unfortunately, your current nickname does not match our guidelines. Please update your username to something that matches these rules: \n" +
+                    "Unfortunately, your current nickname does not match our guidelines. Please update your username to" +
+                        " something that matches these rules: \n" +
                     rules.hintMessage
+
             else -> "Thank you for joining **${event.guild.name}**"
         }
 

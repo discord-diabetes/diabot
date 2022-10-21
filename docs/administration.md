@@ -21,7 +21,7 @@ Websites like [regexr](https://regexr.com/) can help making and testing patterns
 
 
 ### Commands
-- [Show/View Pattern](#showview-Pattern)  
+- [Show/View Pattern](#showview-pattern)  
 - [Show/View Hint](#showview-hint)
 - [Enable Enforcement](#enable-enforcement)
 - [Disable Enforcement](#disable-enforcement)
@@ -61,7 +61,7 @@ Disable username pattern enforcement:
 ## Rewards
 Rewards are a system of giving users in the server a role if they have the required role, and were active while the reward was active.  
 This is useful for events where you want all members who were active during the event to gain and eventually retain a role from that event.  
-Users can opt-out of the reward (and back in) at will, and admins can force users to opt in and out.
+Users can opt out of the reward (and back in) at will, and admins can force users to opt in and out.
 
 
 ### Commands
@@ -86,7 +86,7 @@ To list all currently configured rewards:
 `diabot admin rewards list`
 
 #### Opt user in to rewards
-Admins can force a user to opt-in to rewards by specifying the user ID:  
+Admins can force a user to opt in to rewards by specifying the user ID:  
 `diabot admin rewards optin <user>`
 
 #### Opt user out of rewards
@@ -135,7 +135,7 @@ Admins can write messages as diabot in public channels.
 To announce a message in a channel, specify the channel ID and message you'd like to send:  
 `diabot admin announce <channel> <message>`  
   
-For example, to send `foo` to the channel who's ID is `257554742371155998` :  
+For example, to send `foo` to the channel whose ID is `257554742371155998` :  
 `diabot admin announce 257554742371155998 foo`
 
 Embeds still work, so sending a link to a valid GIF will embed it in chat once the message is sent.

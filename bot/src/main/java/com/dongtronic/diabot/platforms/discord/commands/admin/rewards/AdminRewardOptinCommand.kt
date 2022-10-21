@@ -7,7 +7,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 
-class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardOptinCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -40,7 +40,6 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
 
             val guildId = event.guild.id
 
-
             RewardsDAO.instance.changeOpt(guildId, user.id, false).subscribe({
                 logger.info("User ${user.effectiveName} (${user.id}) opted in to rewards, $it")
                 event.reply("User ${user.effectiveName} opted in to rewards")
@@ -52,6 +51,4 @@ class AdminRewardOptinCommand(category: Command.Category, parent: Command?) : Di
             event.replyError(ex.message)
         }
     }
-
-
 }

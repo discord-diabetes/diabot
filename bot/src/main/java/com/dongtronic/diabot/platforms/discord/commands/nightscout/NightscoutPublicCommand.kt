@@ -7,11 +7,12 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import reactor.core.publisher.Mono
-import java.util.*
 
-class NightscoutPublicCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutPublicCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
     private val nightscoutDAO = NightscoutDAO.instance
     private val logger = logger()
+
+    private val yesStrings = arrayOf("TRUE", "T", "YES", "Y", "ON")
 
     init {
         this.name = "public"
@@ -25,17 +26,14 @@ class NightscoutPublicCommand(category: Command.Category, parent: Command?) : Di
 
     override fun execute(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        val result: Mono<Boolean> = if(args.isEmpty()) {
+        val result: Mono<Boolean> = if (args.isEmpty()) {
             // toggle visibility if no arguments are provided
             nightscoutDAO.changePrivacy(event.author.id, event.guild.id, null)
         } else {
             val mode = args[0].uppercase()
 
-            if (mode == "TRUE" || mode == "T" || mode == "YES" || mode == "Y" || mode == "ON") {
-                nightscoutDAO.changePrivacy(event.author.id, event.guild.id, true)
-            } else {
-                nightscoutDAO.changePrivacy(event.author.id, event.guild.id, false)
-            }
+            val public = yesStrings.contains(mode)
+            nightscoutDAO.changePrivacy(event.author.id, event.guild.id, public)
         }
 
         reply(event, result)

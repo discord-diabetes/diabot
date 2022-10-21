@@ -18,8 +18,8 @@ import reactor.kotlin.core.publisher.toMono
 
 class ProjectDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val collection: MongoCollection<ProjectDTO>
-            = mongo.getCollection(DiabotCollection.PROJECTS.getEnv(), ProjectDTO::class.java)
+    val collection: MongoCollection<ProjectDTO> =
+            mongo.getCollection(DiabotCollection.PROJECTS.getEnv(), ProjectDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -83,8 +83,10 @@ class ProjectDAO private constructor() {
      * @return The result of setting the project's information
      */
     fun setInfo(name: String, text: String): Mono<UpdateResult> {
-        return collection.updateOne(filter(name),
-                setValue(ProjectDTO::text, text), upsert())
+        return collection.updateOne(
+            filter(name),
+                setValue(ProjectDTO::text, text), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
     }

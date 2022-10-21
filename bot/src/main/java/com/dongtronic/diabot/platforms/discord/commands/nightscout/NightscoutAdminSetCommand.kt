@@ -10,7 +10,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 
-class NightscoutAdminSetCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutAdminSetCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 

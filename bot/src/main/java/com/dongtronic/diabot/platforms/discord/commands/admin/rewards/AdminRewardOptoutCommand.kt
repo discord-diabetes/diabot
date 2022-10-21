@@ -8,7 +8,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 
-class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardOptoutCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -41,7 +41,6 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
 
             val guildId = event.guild.id
 
-
             RewardsDAO.instance.changeOpt(guildId, user.id, true).subscribe({
                 logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards, $it")
                 event.reply("User ${event.nameOf(user)} opted out of rewards")
@@ -53,6 +52,4 @@ class AdminRewardOptoutCommand(category: Command.Category, parent: Command?) : D
             event.replyError(ex.message)
         }
     }
-
-
 }

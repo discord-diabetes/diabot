@@ -66,10 +66,12 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         }
     }
 
-    private fun getResult(originalNumString: String,
+    private fun getResult(
+        originalNumString: String,
                           originalUnitString: String?,
                           event: MessageReceivedEvent,
-                          multipleMatches: Boolean = false): String {
+                          multipleMatches: Boolean = false
+    ): String {
         val separator = if (multipleMatches) "─ " else ""
         val numberString = originalNumString.replace(',', '.')
 
@@ -87,8 +89,10 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
                 val reply = arrayOf(
                         "$separator*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
                         "┌%s mg/dL is **%s mmol/L**",
-                        "└%s mmol/L is **%s mg/dL**").joinToString(
-                        "%n")
+                        "└%s mmol/L is **%s mg/dL**"
+                ).joinToString(
+                        "%n"
+                )
 
                 String.format(reply, numberString, result.mmol, numberString, result.mgdl)
             }
@@ -129,6 +133,5 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         if (message.isNotEmpty()) {
             channel.sendMessage(message).queue()
         }
-
     }
 }

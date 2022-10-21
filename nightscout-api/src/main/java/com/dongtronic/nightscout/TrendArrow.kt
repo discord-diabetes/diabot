@@ -1,11 +1,8 @@
 package com.dongtronic.nightscout
 
-import java.util.*
-
 /**
  * Nightscout BG trend arrows
  */
-@Suppress("unused")
 enum class TrendArrow(val unicode: String = "") {
     NONE,
     DOUBLEUP("↟"),

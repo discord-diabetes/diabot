@@ -7,7 +7,8 @@ class A1cDTO(
         dcctMgdl: Double,
         ifccMgdl: Double,
         dcctMmol: Double,
-        ifccMmol: Double) {
+        ifccMmol: Double
+) {
     private val dcctMgdl: Double
     private val ifccMgdl: Double
     private val dcctMmol: Double
@@ -26,7 +27,6 @@ class A1cDTO(
             GlucoseUnit.MGDL -> ifccMgdl
             else -> throw IllegalStateException("Unknown input unit: ${original.inputUnit}")
         }
-
 
     init {
         this.dcctMgdl = round(dcctMgdl, 1)

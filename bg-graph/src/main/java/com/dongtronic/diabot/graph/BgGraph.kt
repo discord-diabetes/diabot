@@ -13,6 +13,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.math.max
 
+private const val Y_AXIS_MIN = 40.0
+private const val Y_AXIS_MAX = 15.0
+
 class BgGraph(
         private val settings: GraphSettings,
         width: Int = 833,
@@ -29,7 +32,7 @@ class BgGraph(
      * @param units The glucose units which are preferred
      * @return This [BgGraph] instance
      */
-    fun setupChartAxes(units: String) = apply {
+    private fun setupChartAxes(units: String) = apply {
         val preferredUnit = GlucoseUnit.byName(units) ?: GlucoseUnit.MMOL
         setupChartAxes(preferredUnit)
     }
@@ -40,9 +43,9 @@ class BgGraph(
      * @param preferredUnit The glucose units which are preferred
      * @return This [BgGraph] instance
      */
-    fun setupChartAxes(preferredUnit: GlucoseUnit) = apply {
+    private fun setupChartAxes(preferredUnit: GlucoseUnit) = apply {
         requireNonAmbiguous(preferredUnit)
-        // use the preferred unit's axis as y axis group 0.
+        // use the preferred unit's axis as y-axis group 0.
         // axis group 0 will be used for creating tick marks on the y-axis for the graph.
         val mmolGroup = if (preferredUnit == GlucoseUnit.MMOL) 0 else 1
         val mgdlGroup = if (preferredUnit == GlucoseUnit.MGDL) 0 else 1
@@ -80,8 +83,9 @@ class BgGraph(
         }
 
         GlucoseUnit.values().forEach { unit ->
-            if (unit == GlucoseUnit.AMBIGUOUS)
+            if (unit == GlucoseUnit.AMBIGUOUS) {
                 return@forEach
+            }
 
             // check if these bg values are in the units which are in use by the nightscout instance.
             //
@@ -108,13 +112,13 @@ class BgGraph(
                 xySeries.markerColor = color
 
                 // axis group 0 will be used for creating lines on the graph.
-                // the series which use the preferred glucose unit will then base line creation off the tick labels for this unit
+                // the series which use the preferred glucose unit will then baseline creation off the tick labels for this unit
                 xySeries.yAxisGroup = if (preferredUnits) 0 else 1
                 xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
 
-                var yAxisMin = 40.0
+                var yAxisMin = Y_AXIS_MIN
                 // add 15 to give extra room
-                var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + 15.0
+                var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + Y_AXIS_MAX
 
                 if (unit != GlucoseUnit.MGDL) {
                     yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
@@ -182,7 +186,7 @@ class BgGraph(
             requireNonAmbiguous(unit)
 
             return readings.associate { bgEntry ->
-                val glucose: Number = when(unit) {
+                val glucose: Number = when (unit) {
                     GlucoseUnit.MGDL -> bgEntry.glucose.mgdl
                     GlucoseUnit.MMOL -> bgEntry.glucose.mmol
                     else -> 0
@@ -192,7 +196,7 @@ class BgGraph(
                 // hours are used (instead of seconds) because of the decimal formatter.
                 // this allows for only the whole number of the hour to be displayed on the chart, while also sorting each reading:
                 // 2.47 hours (with a decimal format pattern of "0") -> 2h
-                val relativeHours = relativeSeconds.toDouble()/3600
+                val relativeHours = relativeSeconds.toDouble() / 3600
                 relativeHours to glucose
             }
         }

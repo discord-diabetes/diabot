@@ -12,10 +12,10 @@ See documentation for admin commands [here](docs/administration.md).
 Diabot is a public Discord bot. This means that anyone can invite the bot to their server. 
 Hosting a public bot isn't free. Diabot requires a machine to run on, and a database. Both of these things cost money. 
 While there is a budget to ensure Diabot can continue running without any financial support from others, we do appreciate contributions. 
-Financial contributions are used to pay for hosting costs, and (when the budget allows this) run a separate test version of Diabot so we can better test it. 
+Financial contributions are used to pay for hosting costs, and (when the budget allows this) run a separate test version of Diabot, so we can better test it. 
 When money is left over after all hosting fees are paid, this money will be saved for when contributions can't fully support the project.
 
-If you wish to help pay for diabot hosting and development, you can [sponsor cascer1 on github](https://github.com/sponsors/cascer1).
+If you wish to help pay for diabot hosting and development, you can [sponsor cascer1 on GitHub](https://github.com/sponsors/cascer1).
 
 Any support received will be used to pay for the hosting and improvement of Diabot. This is not a for-profit project.
 
@@ -35,7 +35,7 @@ java -jar build/libs/diabot.jar
 For detailed instructions, see [Running Diabot](docs/running.md)
 
 ### As Docker container
-Diabot releases are automatically published to the Github Container Registry. So, you can simply launch a new container to get up and running quickly:
+Diabot releases are automatically published to the GitHub Container Registry. So, you can simply launch a new container to get up and running quickly:
 
 ```shell
 docker run -e DIABOTTOKEN='token' ghcr.io/reddit-diabetes/diabot:latest

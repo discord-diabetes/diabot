@@ -7,7 +7,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import org.apache.commons.lang3.StringUtils
 
-class AdminRewardAddCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardAddCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -64,6 +64,4 @@ class AdminRewardAddCommand(category: Command.Category, parent: Command?) : Disc
             event.replyError(ex.message)
         }
     }
-
-
 }

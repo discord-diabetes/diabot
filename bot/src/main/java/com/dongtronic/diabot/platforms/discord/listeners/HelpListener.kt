@@ -24,8 +24,9 @@ class HelpListener : Consumer<CommandEvent> {
      * Executed when the attempt to send a DM to a user fails
      */
     private fun sendingError(exc: Throwable, event: CommandEvent) {
-        if (exc is ErrorResponseException
-                && exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER) {
+        if (exc is ErrorResponseException &&
+                exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER
+        ) {
             // Print a warning in console if the error code was not related to DMs being blocked
             logger.warn("Unexpected error response when sending DM: ${exc.errorCode} - ${exc.meaning}")
         }
@@ -75,7 +76,7 @@ class HelpListener : Consumer<CommandEvent> {
             val categoryBuilder = EmbedBuilder()
             buildCategoryHelp(categoryBuilder, category)
 
-            // Store the CompletableFuture in the queue so we can cancel it later
+            // Store the CompletableFuture in the queue, so we can cancel it later
             val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
                     .whenComplete { _: Message?, exc: Throwable? ->
                         if (exc != null) {
@@ -228,6 +229,7 @@ class HelpListener : Consumer<CommandEvent> {
     private fun filterAllowedCommands(commands: List<Command>, event: CommandEvent): ArrayList<Command> {
         val allowedCommands = ArrayList<Command>()
 
+        // TODO: Refactor method to recude jump statements
         for (command in commands) {
             if (command.isHidden) {
                 continue
@@ -256,7 +258,6 @@ class HelpListener : Consumer<CommandEvent> {
             if (userIsAllowedToUseCommand) {
                 allowedCommands.add(command)
             }
-
         }
 
         return allowedCommands
@@ -289,6 +290,5 @@ class HelpListener : Consumer<CommandEvent> {
             categorizedCommands[categoryName] = categoryCommands
         }
         return categorizedCommands
-
     }
 }

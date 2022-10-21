@@ -26,13 +26,10 @@ class OhNoListener : ListenerAdapter() {
 
         val number = r.nextInt(100)
 
-        if(number < 50) {
+        if (number < 50) {
             return
         }
 
         channel.sendMessage("oh no").queue()
-
-
     }
-
 }

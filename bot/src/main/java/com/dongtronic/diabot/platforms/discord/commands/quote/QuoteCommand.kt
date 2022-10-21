@@ -30,7 +30,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
                 QuoteEditCommand(category, this),
-                QuoteImportCommand(category, this))
+                QuoteImportCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
@@ -43,6 +44,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                 val member = event.message.mentions.members.first()
                 getRandomQuote(event.guild.id, QuoteDTO::authorId eq member.id)
             }
+
             args.isNotEmpty() -> {
                 val arg = args[0]
                 if (arg.toLongOrNull() != null) {
@@ -60,6 +62,7 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                     getRandomQuote(event.guild.id, QuoteDTO::author eq joined)
                 }
             }
+
             else -> getRandomQuote(event.guild.id)
         }
 

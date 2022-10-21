@@ -24,6 +24,7 @@ import java.util.function.Consumer
 
 class QuoteListener(private val client: CommandClient) : CoroutineEventListener {
     private val quoteCommand: QuoteCommand = client.commands.filterIsInstance(QuoteCommand::class.java).first()
+
     // https://emojiguide.org/speech-balloon
     private val speechEmoji = Emoji.fromUnicode("U+1f4ac")
     private val logger = logger()
@@ -55,14 +56,16 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
         }
 
         val quoteMessage = Consumer<Message> { message ->
-            QuoteDAO.getInstance().addQuote(QuoteDTO(
+            QuoteDAO.getInstance().addQuote(
+                QuoteDTO(
                     guildId = guild.id,
                     channelId = event.guildChannel.id,
                     author = message.author.name,
                     authorId = message.author.id,
                     message = message.contentRaw,
                     messageId = message.id
-            )).subscribe({
+            )
+            ).subscribe({
                 message.addReaction(speechEmoji).queue()
                 reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
             }, {
@@ -74,7 +77,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
                 // search for any quotes with this message ID
                 .getQuotes(guild.id, QuoteDTO::messageId eq event.messageId)
                 .toMono()
-                .subscribe({/*ignored*/}, { error ->
+                .subscribe({ /*ignored*/ }, { error ->
                     // only add quote if there are no quotes matching the reacted message ID
                     if (error is NoSuchElementException) {
                         event.retrieveMessage().submitMono()

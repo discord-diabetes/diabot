@@ -13,7 +13,6 @@ import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
-@Suppress("BlockingMethodInNonBlockingContext")
 @ChangeLog(order = "001")
 class AdminChannelMigrator {
     private val mongo = ChannelDAO.instance

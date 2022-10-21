@@ -8,7 +8,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import com.mongodb.client.result.DeleteResult
 import com.mongodb.client.result.UpdateResult
 
-class NightscoutDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutDeleteCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 

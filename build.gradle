@@ -1,3 +1,7 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektPlugin
+import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}"
@@ -6,8 +10,13 @@ plugins {
     id 'net.researchgate.release' version "${releasePluginVersion}"
 }
 
+task reportMerge(type: ReportMergeTask) {
+    output = project.layout.buildDirectory.file("reports/detekt/merge.sarif") // or "reports/detekt/merge.sarif"
+}
+
 allprojects {
     apply plugin: "kotlin"
+    apply plugin: "io.gitlab.arturbosch.detekt"
 
     repositories {
         mavenCentral()
@@ -21,6 +30,8 @@ allprojects {
         implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${kotlinCoroutinesVersion}"
+        detekt "io.gitlab.arturbosch.detekt:detekt-formatting:${detektVersion}"
+        detekt "io.gitlab.arturbosch.detekt:detekt-cli:${detektVersion}"
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitVersion}"
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: "${junitVersion}"
         api group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
@@ -57,19 +68,34 @@ allprojects {
 
         source = objects.fileCollection().from(
                 "src/main/java",
-                "src/test/java"
+                "src/test/java",
+                "bot/src/main/java",
+                "bg-graph/src/main/java",
+                "nightscout-api/src/main/java",
+                "utilities/src/main/java"
         )
+
+        autoCorrect = true
 
         reports {
             html.enabled = true // observe findings in your browser with structure and code snippets
-            xml.enabled = true // checkstyle like format mainly for integrations like Jenkins
+            xml.enabled = false // checkstyle like format mainly for integrations like Jenkins
             txt.enabled = true
-            // similar to the console output, contains issue signature to manually edit baseline files
             sarif.enabled = true
             // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations with Github Code Scanning
-            sarif {
-                enabled = true
-                destination = file("$rootDir/detekt.sarif.json")
+//            sarif {
+//                enabled = true
+//                destination = file("$rootDir/detekt.sarif.json")
+//            }
+        }
+
+        plugins.withType(DetektPlugin) {
+            tasks.withType(Detekt) { detektTask ->
+                finalizedBy(reportMerge)
+
+                reportMerge.configure { mergeTask ->
+                    mergeTask.input.from(detektTask.sarifReportFile) // or detektTask.sarifReportFile
+                }
             }
         }
     }

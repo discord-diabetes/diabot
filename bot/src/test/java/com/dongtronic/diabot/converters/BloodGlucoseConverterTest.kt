@@ -62,7 +62,6 @@ class BloodGlucoseConverterTest {
         Assertions.assertTrue(actual.exceptionOrNull() is IllegalArgumentException)
     }
 
-
     @Test
     fun invalidUnit() {
         val actual = BloodGlucoseConverter.convert("5.5", "what")

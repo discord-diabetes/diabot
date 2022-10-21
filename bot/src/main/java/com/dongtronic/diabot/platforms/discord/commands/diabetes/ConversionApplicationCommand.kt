@@ -18,9 +18,11 @@ class ConversionApplicationCommand : ApplicationCommand {
     override fun config(): CommandData {
         return Commands.slash(commandName, "Convert blood glucose values between mmol/L and mg/dL")
                 .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
-                .addOptions(OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                .addOptions(
+                    OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
                         .addChoice("mmol/L", "mmol/L")
-                        .addChoice("mg/dL", "mg/dL"))
+                        .addChoice("mg/dL", "mg/dL")
+                )
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
@@ -39,11 +41,16 @@ class ConversionApplicationCommand : ApplicationCommand {
             result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
             result.inputUnit === GlucoseUnit.MGDL -> String.format("%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
             else -> {
-                String.format(arrayOf(
+                String.format(
+                    arrayOf(
                         "*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
                         "%s mg/dL is **%s mmol/L**",
-                        "%s mmol/L is **%s mg/dL**").joinToString(
-                        "%n"), glucoseNumber, result.mmol, glucoseNumber, result.mgdl)
+                        "%s mmol/L is **%s mg/dL**"
+                    ).joinToString(
+                        "%n"
+                    ),
+                            glucoseNumber, result.mmol, glucoseNumber, result.mgdl
+                )
             }
         }
 

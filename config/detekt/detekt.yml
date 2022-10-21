@@ -90,7 +90,7 @@ complexity:
     threshold: 15
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
-    ignoreNestingFunctions: false
+    ignoreNestingFunctions: true
     nestingFunctions:
       - 'also'
       - 'apply'
@@ -245,7 +245,7 @@ exceptions:
   ThrowingNewInstanceOfSameException:
     active: true
   TooGenericExceptionCaught:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     exceptionNames:
       - 'ArrayIndexOutOfBoundsException'
@@ -268,7 +268,7 @@ exceptions:
 formatting:
   active: true
   android: false
-  autoCorrect: false
+  autoCorrect: true
   AnnotationOnSeparateLine:
     active: false
     autoCorrect: false
@@ -281,11 +281,11 @@ formatting:
     indentSize: 4
     maxLineLength: 120
   ChainWrapping:
-    active: true
+    active: false
     autoCorrect: false
   CommentSpacing:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   EnumEntryNameCase:
     active: true
     autoCorrect: false
@@ -293,7 +293,7 @@ formatting:
     active: true
   FinalNewline:
     active: true
-    autoCorrect: false
+    autoCorrect: true
     insertFinalNewLine: true
   ImportOrdering:
     active: false
@@ -305,50 +305,50 @@ formatting:
     indentSize: 4
     continuationIndentSize: 4
   MaximumLineLength:
-    active: true
-    maxLineLength: 140
+    active: false
+    maxLineLength: 160
     ignoreBackTickedIdentifier: false
   ModifierOrdering:
     active: true
     autoCorrect: false
   MultiLineIfElse:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoBlankLineBeforeRbrace:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoConsecutiveBlankLines:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoEmptyClassBody:
     active: true
     autoCorrect: false
   NoEmptyFirstLineInMethodBlock:
     active: false
-    autoCorrect: false
+    autoCorrect: true
   NoLineBreakAfterElse:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoLineBreakBeforeAssignment:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoMultipleSpaces:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoSemicolons:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoTrailingSpaces:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoUnitReturn:
     active: true
     autoCorrect: false
   NoUnusedImports:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   NoWildcardImports:
-    active: true
+    active: false
   PackageName:
     active: true
     autoCorrect: false
@@ -356,19 +356,19 @@ formatting:
     active: true
     autoCorrect: false
     indentSize: 4
-    maxLineLength: 120
+    maxLineLength: 140
   SpacingAroundAngleBrackets:
     active: false
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundColon:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundComma:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundCurly:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundDot:
     active: true
     autoCorrect: false
@@ -377,28 +377,28 @@ formatting:
     autoCorrect: false
   SpacingAroundKeyword:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundOperators:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundParens:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundRangeOperator:
     active: true
-    autoCorrect: false
+    autoCorrect: true
   SpacingAroundUnaryOperator:
     active: false
-    autoCorrect: false
+    autoCorrect: true
   SpacingBetweenDeclarationsWithAnnotations:
     active: false
-    autoCorrect: false
+    autoCorrect: true
   SpacingBetweenDeclarationsWithComments:
     active: false
-    autoCorrect: false
+    autoCorrect: true
   StringTemplate:
     active: true
-    autoCorrect: false
+    autoCorrect: true
 
 naming:
   active: true
@@ -502,7 +502,7 @@ performance:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   SpreadOperator:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   UnnecessaryTemporaryInstantiation:
     active: true
@@ -542,7 +542,7 @@ potential-bugs:
     ignoreReturnValueAnnotations:
       - '*.CanIgnoreReturnValue'
   ImplicitDefaultLocale:
-    active: true
+    active: false
   ImplicitUnitReturnType:
     active: false
     allowExplicitReturnType: true
@@ -555,7 +555,6 @@ potential-bugs:
   LateinitUsage:
     active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    excludeAnnotatedProperties: []
     ignoreOnClassesPattern: ''
   MapGetWithNotNullAssertionOperator:
     active: false
@@ -617,7 +616,6 @@ style:
     values:
       - 'FIXME:'
       - 'STOPSHIP:'
-      - 'TODO:'
     allowedPatterns: ''
   ForbiddenImport:
     active: false
@@ -643,7 +641,7 @@ style:
     ignoreOverridableFunction: true
     ignoreActualFunction: true
     excludedFunctions: ''
-    excludeAnnotatedFunction:
+    ignoreAnnotated:
       - 'dagger.Provides'
   LibraryCodeMustSpecifyReturnType:
     active: true
@@ -662,6 +660,8 @@ style:
       - '0'
       - '1'
       - '2'
+      - '200'
+      - '404'
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreLocalVariableDeclaration: false
@@ -678,7 +678,7 @@ style:
     active: true
   MaxLineLength:
     active: true
-    maxLineLength: 140
+    maxLineLength: 160
     excludePackageStatements: true
     excludeImportStatements: true
     excludeCommentStatements: false
@@ -689,8 +689,6 @@ style:
   MultilineLambdaItParameter:
     active: true
   NestedClassesVisibility:
-    active: true
-  NewLineAtEndOfFile:
     active: true
   NoTabs:
     active: true
@@ -733,10 +731,10 @@ style:
     active: true
   UnderscoresInNumericLiterals:
     active: true
-    acceptableDecimalLength: 5
+    acceptableLength: 5
   UnnecessaryAbstractClass:
     active: true
-    excludeAnnotatedClasses:
+    ignoreAnnotated:
       - 'dagger.Module'
   UnnecessaryAnnotationUseSiteTarget:
     active: false
@@ -749,6 +747,7 @@ style:
   UnnecessaryLet:
     active: false
   UnnecessaryParentheses:
+    autoCorrect: true
     active: true
   UntilInsteadOfRangeTo:
     active: false
@@ -767,7 +766,7 @@ style:
     active: false
   UseDataClass:
     active: false
-    excludeAnnotatedClasses: []
+    ignoreAnnotated: []
     allowVars: false
   UseEmptyCounterpart:
     active: false
@@ -790,7 +789,7 @@ style:
   VarCouldBeVal:
     active: true
   WildcardImport:
-    active: true
+    active: false
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     excludeImports:
       - 'java.util.*'

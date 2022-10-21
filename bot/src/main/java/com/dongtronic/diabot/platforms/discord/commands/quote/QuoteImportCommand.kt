@@ -167,15 +167,18 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
                 is IllegalArgumentException -> {
                     errorMessage = "Invalid argument: ${it.message}"
                 }
+
                 is MalformedURLException,
                 is URISyntaxException -> {
                     errorMessage = "Provided URL was invalid"
                     logger.warn("Invalid URL: " + it::class.simpleName + " - " + it.message)
                 }
+
                 is IOException -> {
                     errorMessage = "Could not load input"
                     logger.warn("IO error: " + it::class.simpleName + " - " + it.message)
                 }
+
                 else -> {
                     logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message + " - " + it.stackTrace)
                 }
@@ -228,14 +231,14 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
      * @param attachments A list of the attachments
      * @return The JSON attachment's contents, if any
      */
-    @Suppress("ReactiveStreamsUnusedPublisher")
     private fun getAttachmentsText(attachments: List<Message.Attachment>): Mono<String> {
         val attachment = attachments.firstOrNull { it.fileName.endsWith(".json") }?.url
 
-        return if (attachment != null)
+        return if (attachment != null) {
             getUrlText(attachment)
-        else
+        } else {
             Mono.error(IllegalArgumentException("Could not open attachment"))
+        }
     }
 
     /**
@@ -304,14 +307,16 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
                 guild?.channels?.firstOrNull { it.name == channel }?.id ?: ""
             } else ""
 
-            return QuoteDTO(quoteId = id,
+            return QuoteDTO(
+                quoteId = id,
                     guildId = server,
                     channelId = channelId,
                     author = nick,
                     authorId = userId,
                     message = text,
                     messageId = messageId,
-                    time = time)
+                    time = time
+            )
         }
     }
 }

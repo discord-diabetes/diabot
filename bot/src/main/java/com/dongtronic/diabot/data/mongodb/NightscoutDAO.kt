@@ -68,7 +68,7 @@ class NightscoutDAO private constructor() {
      * If no properties are given, all of their NS data will be deleted from the database.
      *
      * @param userId The user's ID.
-     * @param fields Which fields to delete. If this is not provided then all of the user's data will be deleted.
+     * @param fields Which fields to delete. If this is not provided then all the user's data will be deleted.
      * @return Either a [UpdateResult] or [DeleteResult] representing the result of data deletion.
      * If `fields` is blank this will return [DeleteResult]. If not blank, [UpdateResult].
      */
@@ -93,8 +93,10 @@ class NightscoutDAO private constructor() {
      * @return The result of setting their URL
      */
     fun setUrl(userId: String, url: String): Mono<UpdateResult> {
-        return collection.updateOne(NightscoutUserDTO::userId eq userId,
-                setValue(NightscoutUserDTO::url, url), upsert())
+        return collection.updateOne(
+            NightscoutUserDTO::userId eq userId,
+                setValue(NightscoutUserDTO::url, url), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
     }
@@ -158,8 +160,10 @@ class NightscoutDAO private constructor() {
      * @return The result of setting the user's Nightscout token
      */
     fun setToken(userId: String, token: String): Mono<UpdateResult> {
-        return collection.updateOne(NightscoutUserDTO::userId eq userId,
-                setValue(NightscoutUserDTO::token, token), upsert())
+        return collection.updateOne(
+            NightscoutUserDTO::userId eq userId,
+                setValue(NightscoutUserDTO::token, token), upsert()
+        )
                 .toMono()
                 .subscribeOn(scheduler)
     }
@@ -189,13 +193,16 @@ class NightscoutDAO private constructor() {
             settingsList = listOf()
         }
 
-        @Suppress("CascadeIf")
-        val update = if (append == true) {
-            addEachToSet(NightscoutUserDTO::displayOptions, settingsList)
-        } else if (append == false) {
-            pullAll(NightscoutUserDTO::displayOptions, settingsList)
-        } else {
-            setValue(NightscoutUserDTO::displayOptions, settingsList)
+        val update = when (append) {
+            true -> {
+                addEachToSet(NightscoutUserDTO::displayOptions, settingsList)
+            }
+            false -> {
+                pullAll(NightscoutUserDTO::displayOptions, settingsList)
+            }
+            else -> {
+                setValue(NightscoutUserDTO::displayOptions, settingsList)
+            }
         }
 
         return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()

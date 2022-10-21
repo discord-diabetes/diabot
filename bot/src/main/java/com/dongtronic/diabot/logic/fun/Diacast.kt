@@ -10,7 +10,7 @@ import java.io.IOException
 import java.net.URL
 
 object Diacast {
-    val episodes: List<SyndEntry>
+    private val episodes: List<SyndEntry>
         @Throws(FeedException::class, IOException::class)
         get() {
             val feedSource = URL("https://feeds.buzzsprout.com/1777050.rss")

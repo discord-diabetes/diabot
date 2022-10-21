@@ -23,5 +23,4 @@ class OwnerCommand(category: Category) : DiscordCommand(category, null) {
             event.reply(":wave: Hello $nickname")
         }
     }
-
 }

@@ -20,9 +20,7 @@ import org.litote.kmongo.util.KMongoConfiguration
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.awt.Color
-import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.NoSuchElementException
 
 class MongoDB {
     private val clientSettings: MongoClientSettings = MongoClientSettings.builder()
@@ -63,14 +61,15 @@ class MongoDB {
  * Gets the value of an environment variable, with a `MONGO_` prefix.
  *
  * @param key The key to grab
- * @param default The default value to fallback to, if any.
+ * @param default The default value to fall back to, if any.
  * @return The value of the key or the default value.
  */
 fun mongoEnv(key: String, default: String? = null): String {
     val mongoKey = "MONGO_" + key.uppercase()
 
-    if (default == null)
+    if (default == null) {
         return System.getenv(mongoKey)
+    }
 
     return System.getenv().getOrDefault(mongoKey, default)
 }

@@ -44,7 +44,8 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
                     author = author,
                     message = message,
                     messageId = event.message.id,
-                    channelId = event.channel.id)
+                    channelId = event.channel.id
+            )
             QuoteDAO.getInstance().updateQuote(dto)
         }.subscribe({
             if (it.wasAcknowledged()) {
@@ -60,6 +61,5 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
                 logger.warn("Unexpected error: " + it::class.simpleName + " - " + it.message)
             }
         })
-
     }
 }

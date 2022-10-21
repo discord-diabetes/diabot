@@ -2,11 +2,10 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
 
-class NightscoutAdminSimpleCommand(category: Command.Category, parent: DiscordCommand) : DiscordCommand(category, parent) {
+class NightscoutAdminSimpleCommand(category: Category, parent: DiscordCommand) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -20,7 +19,8 @@ class NightscoutAdminSimpleCommand(category: Command.Category, parent: DiscordCo
         this.children = arrayOf(
                 NightscoutAdminSimpleListCommand(category, this),
                 NightscoutAdminSimpleAddCommand(category, this),
-                NightscoutAdminSimpleDeleteCommand(category, this))
+                NightscoutAdminSimpleDeleteCommand(category, this)
+        )
     }
 
     override fun execute(event: CommandEvent) {
