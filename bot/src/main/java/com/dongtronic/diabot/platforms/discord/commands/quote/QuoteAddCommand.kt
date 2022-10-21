@@ -49,7 +49,8 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
                             val user = event.jda.retrieveUserById(uid).await()
                             author = user.name
                             authorId = uid
-                        } catch (ignored: Throwable) {}
+                        } catch (ignored: Throwable) {
+                        }
                     }
                 }
 
@@ -88,8 +89,9 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
                     .setAllowedMentions(emptyList())
                     .addContent("New quote added by $quoterMention as #$quoteId")
 
-            if (jumpUrl != null)
+            if (jumpUrl != null) {
                 msg.addContent(" (<$jumpUrl>)")
+            }
 
             return msg.build()
         }

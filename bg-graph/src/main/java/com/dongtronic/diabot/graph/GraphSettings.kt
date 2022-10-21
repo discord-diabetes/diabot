@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import java.awt.Color
 
 @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
-data class GraphSettings (
+data class GraphSettings(
         val plotMode: PlottingStyle = PlottingStyle.SCATTER,
         val theme: GraphTheme = GraphTheme.DARK,
         val hours: Long = 4,

@@ -2,7 +2,7 @@ package com.dongtronic.diabot.platforms.discord.commands
 
 import com.jagrosh.jdautilities.command.Command
 
-abstract class DiscordCommand(category: Command.Category, parent: Command?) : Command() {
+abstract class DiscordCommand(category: Category, parent: Command?) : Command() {
     var examples = arrayOfNulls<String>(0)
         protected set
 
@@ -14,7 +14,7 @@ abstract class DiscordCommand(category: Command.Category, parent: Command?) : Co
     }
 
     override fun toString(): String {
-        return if(this.parent != null) {
+        return if (this.parent != null) {
             "${this.parent}  $name"
         } else {
             this.name

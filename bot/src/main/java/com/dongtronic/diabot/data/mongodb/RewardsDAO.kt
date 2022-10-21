@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit
 
 class RewardsDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
-    val rewards: MongoCollection<RewardsDTO>
-            = mongo.getCollection(DiabotCollection.REWARDS.getEnv(), RewardsDTO::class.java)
-    val optOuts: MongoCollection<RewardOptOutsDTO>
-            = mongo.getCollection(DiabotCollection.REWARDS_OPTOUT.getEnv(), RewardOptOutsDTO::class.java)
+    val rewards: MongoCollection<RewardsDTO> =
+            mongo.getCollection(DiabotCollection.REWARDS.getEnv(), RewardsDTO::class.java)
+    val optOuts: MongoCollection<RewardOptOutsDTO> =
+            mongo.getCollection(DiabotCollection.REWARDS_OPTOUT.getEnv(), RewardOptOutsDTO::class.java)
 
     private val guildRewardsCache: Cache<String, List<RewardsDTO>> = Caffeine.newBuilder()
             .expireAfterAccess(240, TimeUnit.MINUTES)
@@ -58,8 +58,9 @@ class RewardsDAO private constructor() {
      */
     fun getOptOuts(guildId: String): Mono<RewardOptOutsDTO> {
         val cached = optOutCache.getIfPresent(guildId)
-        if (cached != null)
+        if (cached != null) {
             return RewardOptOutsDTO(guildId, cached).toMono()
+        }
 
         return optOuts.find(filter(guildId))
                 .toMono().subscribeOn(scheduler)
@@ -75,8 +76,9 @@ class RewardsDAO private constructor() {
      */
     fun isOptOut(guildId: String, userId: String): Mono<Boolean> {
         val cached = optOutCache.getIfPresent(guildId)
-        if (cached != null)
+        if (cached != null) {
             return cached.contains(userId).toMono()
+        }
 
         return optOuts.countDocuments(filterUser(guildId, userId))
                 .toMono().subscribeOn(scheduler)
@@ -93,8 +95,9 @@ class RewardsDAO private constructor() {
      */
     fun getRewards(guildId: String): Mono<List<RewardsDTO>> {
         val cached = guildRewardsCache.getIfPresent(guildId)
-        if (cached != null)
+        if (cached != null) {
             return cached.toMono()
+        }
 
         return rewards.find(filter(guildId))
                 .toFlux().subscribeOn(scheduler)
@@ -188,7 +191,7 @@ class RewardsDAO private constructor() {
      * Changes a user's opt-preference for a guild.
      *
      * @param guildId The guild to change this user's opt-preference under
-     * @param userId The user to change the opt state for
+     * @param userId The user to change to opt state for
      * @param optOut If the new opt state should be `opt-out`
      * @return The updated guild's [RewardOptOutsDTO]
      */
@@ -222,8 +225,9 @@ class RewardsDAO private constructor() {
 
         fun filterReward(requiredRole: String, guildId: String? = null): Bson {
             var filter = RewardsDTO::requiredRole eq requiredRole
-            if (guildId != null)
+            if (guildId != null) {
                 filter = and(filter, RewardsDTO::guildId eq guildId)
+            }
 
             return filter
         }

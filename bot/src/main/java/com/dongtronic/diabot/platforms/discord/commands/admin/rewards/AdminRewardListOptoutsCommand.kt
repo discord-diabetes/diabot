@@ -8,7 +8,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 
-class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardListOptoutsCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
@@ -48,6 +48,4 @@ class AdminRewardListOptoutsCommand(category: Command.Category, parent: Command?
                     event.replyError("Could not retrieve list of opt outs for this guild")
                 })
     }
-
-
 }

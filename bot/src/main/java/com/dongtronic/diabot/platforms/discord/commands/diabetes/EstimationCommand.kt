@@ -17,7 +17,13 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         this.help = "estimate A1c from average blood glucose, or average blood glucose from A1c"
         this.guildOnly = false
         this.arguments = "<a1c/average> <number> [unit]"
-        this.examples = arrayOf("diabot estimate a1c 120", "diabot estimate a1c 5.7", "diabot estimate a1c 120 mg/dL", "diabot estimate average 6.7", "diabot estimate average 42")
+        this.examples = arrayOf(
+            "diabot estimate a1c 120",
+                "diabot estimate a1c 5.7",
+                "diabot estimate a1c 120 mg/dL",
+                "diabot estimate average 6.7",
+                "diabot estimate average 42"
+        )
     }
 
     override fun execute(event: CommandEvent) {
@@ -36,8 +42,6 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                 "AVERAGE" -> estimateAverage(event)
                 else -> event.replyError("Unknown mode. Choose either `a1c` or `average`")
             }
-
-
         }
     }
 
@@ -52,10 +56,11 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         }
 
         event.reply(
-                String.format("An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
-                        result.dcct, result.ifcc, result.original.mgdl, result.original.mmol)
+                String.format(
+                        "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
+                        result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
+                )
         )
-
     }
 
     private fun estimateA1c(event: CommandEvent) {
@@ -68,9 +73,11 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                         is IllegalArgumentException -> {
                             event.replyError("Could not estimate A1c: ${it.message}")
                         }
+
                         is UnknownUnitException -> {
                             event.replyError("I don't know how to convert from " + items[1])
                         }
+
                         else -> {
                             logger.warn("Unknown error when estimating A1c", it)
                         }
@@ -79,11 +86,32 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                 }
 
         when (result.original.inputUnit) {
-            MMOL -> event.reply(String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mmol, result.dcct, result.ifcc))
-            MGDL -> event.reply(String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.mgdl, result.dcct, result.ifcc))
+            MMOL ->
+                event.reply(
+                    String.format(
+                        "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                        result.original.mmol, result.dcct, result.ifcc
+                    )
+                )
+
+            MGDL ->
+                event.reply(
+                    String.format(
+                        "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                        result.original.mgdl, result.dcct, result.ifcc
+                    )
+                )
+
             else -> {
-                //TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
-                val reply = String.format("An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n", result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)) + String.format("An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)", result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL))
+                // TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
+                val reply = String.format(
+                    "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n",
+                        result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)
+                ) +
+                        String.format(
+                            "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                                result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL)
+                        )
                 event.reply(reply)
             }
         }

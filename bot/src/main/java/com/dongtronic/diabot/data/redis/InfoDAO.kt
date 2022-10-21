@@ -3,12 +3,10 @@ package com.dongtronic.diabot.data.redis
 import com.dongtronic.diabot.util.RedisKeyFormats
 import com.dongtronic.diabot.util.logger
 import redis.clients.jedis.Jedis
-import java.util.*
 
 class InfoDAO private constructor() {
     private var jedis: Jedis? = null
     private val logger = logger()
-
 
     init {
         jedis = Jedis(System.getenv("REDIS_URL"))
@@ -22,7 +20,7 @@ class InfoDAO private constructor() {
         return jedis!!.lrange(key, 0, projectListLength - 1)
     }
 
-    fun formatProject(project: String): String? {
+    private fun formatProject(project: String): String? {
         val projects = listProjects()
 
         projects.forEach { foundProject ->
@@ -34,7 +32,7 @@ class InfoDAO private constructor() {
         return null
     }
 
-    fun findProject(project: String): Int {
+    private fun findProject(project: String): Int {
         val projects = listProjects()
 
         projects.forEach { foundProject ->
@@ -61,11 +59,7 @@ class InfoDAO private constructor() {
     }
 
     fun getProjectText(project: String): String {
-        val properName = formatProject(project)
-
-        if (properName == null) {
-            throw IllegalArgumentException("Project $project does not exist")
-        }
+        val properName = formatProject(project) ?: throw IllegalArgumentException("Project $project does not exist")
 
         val key = RedisKeyFormats.infoText.replace("{{project}}", properName)
 

@@ -21,10 +21,10 @@ import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toMono
 
 class QuoteDAO private constructor() {
-    val collection: MongoCollection<QuoteDTO>
-            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTES.getEnv(), QuoteDTO::class.java)
-    val quoteIndexes: MongoCollection<QuoteIndexDTO>
-            = MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTE_INDEX.getEnv(), QuoteIndexDTO::class.java)
+    val collection: MongoCollection<QuoteDTO> =
+            MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTES.getEnv(), QuoteDTO::class.java)
+    val quoteIndexes: MongoCollection<QuoteIndexDTO> =
+            MongoDB.getInstance().database.getCollection(DiabotCollection.QUOTE_INDEX.getEnv(), QuoteIndexDTO::class.java)
 
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
@@ -58,10 +58,11 @@ class QuoteDAO private constructor() {
      * @return all quotes matching the filter for the specified guild
      */
     fun getQuotes(guildId: String, filter: Bson? = null): Flux<QuoteDTO> {
-        val joinedFilter = if (filter != null)
+        val joinedFilter = if (filter != null) {
             and(filter(guildId), filter)
-        else
+        } else {
             filter(guildId)
+        }
 
         return collection.findMany(joinedFilter).subscribeOn(scheduler)
     }
@@ -74,10 +75,11 @@ class QuoteDAO private constructor() {
      * @return a random quote matching the filter for the specified guild
      */
     fun getRandomQuote(guildId: String, filter: Bson? = null): Mono<QuoteDTO> {
-        val joinedFilter = if (filter != null)
+        val joinedFilter = if (filter != null) {
             and(filter(guildId), filter)
-        else
+        } else {
             filter(guildId)
+        }
 
         return collection.findOneRandom(joinedFilter).subscribeOn(scheduler)
     }
@@ -96,10 +98,11 @@ class QuoteDAO private constructor() {
             incrementId(quote.guildId)
                     .onErrorMap { IllegalStateException("Could not find guild's quote index") }
                     .map {
-                        if (quote.quoteId == null)
+                        if (quote.quoteId == null) {
                             quote.copy(quoteId = it.toString())
-                        else
+                        } else {
                             quote
+                        }
                     }
         } else {
             quote.toMono()
@@ -107,8 +110,9 @@ class QuoteDAO private constructor() {
 
         return quoteWithId.flatMap { quoteDTO ->
             collection.insertOne(quoteDTO).toMono().map {
-                if (!it.wasAcknowledged())
+                if (!it.wasAcknowledged()) {
                     throw IllegalStateException("Could not insert quote")
+                }
 
                 quoteDTO
             }
@@ -161,8 +165,10 @@ class QuoteDAO private constructor() {
                 .upsert(true)
                 .returnDocument(ReturnDocument.AFTER)
 
-        return quoteIndexes.findOneAndUpdate(QuoteIndexDTO::guildId eq guildId,
-                Updates.inc("quoteIndex", 1L), options)
+        return quoteIndexes.findOneAndUpdate(
+            QuoteIndexDTO::guildId eq guildId,
+                Updates.inc("quoteIndex", 1L), options
+        )
                 .toMono()
                 .subscribeOn(scheduler)
                 .map { it.quoteIndex }
@@ -187,9 +193,11 @@ class QuoteDAO private constructor() {
          * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
          * @return true if the guild passed restrictions, false if not
          */
-        fun checkRestrictions(channel: GuildMessageChannel,
+        fun checkRestrictions(
+            channel: GuildMessageChannel,
                               warnDisabledGuild: Boolean = false,
-                              checkQuoteLimit: Boolean = true): Boolean {
+                              checkQuoteLimit: Boolean = true
+        ): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
                 if (warnDisabledGuild) {
                     channel.sendMessage("This guild is not permitted to use the quoting system").queue()
@@ -199,8 +207,10 @@ class QuoteDAO private constructor() {
 
             val numOfQuotes = getInstance().quoteAmount(channel.guild.id).block() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
-                channel.sendMessage("Could not create quote as your guild has reached " +
-                        "the max of ${getInstance().maxQuotes} quotes").queue()
+                channel.sendMessage(
+                    "Could not create quote as your guild has reached " +
+                        "the max of ${getInstance().maxQuotes} quotes"
+                ).queue()
                 return false
             }
             return true
@@ -215,9 +225,11 @@ class QuoteDAO private constructor() {
          * @param checkQuoteLimit whether to check if the guild has reached the max quote limit
          * @return true if the guild passed restrictions, false if not
          */
-        suspend fun awaitCheckRestrictions(channel: GuildMessageChannel,
+        suspend fun awaitCheckRestrictions(
+            channel: GuildMessageChannel,
                                            warnDisabledGuild: Boolean = false,
-                                           checkQuoteLimit: Boolean = true): Boolean {
+                                           checkQuoteLimit: Boolean = true
+        ): Boolean {
             if (!getInstance().enabledGuilds.contains(channel.guild.id)) {
                 if (warnDisabledGuild) {
                     channel.sendMessage("This guild is not permitted to use the quoting system").queue()
@@ -227,8 +239,10 @@ class QuoteDAO private constructor() {
 
             val numOfQuotes = getInstance().quoteAmount(channel.guild.id).awaitSingleOrNull() ?: -1
             if (checkQuoteLimit && numOfQuotes >= getInstance().maxQuotes) {
-                channel.sendMessage("Could not create quote as your guild has reached " +
-                        "the max of ${getInstance().maxQuotes} quotes").queue()
+                channel.sendMessage(
+                    "Could not create quote as your guild has reached " +
+                        "the max of ${getInstance().maxQuotes} quotes"
+                ).queue()
                 return false
             }
             return true

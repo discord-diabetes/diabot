@@ -51,11 +51,13 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 commandModeGraphMode -> setGraphMode(event)
                 commandModeGraphHours -> setGraphHours(event)
             }
+
             groupNameClear -> when (event.subcommandName) {
                 commandModeToken -> clearToken(event)
                 commandModeUrl -> clearUrl(event)
                 commandModeAll -> confirmDeleteData(event)
             }
+
             groupNameGet -> when (event.subcommandName) {
                 commandModeUrl -> getUrl(event)
                 commandModeToken -> getToken(event)
@@ -99,6 +101,12 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
         val public = commandArgPublic == privacy
         val visibility = if (public) "public" else "private"
+
+        if (public) {
+            println("Hello")
+        } else {
+            println("Goodbye")
+        }
 
         NightscoutFacade.setPublic(event.user, event.guild!!, public).subscribe({
             event.reply("Your Nightscout data was made $visibility in this server").setEphemeral(true).queue()
@@ -235,16 +243,22 @@ class NightscoutApplicationCommand : ApplicationCommand {
                         SubcommandData(commandModeToken, "Set Nightscout token")
                                 .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
                         SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
-                                .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                .addOptions(
+                                    OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
                                         .addChoice(commandArgPrivate, commandArgPrivate)
-                                        .addChoice(commandArgPublic, commandArgPublic)),
+                                        .addChoice(commandArgPublic, commandArgPublic)
+                                ),
                         SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
-                                .addOptions(OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                        .addChoice(commandArgPrivate, commandArgPrivate)),
+                                .addOptions(
+                                    OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                        .addChoice(commandArgPrivate, commandArgPrivate)
+                                ),
                         SubcommandData(commandModeGraphMode, "Set the plotting style for Nightscout graphs")
-                                .addOptions(OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
+                                .addOptions(
+                                    OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
                                         .addChoice(commandArgScatter, commandArgScatter)
-                                        .addChoice(commandArgLine, commandArgLine)),
+                                        .addChoice(commandArgLine, commandArgLine)
+                                ),
                         SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
                                 .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true))
 

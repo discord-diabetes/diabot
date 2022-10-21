@@ -41,11 +41,11 @@ object NutritionixCommunicator {
             it.use { response ->
                 val bodyString = response.body!!.string()
                 if (response.code != 200) {
-                    logger.warn("Nutritionix communication error. Status ${response.message}\n${bodyString}")
+                    logger.warn("Nutritionix communication error. Status ${response.message}\n$bodyString")
                     throw RequestStatusException(response.code)
                 }
 
-                mapper.readValue<NutritionResponseDTO>(bodyString, NutritionResponseDTO::class.java)
+                mapper.readValue(bodyString, NutritionResponseDTO::class.java)
             }
         }
     }

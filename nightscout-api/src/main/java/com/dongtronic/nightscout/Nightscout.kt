@@ -26,7 +26,8 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
     init {
         val client = OkHttpClient.Builder()
         if (token != null) {
-            client.interceptors().add(Interceptor {
+            client.interceptors().add(
+                Interceptor {
                 // adds the auth token to the parameters
                 val newUrl = it.request()
                         .url
@@ -40,10 +41,12 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                         .build()
 
                 return@Interceptor it.proceed(newRequest)
-            })
+            }
+            )
         }
 
-        client.interceptors().add(Interceptor { chain ->
+        client.interceptors().add(
+            Interceptor { chain ->
             // provide cached responses / cache network responses
             val request = chain.request()
 
@@ -59,7 +62,8 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                     cached.build()
                 }
             }
-        })
+        }
+        )
 
         httpClient = client.build()
         service = Retrofit.Builder()
@@ -82,7 +86,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
 
     /**
      * Tests whether a Nightscout requires a token to be read.
-     * This does not actually test whether or not the instance is *secured*, it tests whether a token is currently needed.
+     * This does not actually test whether the instance is *secured*, it tests whether a token is currently needed.
      * If this class was instantiated with the `token` parameter filled, and it grants read access to this NS, then this will be false.
      *
      * @return true if a token is required, false if not
@@ -146,9 +150,10 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                 bgDelta = bgsJson.get("bgdelta").asText()
             }
             val newestBg = dto.getNewestEntryOrNull()
-            if (newestBg != null && newestBg.delta == null
+            if (newestBg != null && newestBg.delta == null ||
                     // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
-                    || (newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0)) {
+                    newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0
+            ) {
                 val bgBuilder = newestBg.newBuilder()
                 BloodGlucoseConverter.convert(bgDelta, dto.units).onSuccess {
                     bgBuilder.delta(it)
@@ -224,13 +229,15 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
                     }
                 }
 
-                bgBuilder.glucose(BloodGlucoseConverter.convert(sgv, "mg").getOrElse {
+                bgBuilder.glucose(
+                    BloodGlucoseConverter.convert(sgv, "mg").getOrElse {
                     if (throwOnConversion) {
                         throw it
                     } else {
                         return@forEach
                     }
-                })
+                }
+                )
                 bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
                 bgBuilder.trend(trend)
                 dtoBuilder.replaceEntry(bgBuilder.build())

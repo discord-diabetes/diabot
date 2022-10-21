@@ -79,7 +79,6 @@ object Main {
         // sets emojis used throughout the bot on successes, warnings, and failures
         client.setEmojis("\uD83D\uDC4C", "\uD83D\uDE2E", "\uD83D\uDE22")
 
-
         // sets the bot prefix
         val prefix = if (debug) "dl " else "diabot "
         client.setPrefix(prefix)
@@ -95,10 +94,11 @@ object Main {
         // add commands
         client.addCommands(
                 // command to show information about the bot
-                AboutCommand(utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
+                AboutCommand(
+                    utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
                         arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        permissions),
-
+                        permissions
+                ),
 
                 // A1c
                 EstimationCommand(a1cCategory),
@@ -131,7 +131,6 @@ object Main {
                 RolesCommand(adminCategory),
                 GuildlistCommand(waiter)
         )
-
 
         // Custom help handler
         client.setHelpConsumer(HelpListener())
@@ -187,5 +186,4 @@ object Main {
 
         shardManager.addEventListener(applicationCommandListener)
     }
-
 }

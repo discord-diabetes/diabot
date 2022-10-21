@@ -50,7 +50,6 @@ class ConversionDTO {
             }
         }
 
-
     /**
      * Create a ConversionDTO object with explicit unit
      *

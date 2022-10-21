@@ -6,7 +6,7 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
-class AdminUsernameHintCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminUsernameHintCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 

@@ -1,11 +1,10 @@
 package com.dongtronic.diabot.platforms.discord.commands.misc
 
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
-import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import java.time.temporal.ChronoUnit
 
-class PingCommand(category: Command.Category) : DiscordCommand(category, null) {
+class PingCommand(category: Category) : DiscordCommand(category, null) {
 
     init {
         this.name = "ping"

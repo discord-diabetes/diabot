@@ -7,7 +7,7 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 
-class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutSetUrlCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     init {
         this.name = "set"
@@ -24,7 +24,7 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
     override fun execute(event: CommandEvent) {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        if(args.isEmpty()) {
+        if (args.isEmpty()) {
             event.replyError("nightscout URL is required")
             return
         }
@@ -33,19 +33,23 @@ class NightscoutSetUrlCommand(category: Command.Category, parent: Command?) : Di
             event.reply("Set Nightscout URL for ${event.author.name}")
         }, {
             logger.warn("Could not set NS URL", it)
-            if (it is IllegalArgumentException)
+            if (it is IllegalArgumentException) {
                 event.replyError(it.message)
-            else
+            } else {
                 event.replyError("Could not set URL")
+            }
         })
 
         try {
             event.message.delete().reason("privacy").queue()
         } catch (ex: InsufficientPermissionException) {
             logger.info("Could not remove command message due to missing permission: ${ex.permission}")
-            event.replyError("Could not remove command message due to missing `${ex.permission}` permission. Please remove the message yourself to protect your privacy.")
+            event.replyError(
+                "Could not remove command message due to missing `${ex.permission}` permission. " +
+                    "Please remove the message yourself to protect your privacy."
+            )
         } catch (ex: IllegalStateException) {
-            logger.info("Could not delete command message. probably in a DM")
+            logger.info("Could not delete command message. probably in a DM", ex)
         }
     }
 }

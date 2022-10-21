@@ -8,7 +8,6 @@ class RewardDAO private constructor() {
     private var jedis: Jedis? = null
     private val logger = logger()
 
-
     init {
         jedis = Jedis(System.getenv("REDIS_URL"))
     }

@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Role
 import java.util.*
 
-class AdminRewardListCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class AdminRewardListCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 

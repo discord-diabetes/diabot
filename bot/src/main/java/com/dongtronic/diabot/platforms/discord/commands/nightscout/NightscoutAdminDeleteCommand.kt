@@ -10,7 +10,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import com.mongodb.client.result.UpdateResult
 import org.apache.commons.lang3.StringUtils
 
-class NightscoutAdminDeleteCommand(category: Command.Category, parent: Command?) : DiscordCommand(category, parent) {
+class NightscoutAdminDeleteCommand(category: Category, parent: Command?) : DiscordCommand(category, parent) {
 
     private val logger = logger()
 
