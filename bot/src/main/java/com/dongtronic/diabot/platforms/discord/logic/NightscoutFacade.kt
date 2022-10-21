@@ -6,6 +6,7 @@ import com.dongtronic.diabot.util.logger
 import com.mongodb.client.result.UpdateResult
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import reactor.core.publisher.Mono
 
 object NightscoutFacade {
@@ -17,7 +18,13 @@ object NightscoutFacade {
 
     fun setUrl(user: User, url: String): Mono<UpdateResult> {
         val finalUrl = validateNightscoutUrl(url)
-        return NightscoutDAO.instance.setUrl(user.id, finalUrl)
+        var update = NightscoutDAO.instance.setUrl(user.id, finalUrl)
+
+        val token = url.toHttpUrl().queryParameter("token")
+        if (token != null) {
+            update = update.flatMap { setToken(user, token) }
+        }
+        return update
     }
 
     fun setPublic(user: User, guild: Guild, public: Boolean): Mono<Boolean> {
