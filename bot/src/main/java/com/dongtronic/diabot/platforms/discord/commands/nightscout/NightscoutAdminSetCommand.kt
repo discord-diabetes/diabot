@@ -1,7 +1,6 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.authorName
-import com.dongtronic.diabot.data.mongodb.NightscoutDAO
 import com.dongtronic.diabot.nameOf
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
@@ -51,11 +50,9 @@ class NightscoutAdminSetCommand(category: Category, parent: Command?) : DiscordC
                 event.message.mentions.users[0]
             }
 
-            val url = NightscoutFacade.parseNightscoutUrl(args[1]).first
-
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
-            NightscoutDAO.instance.setUrl(user.id, url).subscribe({
+            NightscoutFacade.setUrl(user, args[1]).subscribe({
                 event.reply("Admin set Nightscout URL for ${event.nameOf(user)} [requested by ${event.authorName}]")
             }, {
                 val msg = "Could not set Nightscout URL for ${event.nameOf(user)} (${user.id})"
