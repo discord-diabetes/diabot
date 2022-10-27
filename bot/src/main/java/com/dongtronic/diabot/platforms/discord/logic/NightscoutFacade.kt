@@ -60,6 +60,13 @@ object NightscoutFacade {
             finalUrl = "https://$finalUrl"
         }
 
+        finalUrl = finalUrl
+                .toHttpUrl()
+                .newBuilder()
+                .removeAllQueryParameters("token")
+                .build()
+                .toString()
+
         if (finalUrl.endsWith("/")) {
             finalUrl = finalUrl.trimEnd('/')
         }
