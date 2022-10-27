@@ -35,7 +35,7 @@ class QuoteMineCommand(category: Category, parent: QuoteCommand) : DiscordComman
     private fun createEmbed(author: String, quoteDTOs: List<QuoteDTO>): MessageEmbed {
         val builder = EmbedBuilder()
 
-        val quoteIdList = quoteDTOs.map { "#" + it.messageId }
+        val quoteIdList = quoteDTOs.map { "#" + it.quoteId + ": " + it.message }
         val joinedQuoteIds = quoteIdList.joinToString("\n")
 
         builder.setAuthor("$author's Quotes")
