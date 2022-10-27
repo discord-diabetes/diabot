@@ -30,7 +30,8 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
                 QuoteAddCommand(category, this),
                 QuoteDeleteCommand(category, this),
                 QuoteEditCommand(category, this),
-                QuoteImportCommand(category, this)
+                QuoteImportCommand(category, this),
+                QuoteMineCommand(category, this)
         )
     }
 
