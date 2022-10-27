@@ -51,7 +51,7 @@ class NightscoutAdminSetCommand(category: Category, parent: Command?) : DiscordC
                 event.message.mentions.users[0]
             }
 
-            val url = NightscoutFacade.validateNightscoutUrl(args[1])
+            val url = NightscoutFacade.parseNightscoutUrl(args[1]).first
 
             logger.info("Admin setting URL for user ${args[0]} to ${args[1]}")
 
