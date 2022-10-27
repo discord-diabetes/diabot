@@ -43,5 +43,4 @@ class QuoteMineCommand(category: Category, parent: QuoteCommand) : DiscordComman
 
         return builder.build()
     }
-
 }
