@@ -17,10 +17,10 @@ object NightscoutFacade {
     }
 
     fun setUrl(user: User, url: String): Mono<UpdateResult> {
-        val finalUrl = validateNightscoutUrl(url)
-        var update = NightscoutDAO.instance.setUrl(user.id, finalUrl)
+        val finalUrl = parseNightscoutUrl(url)
+        var update = NightscoutDAO.instance.setUrl(user.id, finalUrl.first)
 
-        val token = url.toHttpUrl().queryParameter("token")
+        val token = finalUrl.second
         if (token != null) {
             update = update.flatMap { setToken(user, token) }
         }
@@ -53,21 +53,31 @@ object NightscoutFacade {
         return NightscoutDAO.instance.getUser(user.id)
     }
 
-    fun validateNightscoutUrl(url: String): String {
-        var finalUrl = url
-        if (!finalUrl.contains("http://") && !finalUrl.contains("https://")) {
-            logger.info("Missing scheme in Nightscout URL: $finalUrl, adding https://")
-            finalUrl = "https://$finalUrl"
+    fun parseNightscoutUrl(url: String): Pair<String, String?> {
+        var inputUrl = url
+        if (!url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)) {
+            logger.debug("Missing scheme in Nightscout URL: $inputUrl, adding https://")
+            inputUrl = "https://$inputUrl"
         }
 
-        if (finalUrl.endsWith("/")) {
-            finalUrl = finalUrl.trimEnd('/')
+        val parsed = inputUrl.toHttpUrl()
+        val final = parsed.newBuilder()
+        val token = parsed.queryParameter("token")
+        // trim token
+        final.removeAllQueryParameters("token")
+        logger.debug("Input: $final")
+
+        val pathSegments = parsed.pathSegments.dropLastWhile { it == "" }
+        if (pathSegments.takeLast(2) == listOf("api", "v1")) {
+            logger.debug("Removing API declaration in NS URL path: $pathSegments")
+            val trimmedPath = pathSegments.dropLast(2).joinToString("/")
+            // reset the path to nothing
+            final.encodedPath("/")
+            final.addPathSegments(trimmedPath)
         }
 
-        if (finalUrl.endsWith("/api/v1")) {
-            finalUrl = finalUrl.removeSuffix("/api/v1")
-        }
+        logger.debug("Final URL: $final")
 
-        return finalUrl
+        return final.toString() to token
     }
 }

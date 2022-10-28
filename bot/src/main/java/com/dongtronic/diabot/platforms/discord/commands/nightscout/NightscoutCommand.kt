@@ -141,7 +141,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
             args.isNotEmpty() && args[0].matches("^https?://.*".toRegex()) -> {
                 // is a URL
-                val url = NightscoutFacade.validateNightscoutUrl(args[0])
+                val url = NightscoutFacade.parseNightscoutUrl(args[0]).first
                 getDataFromDomain(url, event)
             }
 
