@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.*
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import java.util.NoSuchElementException
 
 class NightscoutApplicationCommand : ApplicationCommand {
     private val logger = logger()
@@ -186,28 +187,38 @@ class NightscoutApplicationCommand : ApplicationCommand {
     }
 
     private fun getUrl(event: SlashCommandInteractionEvent) {
-        val errorMessage = "You do not have a configured Nightscout URL. Use `/nightscout set url` to configure it."
+        val missingDataMessage = "You have not configured a Nightscout URL. Use `/nightscout set url` to configure it."
+        val errorMessage = "There was an error while getting your Nightscout URL. Please try again later."
         NightscoutFacade.getUser(event.user).subscribe({
             if (it.url != null) {
                 event.reply("Your configured Nightscout URL is `${it.url}`").setEphemeral(true).queue()
             } else {
-                event.reply(errorMessage).setEphemeral(true).queue()
+                event.reply(missingDataMessage).setEphemeral(true).queue()
             }
         }, {
-            event.reply(errorMessage).setEphemeral(true).queue()
+            if (it is NoSuchElementException) {
+                event.reply(missingDataMessage).setEphemeral(true).queue()
+            } else {
+                replyError(event, it, errorMessage)
+            }
         })
     }
 
     private fun getToken(event: SlashCommandInteractionEvent) {
-        val errorMessage = "You do not have a configured Nightscout URL. Use `/nightscout set url` to configure it."
+        val missingDataMessage = "You have not configured a Nightscout Token. Use `/nightscout set token` to configure it."
+        val errorMessage = "There was an error while getting your Nightscout Token. Please try again later."
         NightscoutFacade.getUser(event.user).subscribe({
             if (it.token != null) {
                 event.reply("Your configured Nightscout token is `${it.token}`").setEphemeral(true).queue()
             } else {
-                event.reply(errorMessage).setEphemeral(true).queue()
+                event.reply(missingDataMessage).setEphemeral(true).queue()
             }
         }, {
-            event.reply(errorMessage).setEphemeral(true).queue()
+            if (it is NoSuchElementException) {
+                event.reply(missingDataMessage).setEphemeral(true).queue()
+            } else {
+                replyError(event, it, errorMessage)
+            }
         })
     }
 
