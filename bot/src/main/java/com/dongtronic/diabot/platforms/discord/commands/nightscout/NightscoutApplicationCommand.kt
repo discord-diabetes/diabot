@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.*
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import java.util.NoSuchElementException
 
 class NightscoutApplicationCommand : ApplicationCommand {
     private val logger = logger()
@@ -186,23 +187,39 @@ class NightscoutApplicationCommand : ApplicationCommand {
     }
 
     private fun getUrl(event: SlashCommandInteractionEvent) {
-        NightscoutFacade.getUser(event.user).subscribe {
+        val missingDataMessage = "You have not configured a Nightscout URL. Use `/nightscout set url` to configure it."
+        val errorMessage = "There was an error while getting your Nightscout URL. Please try again later."
+        NightscoutFacade.getUser(event.user).subscribe({
             if (it.url != null) {
                 event.reply("Your configured Nightscout URL is `${it.url}`").setEphemeral(true).queue()
             } else {
-                event.reply("You do not have a configured Nightscout URL. Use `/nightscout set url` to configure it.").setEphemeral(true).queue()
+                event.reply(missingDataMessage).setEphemeral(true).queue()
             }
-        }
+        }, {
+            if (it is NoSuchElementException) {
+                event.reply(missingDataMessage).setEphemeral(true).queue()
+            } else {
+                replyError(event, it, errorMessage)
+            }
+        })
     }
 
     private fun getToken(event: SlashCommandInteractionEvent) {
-        NightscoutFacade.getUser(event.user).subscribe {
+        val missingDataMessage = "You have not configured a Nightscout token. Use `/nightscout set token` to configure it."
+        val errorMessage = "There was an error while getting your Nightscout token. Please try again later."
+        NightscoutFacade.getUser(event.user).subscribe({
             if (it.token != null) {
                 event.reply("Your configured Nightscout token is `${it.token}`").setEphemeral(true).queue()
             } else {
-                event.reply("You do not have a configured Nightscout token. Use `/nightscout set token` to configure it.").setEphemeral(true).queue()
+                event.reply(missingDataMessage).setEphemeral(true).queue()
             }
-        }
+        }, {
+            if (it is NoSuchElementException) {
+                event.reply(missingDataMessage).setEphemeral(true).queue()
+            } else {
+                replyError(event, it, errorMessage)
+            }
+        })
     }
 
     private fun confirmDeleteData(event: SlashCommandInteractionEvent) {
@@ -244,20 +261,20 @@ class NightscoutApplicationCommand : ApplicationCommand {
                                 .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
                         SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
                                 .addOptions(
-                                    OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                        .addChoice(commandArgPrivate, commandArgPrivate)
-                                        .addChoice(commandArgPublic, commandArgPublic)
+                                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                                .addChoice(commandArgPrivate, commandArgPrivate)
+                                                .addChoice(commandArgPublic, commandArgPublic)
                                 ),
                         SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
                                 .addOptions(
-                                    OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                        .addChoice(commandArgPrivate, commandArgPrivate)
+                                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                                                .addChoice(commandArgPrivate, commandArgPrivate)
                                 ),
                         SubcommandData(commandModeGraphMode, "Set the plotting style for Nightscout graphs")
                                 .addOptions(
-                                    OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
-                                        .addChoice(commandArgScatter, commandArgScatter)
-                                        .addChoice(commandArgLine, commandArgLine)
+                                        OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
+                                                .addChoice(commandArgScatter, commandArgScatter)
+                                                .addChoice(commandArgLine, commandArgLine)
                                 ),
                         SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
                                 .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true))
