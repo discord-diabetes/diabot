@@ -205,8 +205,8 @@ class NightscoutApplicationCommand : ApplicationCommand {
     }
 
     private fun getToken(event: SlashCommandInteractionEvent) {
-        val missingDataMessage = "You have not configured a Nightscout Token. Use `/nightscout set token` to configure it."
-        val errorMessage = "There was an error while getting your Nightscout Token. Please try again later."
+        val missingDataMessage = "You have not configured a Nightscout token. Use `/nightscout set token` to configure it."
+        val errorMessage = "There was an error while getting your Nightscout token. Please try again later."
         NightscoutFacade.getUser(event.user).subscribe({
             if (it.token != null) {
                 event.reply("Your configured Nightscout token is `${it.token}`").setEphemeral(true).queue()
