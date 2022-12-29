@@ -6,6 +6,7 @@ import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.bson.conversions.Bson
 import org.litote.kmongo.eq
@@ -40,31 +41,30 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
 
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        val quote = when {
-            event.message.mentions.members.isNotEmpty() -> {
-                val member = event.message.mentions.members.first()
-                getRandomQuote(event.guild.id, QuoteDTO::authorId eq member.id)
+        val quote = if (args.isNotEmpty()) {
+            val arg = args[0]
+            val mentionId = Message.MentionType.USER.pattern.toRegex().find(arg)?.let {
+                it.groups[1]?.value?.toLongOrNull()
             }
 
-            args.isNotEmpty() -> {
-                val arg = args[0]
-                if (arg.toLongOrNull() != null) {
-                    if (arg.length < 17) {
-                        // the first discord snowflakes were 17 digits long
-                        // assume it's a quote ID if it's less than 17 digits long
-                        QuoteDAO.getInstance().getQuote(event.guild.id, arg)
-                    } else {
-                        // assume it's a user ID otherwise
-                        getRandomQuote(event.guild.id, QuoteDTO::authorId eq arg)
-                    }
+            if (mentionId != null) {
+                getRandomQuote(event.guild.id, QuoteDTO::authorId eq mentionId.toString())
+            } else if (arg.toLongOrNull() != null) {
+                if (arg.length < 17) {
+                    // the first discord snowflakes were 17 digits long
+                    // assume it's a quote ID if it's less than 17 digits long
+                    QuoteDAO.getInstance().getQuote(event.guild.id, arg)
                 } else {
-                    // may be a username
-                    val joined = args.joinToString(" ")
-                    getRandomQuote(event.guild.id, QuoteDTO::author eq joined)
+                    // assume it's a user ID otherwise
+                    getRandomQuote(event.guild.id, QuoteDTO::authorId eq arg)
                 }
+            } else {
+                // may be a username
+                val joined = args.joinToString(" ")
+                getRandomQuote(event.guild.id, QuoteDTO::author eq joined)
             }
-
-            else -> getRandomQuote(event.guild.id)
+        } else {
+            getRandomQuote(event.guild.id)
         }
 
         quote.subscribe({
