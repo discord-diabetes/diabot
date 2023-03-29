@@ -1,6 +1,7 @@
 package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.NightscoutDAO
+import com.dongtronic.diabot.graph.GraphTheme
 import com.dongtronic.diabot.graph.PlottingStyle
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.platforms.discord.logic.NightscoutFacade
@@ -10,7 +11,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.*
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import java.util.NoSuchElementException
 
 class NightscoutApplicationCommand : ApplicationCommand {
     private val logger = logger()
@@ -25,6 +25,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
     private val commandModeGlobalPrivacy = "globalprivacy"
     private val commandModeGraphMode = "graphmode"
     private val commandModeGraphHours = "graphhours"
+    private val commandModeGraphAnimals = "graphanimals"
     private val commandArgUrl = "url"
     private val commandArgToken = "token"
     private val commandArgPrivacy = "privacy"
@@ -36,6 +37,8 @@ class NightscoutApplicationCommand : ApplicationCommand {
     private val commandArgLine = "line"
 
     private val commandArgHours = "hours"
+
+    private val commandArgEnabled = "enabled"
 
     override val commandName: String = "nightscout"
 
@@ -51,6 +54,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 commandModeGlobalPrivacy -> setGlobalPrivacy(event)
                 commandModeGraphMode -> setGraphMode(event)
                 commandModeGraphHours -> setGraphHours(event)
+                commandModeGraphAnimals -> setGraphAnimals(event)
             }
 
             groupNameClear -> when (event.subcommandName) {
@@ -170,6 +174,37 @@ class NightscoutApplicationCommand : ApplicationCommand {
                 })
     }
 
+    private fun setGraphAnimals(event: SlashCommandInteractionEvent) {
+        val enabled = event.getOption(commandArgEnabled)?.asBoolean
+
+        NightscoutDAO.instance.getUser(event.user.id)
+                .map {
+                    val newState = enabled ?: (it.graphSettings.theme != GraphTheme.ANIMALS)
+                    val theme = if (newState) GraphTheme.ANIMALS else GraphTheme.DARK
+                    it.graphSettings.copy(theme = theme)
+                }
+                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+                .subscribe({
+                    val msg = if (it.theme == GraphTheme.ANIMALS) {
+                        "Congratulations, you've successfully unlocked the purr-fect 'Furry Friends' mode! From now on, your graphs will " +
+                                "have an extra dose of cuteness. It's like having a virtual pet on your screen. We hope you're feline good " +
+                                "about your decision! Meow!"
+                    } else {
+                        "Oh no, you've decided to paws our 'Furry Friends' mode. We'll miss those cute little noses and wagging tails in " +
+                                "your graphs, but we understand that not everyone can handle so much adorableness at once. Thanks for " +
+                                "playing along, and happy graphing without our furry companions!"
+                    }
+
+                    event.reply(msg).setEphemeral(true).queue()
+                }, {
+                    replyError(event, it, "Oops! It looks like there's been an error (`${it.javaClass.simpleName}`) while trying to " +
+                            "change the 'Furry Friends' mode. Maybe the cats and dogs got too excited? Report this issue to Diabot's GitHub " +
+                            "and we'll get this fixed faster than you can say 'pawsome'. Thanks for your patience and " +
+                            "happy graphing without any technical ruff-les!")
+                    logger.warn("Unexpected error when changing graph theme for ${event.user}", it)
+                })
+    }
+
     private fun clearToken(event: SlashCommandInteractionEvent) {
         NightscoutFacade.clearToken(event.user).subscribe({
             event.reply("Your Nightscout token has been deleted").setEphemeral(true).queue()
@@ -277,8 +312,9 @@ class NightscoutApplicationCommand : ApplicationCommand {
                                                 .addChoice(commandArgLine, commandArgLine)
                                 ),
                         SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
-                                .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true))
-
+                                .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true)),
+                        SubcommandData(commandModeGraphAnimals, "Toggles the April Fools' joke in Nightscout graphs")
+                                .addOptions(OptionData(OptionType.BOOLEAN, commandArgEnabled, "Enabled", false)),
                 ),
                 SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
                         SubcommandData(commandModeUrl, "Clear Nightscout url"),
