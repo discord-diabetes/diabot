@@ -21,8 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.utils.FileUpload
-import org.knowm.xchart.BitmapEncoder
-import org.knowm.xchart.XYChart
+import org.knowm.xchart.BitmapEncoder.BitmapFormat
 import org.litote.kmongo.MongoOperator
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorMap
@@ -71,7 +70,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                     event.deferReply(false).queue()
 
                     val chart = getDataSet(event.user.id, hours).awaitSingle()
-                    val imageBytes = BitmapEncoder.getBitmapBytes(chart, BitmapEncoder.BitmapFormat.PNG)
+                    val imageBytes = chart.getBitmapBytes(BitmapFormat.PNG)
                     event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).submit().await()
                     applyCooldown(event.user.id)
                 } catch (e: Exception) {
@@ -112,7 +111,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                 .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
     }
 
-    private fun getDataSet(senderId: String, hours: Long?): Mono<XYChart> {
+    private fun getDataSet(senderId: String, hours: Long?): Mono<BgGraph> {
         return NightscoutDAO.instance.getUser(senderId)
                 .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
                 .zipWhen { userDTO ->

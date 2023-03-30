@@ -3,14 +3,18 @@ package com.dongtronic.diabot.graph
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.nightscout.data.BgEntry
 import com.dongtronic.nightscout.data.NightscoutDTO
+import org.knowm.xchart.BitmapEncoder
 import org.knowm.xchart.XYChart
 import org.knowm.xchart.style.Styler
 import org.knowm.xchart.style.markers.Circle
 import java.awt.BasicStroke
 import java.awt.Color
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.math.max
 
 private const val Y_AXIS_MIN = 40.0
@@ -153,7 +157,7 @@ class BgGraph(
                 }
             }
 
-            GraphTheme.DARK -> {
+            GraphTheme.DARK, GraphTheme.ANIMALS -> {
                 when {
                     lineGraph -> settings.inRangeDarkColor
 
@@ -163,6 +167,34 @@ class BgGraph(
                 }
             }
         }
+    }
+
+    fun getBitmapBytes(bitmapFormat: BitmapEncoder.BitmapFormat): ByteArray {
+        val theme = settings.theme.instance
+        val bufferedImage = BufferedImage(theme.getImageWidth(this), theme.getImageHeight(this), BufferedImage.TYPE_INT_ARGB)
+        val g = bufferedImage.createGraphics()
+
+        if (theme.overridePaint) {
+            theme.customPaint(g, this, this.plot)
+        } else {
+            this.paint(g, this.width, this.height)
+        }
+
+        val baos = ByteArrayOutputStream()
+        val imageInBytes: ByteArray = try {
+            ImageIO.write(bufferedImage, bitmapFormat.toString().lowercase(Locale.getDefault()), baos)
+            baos.flush()
+            baos.toByteArray()
+        } catch (var8: Throwable) {
+            try {
+                baos.close()
+            } catch (var7: Throwable) {
+                var8.addSuppressed(var7)
+            }
+            throw var8
+        }
+        baos.close()
+        return imageInBytes
     }
 
     companion object {
