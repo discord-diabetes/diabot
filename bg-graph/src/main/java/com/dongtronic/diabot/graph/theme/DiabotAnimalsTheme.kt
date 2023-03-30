@@ -14,7 +14,6 @@ import javax.imageio.ImageIO
 import kotlin.math.*
 import kotlin.random.Random
 
-
 class DiabotAnimalsTheme : DiabotTheme(true) {
     companion object {
         private val credits = buildMap {
@@ -89,7 +88,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
                 FontRenderContext(null, true, true)
         )
 
-        return (super.getImageHeight(chart) + textLayout.bounds.height*2).roundToInt()
+        return (super.getImageHeight(chart) + textLayout.bounds.height * 2).roundToInt()
     }
 
     override fun customPaint(g: Graphics2D, chart: BgGraph, plot: Plot_<*, *>) {
@@ -124,7 +123,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
             val angle = (-30..30).random()
             cat = rotate(cat, angle.toDouble())
             // The boundaries of the smaller split rectangle in the plot
-            val plotBounds: Rectangle = bounds[i-1]
+            val plotBounds: Rectangle = bounds[i - 1]
 
             // The randomly scaled+positioned boundaries for the image
             val imgBounds: Rectangle = calculateImageBounds(cat.width, cat.height, plotBounds)
@@ -144,7 +143,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
         val textBounds = textLayout.bounds
 
         g.color = getCreditsFontColor()
-        g.drawString(credits, 5, chart.height + (textBounds.height.toInt()))
+        g.drawString(credits, 5, chart.height + textBounds.height.toInt())
 
         // re-paint the graph, filling in the rest of the data.
         chart.paint(g, chart.width, chart.height)
@@ -172,8 +171,8 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
         val newHeight = (height * scale).toInt()
 
         // Randomly position image within plot bounds
-        val xOff = (0..(bounds.width - newWidth)).random()
-        val yOff = (0..(bounds.height - newHeight)).random()
+        val xOff = (0..bounds.width - newWidth).random()
+        val yOff = (0..bounds.height - newHeight).random()
         // calculate the final x and y positions
         val xPos = xOff + bounds.x
         val yPos = yOff + bounds.y
@@ -221,12 +220,12 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
     private fun splitBounds(bounds: Rectangle): List<Rectangle> {
         val horizontal = Random.nextBoolean()
         return if (horizontal) {
-            val splitHeight = bounds.height/2
+            val splitHeight = bounds.height / 2
             val one = Rectangle(bounds.x, bounds.y, bounds.width, splitHeight)
             val two = Rectangle(bounds.x, bounds.y + splitHeight, bounds.width, splitHeight)
             listOf(one, two)
         } else {
-            val splitWidth = bounds.width/2
+            val splitWidth = bounds.width / 2
             val one = Rectangle(bounds.x, bounds.y, splitWidth, bounds.height)
             val two = Rectangle(bounds.x + splitWidth, bounds.y, splitWidth, bounds.height)
             listOf(one, two)
