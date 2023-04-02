@@ -25,6 +25,13 @@ object Patterns {
      * Matches suspected BG values with units
      */
     val unitBgPattern = Regex("""(?<value>\d{1,3}(?:[.,]\d+)?) ?(?<unit>mmol|mg)""")
+
+    /**
+     * Matches special regex characters. May be used with `replace` to sanitize inputs
+     * for use in a regex.
+     */
+    val regexSanitizerPattern = Regex("[-.\\+*?\\[^\\]$(){}=!<>|:\\\\]")
+
     val feelPattern = Pattern.compile(".*feel it.*")!!
     val ohNoPattern = Pattern.compile("oh no")!!
 }
