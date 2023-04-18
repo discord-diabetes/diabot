@@ -67,6 +67,7 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
                     return@launch
                 }
 
+                @Suppress("SwallowedException")
                 try {
                     val quotes = QuoteDAO.getInstance().getQuotes(event.guild.id, and(filters))
 
