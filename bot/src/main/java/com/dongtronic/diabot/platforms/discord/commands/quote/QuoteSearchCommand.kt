@@ -4,12 +4,13 @@ import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.jagrosh.jdautilities.command.CommandEvent
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
-import org.litote.kmongo.regex
-import org.litote.kmongo.and
-import org.bson.conversions.Bson
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.EmbedBuilder
+import org.bson.conversions.Bson
+import org.litote.kmongo.and
+import org.litote.kmongo.regex
 
 class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
     private val maxNumberOfQuotes: Int
@@ -62,7 +63,7 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
 
                 if (random) {
                     // Get a single, random quote
-                    val quote = QuoteDAO.getInstance().getRandomQuote(event.guild.id, and(filters)).block()
+                    val quote = QuoteDAO.getInstance().getRandomQuote(event.guild.id, and(filters)).awaitSingle()
                     event.reply(createQuoteEmbed(quote))
                     return@launch
                 }
