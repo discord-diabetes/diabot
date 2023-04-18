@@ -94,7 +94,13 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
     }
 
     private fun addQuoteToEmbed(builder: EmbedBuilder, quote: QuoteDTO) {
-        builder.addField("#${quote.quoteId}", "\"${quote.message}\" - <@${quote.authorId}> (${quote.author})", false)
+        val author = if (quote.authorId != "0") {
+            "<@${quote.authorId}> (${quote.author})"
+        } else {
+            quote.author
+        }
+
+        builder.addField("#${quote.quoteId}", "\"${quote.message}\" - $author", false)
     }
 
     private fun replyTooFewArgs(event: CommandEvent) {
