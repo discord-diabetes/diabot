@@ -33,25 +33,17 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
             launch {
                 if (!QuoteDAO.awaitCheckRestrictions(event.guildChannel, warnDisabledGuild = true)) return@launch
 
-                var args = event.message.contentRaw.split(" ").toList()
-                if (args.size < 3) {
-                    replyTooFewArgs(event)
-                    return@launch
-                }
-
-                // Remove the command portion of the message
-                args = args.slice(2 until args.size)
+                var args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toList()
 
                 // Do we want one random quote from our search?
-                var random = false
-                if (args[0] == "r") {
-                    random = true
-                    if (args.size < 2) {
-                        replyTooFewArgs(event)
-                        return@launch
-                    }
-
+                val random = args.getOrNull(0) == "r"
+                if (random) {
                     args = args.slice(1 until args.size)
+                }
+
+                if (args.isEmpty()) {
+                    replyTooFewArgs(event)
+                    return@launch
                 }
 
                 // Build a list of regex filters based on the provided keywords
