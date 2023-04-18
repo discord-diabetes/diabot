@@ -1,6 +1,5 @@
 package com.dongtronic.diabot.platforms.discord.commands.quote
 
-import com.dongtronic.diabot.util.Patterns
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
@@ -40,7 +39,7 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
                 }
 
                 // Remove the command portion of the message
-                args = args.slice(2..args.size - 1)
+                args = args.slice(2 until args.size)
 
                 // Do we want one random quote from our search?
                 var random = false
@@ -51,36 +50,31 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
                         return@launch
                     }
 
-                    args = args.slice(1..args.size - 1)
-                }
-
-                var keywords: List<String> = emptyList()
-                for (arg in args) {
-                    keywords += sanitizeString(arg)
+                    args = args.slice(1 until args.size)
                 }
 
                 // Build a list of regex filters based on the provided keywords
-                var filters: List<Bson> = emptyList()
-                for (kw in keywords) {
-                    filters += QuoteDTO::message regex "(?i)$kw"
+                val filters: MutableList<Bson> = mutableListOf()
+                for (arg in args) {
+                    val keyword = Regex.escape(arg)
+                    filters += QuoteDTO::message regex "(?i)$keyword"
                 }
 
-                @Suppress("SwallowedException")
+                if (random) {
+                    // Get a single, random quote
+                    val quote = QuoteDAO.getInstance().getRandomQuote(event.guild.id, and(filters)).block()
+                    event.reply(createQuoteEmbed(quote))
+                    return@launch
+                }
+
                 try {
                     val quotes = QuoteDAO.getInstance().getQuotes(event.guild.id, and(filters))
-
-                    if (random) {
-                        // Get a random quote, ignore the rest of the search
-                        val randomQuote = quotes.toIterable().shuffled()[0]
-                        event.reply(createQuoteEmbed(randomQuote))
-                        return@launch
-                    }
 
                     // Create an embed with up to 10 quotes as fields
                     val builder = EmbedBuilder()
                     val msg = event.message.contentRaw
                     builder.setAuthor("Diabot Quote Search")
-                    builder.setDescription("\"$msg\"")
+                    builder.setDescription("Command: \"$msg\"")
 
                     val quotesIter = quotes.toIterable().iterator()
                     var count = 0
@@ -103,10 +97,6 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
                 }
             }
         }
-    }
-
-    private fun sanitizeString(input: String): String {
-        return Patterns.regexSanitizerPattern.replace(input, "\\\\$0")
     }
 
     private fun addQuoteToEmbed(builder: EmbedBuilder, quote: QuoteDTO) {
