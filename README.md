@@ -15,7 +15,7 @@ While there is a budget to ensure Diabot can continue running without any financ
 Financial contributions are used to pay for hosting costs, and (when the budget allows this) run a separate test version of Diabot, so we can better test it. 
 When money is left over after all hosting fees are paid, this money will be saved for when contributions can't fully support the project.
 
-If you wish to help pay for diabot hosting and development, you can [Become a supporter on OpenCollective](opencollective.com/diabot) or [sponsor cascer1 on GitHub](https://github.com/sponsors/cascer1).
+If you wish to help pay for diabot hosting and development, you can [Become a supporter on OpenCollective](https://opencollective.com/diabot) or [sponsor cascer1 on GitHub](https://github.com/sponsors/cascer1).
 
 Any support received will be used to pay for the hosting and improvement of Diabot. This is not a for-profit project.
 
