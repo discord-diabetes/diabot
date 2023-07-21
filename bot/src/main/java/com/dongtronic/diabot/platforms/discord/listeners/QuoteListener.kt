@@ -4,7 +4,6 @@ import com.dongtronic.diabot.data.mongodb.QuoteDAO
 import com.dongtronic.diabot.data.mongodb.QuoteDTO
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteAddCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
-import com.dongtronic.diabot.submitMono
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -43,34 +42,38 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
         if (event.reaction.emoji != speechEmoji) return
         if (!QuoteDAO.checkRestrictions(event.guildChannel)) return
 
+        val message = event.retrieveMessage().await()
         val author = event.retrieveMember().await()
         val guild = event.guild
+
+        // Ignore event if the bot already created a quote from this message
+        if (message.reactions.any { it.emoji == speechEmoji && it.isSelf }) return
 
         /**
          * Replies to the channel only if the reacting user has permission to send messages
          */
-        val reply: (() -> MessageCreateAction) -> Unit = { message ->
+        val reply: (() -> MessageCreateAction) -> Unit = { msg ->
             if (event.guildChannel.canTalk(author)) {
-                message().queue()
+                msg().queue()
             }
         }
 
-        val quoteMessage = Consumer<Message> { message ->
+        val quoteMessage = Consumer<Message> { msg ->
             QuoteDAO.getInstance().addQuote(
                     QuoteDTO(
                             guildId = guild.id,
                             channelId = event.guildChannel.id,
-                            author = message.author.name,
-                            authorId = message.author.id,
+                            author = msg.author.name,
+                            authorId = msg.author.id,
                             quoterId = event.userId,
-                            message = message.contentRaw,
-                            messageId = message.id
+                            message = msg.contentRaw,
+                            messageId = msg.id
                     )
             ).subscribe({
-                message.addReaction(speechEmoji).queue()
-                reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
+                msg.addReaction(speechEmoji).queue()
+                reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, msg.jumpUrl)) }
             }, {
-                reply { event.guildChannel.sendMessage("Could not create quote for message: ${message.id}") }
+                reply { event.guildChannel.sendMessage("Could not create quote for message: ${msg.id}") }
             })
         }
 
@@ -81,7 +84,7 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
                 .subscribe({ /*ignored*/ }, { error ->
                     // only add quote if there are no quotes matching the reacted message ID
                     if (error is NoSuchElementException) {
-                        event.retrieveMessage().submitMono()
+                        message.toMono()
                                 .filter { (it.type == MessageType.DEFAULT || it.type == MessageType.INLINE_REPLY) && !it.author.isBot }
                                 .subscribe(quoteMessage)
                     }
