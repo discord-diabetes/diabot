@@ -40,7 +40,7 @@ class QuoteDeleteCommand(category: Category, parent: Command) : DiscordCommand(c
 
         if (!event.member.hasPermission(Permission.MESSAGE_MANAGE)) {
             execution = QuoteDAO.getInstance().getQuote(event.guild.id, quoteId.toString()).flatMap {
-                if (it.authorId == event.author.id) {
+                if (it.authorId == event.author.id || it.quoterId == event.author.id) {
                     // this will be mapped to the delete command
                     it.toMono()
                 } else {
