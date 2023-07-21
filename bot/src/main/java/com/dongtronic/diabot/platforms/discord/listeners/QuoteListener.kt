@@ -57,14 +57,15 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
 
         val quoteMessage = Consumer<Message> { message ->
             QuoteDAO.getInstance().addQuote(
-                QuoteDTO(
-                    guildId = guild.id,
-                    channelId = event.guildChannel.id,
-                    author = message.author.name,
-                    authorId = message.author.id,
-                    message = message.contentRaw,
-                    messageId = message.id
-            )
+                    QuoteDTO(
+                            guildId = guild.id,
+                            channelId = event.guildChannel.id,
+                            author = message.author.name,
+                            authorId = message.author.id,
+                            quoterId = event.userId,
+                            message = message.contentRaw,
+                            messageId = message.id
+                    )
             ).subscribe({
                 message.addReaction(speechEmoji).queue()
                 reply { event.guildChannel.sendMessage(QuoteAddCommand.createAddedMessage(author.asMention, it.quoteId!!, message.jumpUrl)) }
