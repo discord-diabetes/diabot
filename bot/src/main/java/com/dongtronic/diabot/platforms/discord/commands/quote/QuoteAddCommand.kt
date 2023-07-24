@@ -59,6 +59,7 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
                         channelId = event.channel.id,
                         author = author,
                         authorId = authorId.toString(),
+                        quoterId = event.author.id,
                         message = message,
                         messageId = event.message.id
                 )

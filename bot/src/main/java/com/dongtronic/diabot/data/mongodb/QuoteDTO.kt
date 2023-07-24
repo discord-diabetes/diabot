@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
  * @property channelId the channel which this quote is located under
  * @property author the quote's author
  * @property authorId the author's user ID
+ * @property quoterId the user ID of the person who created the quote
  * @property message the quote message
  * @property messageId the quote's message ID
  * @property time quote creation in unix time
@@ -20,6 +21,7 @@ data class QuoteDTO(
         val channelId: String,
         val author: String,
         val authorId: String = "",
+        val quoterId: String = "",
         val message: String,
         val messageId: String,
         val time: Long = System.currentTimeMillis() / 1000
