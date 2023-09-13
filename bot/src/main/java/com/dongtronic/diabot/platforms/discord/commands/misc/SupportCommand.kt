@@ -20,8 +20,8 @@ class SupportCommand(category: Category) : DiscordCommand(category, null) {
 
         builder.setDescription("Diabot costs money to run and time to develop. You can help!")
 
-        builder.addField("Contribute Code", "https://github.com/reddit-diabetes/diabot", true)
-        builder.addField("Donate money", "https://github.com/sponsors/cascer1", true)
+        builder.addField("Contribute Code", "https://github.com/discord-diabetes/diabot", true)
+        builder.addField("Donate money", "https://opencollective.com/diabot", true)
 
         builder.setColor(java.awt.Color.orange)
 

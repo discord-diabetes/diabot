@@ -46,7 +46,7 @@ class AboutCommand(
         } else {
             builder.setColor(event.guild.selfMember.color)
         }
-        builder.setAuthor("All about " + event.selfUser.name + "!", "https://github.com/reddit-diabetes/diabot", event.selfUser.avatarUrl)
+        builder.setAuthor("All about " + event.selfUser.name + "!", "https://github.com/discord-diabetes/diabot", event.selfUser.avatarUrl)
         val join = !(event.client.serverInvite == null || event.client.serverInvite.isEmpty())
         val invite = oauthLink!!.isNotEmpty()
 
