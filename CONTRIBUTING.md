@@ -29,4 +29,4 @@ gradle release
 ```
 
 The plugin will prompt for the release version and new snapshot version, and make the required commits.  
-After this, a draft release will be created on GitHub. Once this is released (un-marked as draft), the new version will be deployed to Heroku.
+After this, a draft release will be created on GitHub. Once this is released (un-marked as draft), the new version will be deployed.
