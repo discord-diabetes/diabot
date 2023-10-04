@@ -120,7 +120,6 @@ object Main {
 
                 // Fun
                 ExcuseCommand(funCategory),
-                DiacastCommand(funCategory),
                 OwnerCommand(funCategory),
                 QuoteCommand(funCategory),
 
