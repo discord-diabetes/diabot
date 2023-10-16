@@ -2,12 +2,13 @@ package com.dongtronic.diabot.platforms.discord.listeners
 
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.util.logger
+import dev.minn.jda.ktx.events.CoroutineEventListener
+import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-class ApplicationCommandListener(vararg val commands: ApplicationCommand) : ListenerAdapter() {
+class ApplicationCommandListener(vararg val commands: ApplicationCommand) : CoroutineEventListener {
     private val logger = logger()
     private val commandMap: Map<String, ApplicationCommand>
 
@@ -23,7 +24,15 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
         }
     }
 
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+    override suspend fun onEvent(event: GenericEvent) {
+        when (event) {
+            is SlashCommandInteractionEvent -> onSlashCommandInteraction(event)
+            is ButtonInteractionEvent -> onButtonInteraction(event)
+            is ModalInteractionEvent -> onModalInteraction(event)
+        }
+    }
+
+    suspend fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         val commandClass = commandMap[event.name]
 
         if (commandClass != null) {
@@ -34,7 +43,7 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
         }
     }
 
-    override fun onButtonInteraction(event: ButtonInteractionEvent) {
+    suspend fun onButtonInteraction(event: ButtonInteractionEvent) {
         val name = event.componentId.split(':').firstOrNull()
         val commandClass = commandMap[name]
 
@@ -44,7 +53,7 @@ class ApplicationCommandListener(vararg val commands: ApplicationCommand) : List
         }
     }
 
-    override fun onModalInteraction(event: ModalInteractionEvent) {
+    suspend fun onModalInteraction(event: ModalInteractionEvent) {
         val name = event.modalId.split(':').firstOrNull()
         val commandClass = commandMap[name]
 

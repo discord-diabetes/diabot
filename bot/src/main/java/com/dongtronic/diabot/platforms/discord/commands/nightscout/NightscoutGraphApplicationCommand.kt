@@ -13,9 +13,7 @@ import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
 import dev.minn.jda.ktx.coroutines.await
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -37,7 +35,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
     private val logger = logger()
     private val cooldowns = mutableMapOf<String, Long>()
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val cooldownSeconds = getCooldown(event.user.id)
         if (cooldownSeconds != null) {
             val plural = if (abs(cooldownSeconds) != 1L) "s" else ""
@@ -56,31 +54,27 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
             return
         }
 
-        runBlocking {
-            launch {
-                try {
-                    val enabled = !event.isFromGuild ||
-                            GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
+        try {
+            val enabled = !event.isFromGuild ||
+                    GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
-                    if (!enabled) {
-                        event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
-                        return@launch
-                    }
+            if (!enabled) {
+                event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
+                return
+            }
 
-                    event.deferReply(false).queue()
+            event.deferReply(false).queue()
 
-                    val chart = getDataSet(event.user.id, hours).awaitSingle()
-                    val imageBytes = chart.getBitmapBytes(BitmapFormat.PNG)
-                    event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).submit().await()
-                    applyCooldown(event.user.id)
-                } catch (e: Exception) {
-                    logger.error("Error generating NS graph for ${event.user}")
-                    if (e is NightscoutFetchException) {
-                        event.hook.editOriginal(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO)).queue()
-                    } else {
-                        event.hook.editOriginal(NightscoutCommand.handleError(e)).queue()
-                    }
-                }
+            val chart = getDataSet(event.user.id, hours).awaitSingle()
+            val imageBytes = chart.getBitmapBytes(BitmapFormat.PNG)
+            event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).submit().await()
+            applyCooldown(event.user.id)
+        } catch (e: Exception) {
+            logger.error("Error generating NS graph for ${event.user}")
+            if (e is NightscoutFetchException) {
+                event.hook.editOriginal(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO)).queue()
+            } else {
+                event.hook.editOriginal(NightscoutCommand.handleError(e)).queue()
             }
         }
     }

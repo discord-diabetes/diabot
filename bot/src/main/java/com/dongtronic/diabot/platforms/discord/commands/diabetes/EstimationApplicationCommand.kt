@@ -33,7 +33,7 @@ class EstimationApplicationCommand : ApplicationCommand {
         )
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandName) {
             commandModeAverage -> estimateAverage(event)
             commandModeA1c -> estimateA1c(event)
