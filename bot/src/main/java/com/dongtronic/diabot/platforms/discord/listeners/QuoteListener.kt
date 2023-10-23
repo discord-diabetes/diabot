@@ -96,7 +96,8 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
             val cmd = fullCommand.split(' ', limit = 2)
 
             if (quoteCommand.isCommandFor(cmd[0])) {
-                if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = false)) return
+                // Only check if quotes are enabled for this guild (silently)
+                if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = false, checkQuoteLimit = false)) return
 
                 val arguments = cmd.getOrNull(1) ?: ""
                 val commandEvent = CommandEvent(event, ".", arguments, client)
