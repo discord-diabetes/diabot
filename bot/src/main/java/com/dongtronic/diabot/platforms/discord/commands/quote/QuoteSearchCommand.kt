@@ -27,7 +27,7 @@ class QuoteSearchCommand(category: Category, parent: QuoteCommand) : DiscordComm
     }
 
     override suspend fun executeSuspend(event: CommandEvent) {
-        if (!QuoteDAO.awaitCheckRestrictions(event.guildChannel, warnDisabledGuild = true)) return
+        if (!QuoteDAO.awaitCheckRestrictions(event.guildChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
 
         var args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toList()
 
