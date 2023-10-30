@@ -53,7 +53,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         this.guildOnly = false
         this.aliases = arrayOf("ns", "bg", "bs")
         this.examples = arrayOf(
-            "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
+                "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
                 "diabot ns @SomeUser#1234", "diabot ns public false"
         )
         this.children = arrayOf(
