@@ -492,7 +492,8 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 is HttpException -> {
                     if (ex.code() == 401) {
                         message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {
-                            "Could not authenticate to Nightscout. Please set an authentication token with `/nightscout set token <token>`"
+                            "Could not authenticate to Nightscout. Please set an authentication token with `/nightscout set token <token>`, " +
+                                    "or view our [setup guide](https://github.com/discord-diabetes/diabot/blob/main/docs/nightscout_setup.md)."
                         } else {
                             "Nightscout data is unreadable due to missing token."
                         }
