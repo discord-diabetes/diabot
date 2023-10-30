@@ -25,7 +25,7 @@ class ConversionApplicationCommand : ApplicationCommand {
                 )
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val glucoseNumber = event.getOption(commandArgGlucose)!!.asString
         val glucoseUnit = event.getOption(commandArgUnit)?.asString
 

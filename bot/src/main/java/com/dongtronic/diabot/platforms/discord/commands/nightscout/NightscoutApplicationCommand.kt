@@ -45,7 +45,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
     private val commandButtonDeleteConfirm = "nsdeleteyes".generateId()
     private val commandButtonDeleteCancel = "nsdeleteno".generateId()
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandGroup) {
             groupNameSet -> when (event.subcommandName) {
                 commandModeToken -> setToken(event)
@@ -70,7 +70,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
     }
 
-    override fun execute(event: ButtonInteractionEvent): Boolean {
+    override suspend fun execute(event: ButtonInteractionEvent): Boolean {
         when (event.componentId) {
             commandButtonDeleteConfirm -> deleteData(event)
             commandButtonDeleteCancel -> cancelDeleteData(event)

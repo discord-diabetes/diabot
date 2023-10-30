@@ -38,7 +38,7 @@ class SampleSubCommand(category: Category, parent: Command?) : DiscordCommand(ca
             this.aliases = arrayOf("l")
         }
 
-        override fun execute(event: CommandEvent?) {
+        override fun execute(event: CommandEvent) {
             // do a thing
         }
     }
@@ -53,7 +53,7 @@ class SampleSubCommand(category: Category, parent: Command?) : DiscordCommand(ca
             this.aliases = arrayOf("a")
         }
 
-        override fun execute(event: CommandEvent?) {
+        override fun execute(event: CommandEvent) {
             // do another thing
         }
     }
@@ -68,7 +68,7 @@ class SampleSubCommand(category: Category, parent: Command?) : DiscordCommand(ca
             this.aliases = arrayOf("remove", "d", "r")
         }
 
-        override fun execute(event: CommandEvent?) {
+        override fun execute(event: CommandEvent) {
             // do the third thing
         }
     }

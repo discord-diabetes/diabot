@@ -10,11 +10,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 interface ApplicationCommand {
     val commandName: String
 
-    fun execute(event: SlashCommandInteractionEvent)
+    suspend fun execute(event: SlashCommandInteractionEvent)
 
-    fun execute(event: ButtonInteractionEvent): Boolean = false
+    suspend fun execute(event: ButtonInteractionEvent): Boolean = false
 
-    fun execute(event: ModalInteractionEvent): Boolean = false
+    suspend fun execute(event: ModalInteractionEvent): Boolean = false
 
     fun config(): CommandData
 

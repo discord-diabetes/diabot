@@ -23,7 +23,7 @@ class AwyissApplicationCommand : ApplicationCommand {
                 .addOption(OptionType.BOOLEAN, commandArgSfw, "Safe for work", false)
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val stringValue = event.getOption(commandArgValue)!!.asString
         val sfwValue = event.getOption(commandArgSfw)?.asBoolean ?: true
 
