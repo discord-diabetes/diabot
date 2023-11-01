@@ -2,6 +2,7 @@ package com.dongtronic.diabot.platforms.discord.utils
 
 import com.dongtronic.diabot.submitMono
 import com.jagrosh.jdautilities.command.CommandEvent
+import dev.minn.jda.ktx.coroutines.await
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import reactor.core.publisher.Mono
@@ -21,6 +22,17 @@ object NicknameUtils {
                     .map { it.effectiveName }
                     .onErrorResume { fallback }
         } else {
+            fallback
+        }
+    }
+
+    suspend fun suspendDetermineDisplayName(event: CommandEvent, user: User): String {
+        val fallback = user.name
+
+        return try {
+            val member = event.guild.retrieveMember(user).await()
+            member.effectiveName
+        } catch (_: Exception) {
             fallback
         }
     }
