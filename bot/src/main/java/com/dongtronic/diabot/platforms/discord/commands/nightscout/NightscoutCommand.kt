@@ -79,7 +79,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
 
             addReactions(nsDTO, message)
 
-            logger.debug("Sent Nightscout embed: $message")
+            logger.debug("Sent Nightscout embed: {}", message)
         } catch (e: Exception) {
             event.reply(
                     if (e is NightscoutFetchException) {
