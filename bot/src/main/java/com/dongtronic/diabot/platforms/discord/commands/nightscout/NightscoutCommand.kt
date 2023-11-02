@@ -53,7 +53,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         this.guildOnly = false
         this.aliases = arrayOf("ns", "bg", "bs")
         this.examples = arrayOf(
-            "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
+                "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
                 "diabot ns @SomeUser#1234", "diabot ns public false"
         )
         this.children = arrayOf(
@@ -446,7 +446,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                     }
                 }
 
-                is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `diabot nightscout set <hostname>`"
+                is UnconfiguredNightscoutException -> "Please set your Nightscout hostname using `/nightscout set url <hostname>`"
                 is IllegalArgumentException -> "Error: ${ex.message}"
                 is InsufficientPermissionException -> {
                     logger.info("Couldn't reply with nightscout data due to missing permission: ${ex.permission}")
@@ -492,7 +492,8 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                 is HttpException -> {
                     if (ex.code() == 401) {
                         message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {
-                            "Could not authenticate to Nightscout. Please set an authentication token with `diabot nightscout token <token>`"
+                            "Could not authenticate to Nightscout. Please set an authentication token with `/nightscout set token <token>`, " +
+                                    "or view our [setup guide](https://github.com/discord-diabetes/diabot/blob/main/docs/nightscout_setup.md)."
                         } else {
                             "Nightscout data is unreadable due to missing token."
                         }
