@@ -30,6 +30,17 @@ fun CommandEvent.nameOf(user: User): String {
     return NicknameUtils.determineDisplayName(this, user).block()!!
 }
 
+/**
+ * Gets the display name of a [User].
+ *
+ * @receiver CommandEvent
+ * @param user The user to retrieve the display name of
+ * @return the display name of the given user
+ */
+suspend fun CommandEvent.suspendNameOf(user: User): String {
+    return NicknameUtils.suspendDetermineDisplayName(this, user)
+}
+
 fun <T> RestAction<T>.submitMono(): Mono<T> {
     return submit().toMono()
 }
