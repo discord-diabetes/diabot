@@ -14,7 +14,7 @@ We actively welcome your pull requests.
 
 # Commits
 
-For an extensive guide see https://chris.beams.io/posts/git-commit/. Here's a TL;DR:
+For an extensive guide see https://cbea.ms/git-commit/. Here's a TL;DR:
 
 1. Use imperative mood
 2. Use present tense
