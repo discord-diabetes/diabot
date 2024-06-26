@@ -26,7 +26,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
             this["cat-7307184_1280_trimmed.png"] = "nekomachines @ pixabay.com"
             this["dog-6012750_960_720_trimmed.png"] = "nekomachines @ pixabay.com"
             this["fluffy-6140194_960_720_trimmed.png"] = "nekomachines @ pixabay.com"
-
+            this["rat_20240625_720_720.png"] = "Luxlyn"
             this["dog-5188108_960_720_trimmed.png"] = "Edurs34 @ pixabay.com"
             this["cat-4475583_960_720_trimmed.png"] = "LimoncitoSketching @ pixabay.com"
             this["Project_20230323020209_trimmed.png"] = "nads"
