@@ -30,6 +30,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
             this["dog-5188108_960_720_trimmed.png"] = "Edurs34 @ pixabay.com"
             this["cat-4475583_960_720_trimmed.png"] = "LimoncitoSketching @ pixabay.com"
             this["Project_20230323020209_trimmed.png"] = "nads"
+            this["raccoon-dropped-their-pump-20240627-824x818.png"] = "DJ"
         }
 
         private const val creditsPrefix = "Image Credits: "
