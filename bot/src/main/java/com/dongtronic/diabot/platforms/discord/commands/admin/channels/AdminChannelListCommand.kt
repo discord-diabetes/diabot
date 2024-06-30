@@ -22,25 +22,25 @@ class AdminChannelListCommand(category: Category, parent: Command?) : DiscordCom
 
     override fun execute(event: CommandEvent) {
         ChannelDAO.instance.getChannels(event.guild.id)
-                .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.ADMIN) }
-                .mapNotNull { event.guild.getTextChannelById(it.channelId) }
-                .collectList()
-                .subscribe({ channels ->
-                    val builder = EmbedBuilder()
+            .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.ADMIN) }
+            .mapNotNull { event.guild.getTextChannelById(it.channelId) }
+            .collectList()
+            .subscribe({ channels ->
+                val builder = EmbedBuilder()
 
-                    builder.setTitle("Admin channels")
-                    if (channels.isEmpty()) {
-                        builder.setDescription("No admin channels are configured")
-                    } else {
-                        channels.forEach {
-                            builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
-                        }
+                builder.setTitle("Admin channels")
+                if (channels.isEmpty()) {
+                    builder.setDescription("No admin channels are configured")
+                } else {
+                    channels.forEach {
+                        builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
                     }
-                    event.reply(builder.build())
-                }, {
-                    val msg = "Could not access list of admin channels"
-                    logger.warn(msg + " for ${event.guild.id}", it)
-                    event.replyError(msg)
-                })
+                }
+                event.reply(builder.build())
+            }, {
+                val msg = "Could not access list of admin channels"
+                logger.warn(msg + " for ${event.guild.id}", it)
+                event.replyError(msg)
+            })
     }
 }

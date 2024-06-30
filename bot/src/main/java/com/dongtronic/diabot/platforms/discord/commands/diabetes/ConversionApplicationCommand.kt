@@ -17,12 +17,12 @@ class ConversionApplicationCommand : ApplicationCommand {
 
     override fun config(): CommandData {
         return Commands.slash(commandName, "Convert blood glucose values between mmol/L and mg/dL")
-                .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
-                .addOptions(
-                    OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
-                        .addChoice("mmol/L", "mmol/L")
-                        .addChoice("mg/dL", "mg/dL")
-                )
+            .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
+            .addOptions(
+                OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                    .addChoice("mmol/L", "mmol/L")
+                    .addChoice("mg/dL", "mg/dL")
+            )
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -30,12 +30,12 @@ class ConversionApplicationCommand : ApplicationCommand {
         val glucoseUnit = event.getOption(commandArgUnit)?.asString
 
         val result = BloodGlucoseConverter.convert(glucoseNumber, glucoseUnit)
-                .getOrElse {
-                    if (it is IllegalArgumentException) {
-                        event.reply("Could not convert: ${it.message}").queue()
-                    }
-                    return
+            .getOrElse {
+                if (it is IllegalArgumentException) {
+                    event.reply("Could not convert: ${it.message}").queue()
                 }
+                return
+            }
 
         val reply = when {
             result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
@@ -49,7 +49,7 @@ class ConversionApplicationCommand : ApplicationCommand {
                     ).joinToString(
                         "%n"
                     ),
-                            glucoseNumber, result.mmol, glucoseNumber, result.mgdl
+                    glucoseNumber, result.mmol, glucoseNumber, result.mgdl
                 )
             }
         }

@@ -30,13 +30,13 @@ class RewardMigrator {
         if (!needsMigration()) return
 
         getAllRewards().toFlux()
-                .flatMap { mongo.importReward(it) }
-                .map { it.wasAcknowledged() }
-                .onErrorContinue { t, u ->
-                    logger.warn("Could not import reward: $u", t)
-                }
-                .filter { it }
-                .blockLast()!!
+            .flatMap { mongo.importReward(it) }
+            .map { it.wasAcknowledged() }
+            .onErrorContinue { t, u ->
+                logger.warn("Could not import reward: $u", t)
+            }
+            .filter { it }
+            .blockLast()!!
     }
 
     /**
@@ -44,13 +44,13 @@ class RewardMigrator {
      */
     private fun getAllRewards(): List<RewardsDTO> {
         return jedis.keys("*:simplerewards")
-                // grab the guild ID only (before `:`)
-                .map { it.substringBefore(":") }
-                .toSet()
-                .flatMap { guildId ->
-                    val guildRewards = redis.getSimpleRewards(guildId)!!.toList()
-                    buildRewards(guildId, guildRewards)
-                }
+            // grab the guild ID only (before `:`)
+            .map { it.substringBefore(":") }
+            .toSet()
+            .flatMap { guildId ->
+                val guildRewards = redis.getSimpleRewards(guildId)!!.toList()
+                buildRewards(guildId, guildRewards)
+            }
     }
 
     /**

@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:Nightscout.kt$Nightscout$newestBg != null &amp;&amp; newestBg.delta == null || // Set delta if the original is zero and the pebble endpoint is providing non-zero delta newestBg?.delta?.original == 0.0 &amp;&amp; bgDelta.toDouble() != 0.0</ID>
+    <ID>SwallowedException:NightscoutDTO.kt$NightscoutDTO$e: NoNightscoutDataException</ID>
+  </CurrentIssues>
+</SmellBaseline>

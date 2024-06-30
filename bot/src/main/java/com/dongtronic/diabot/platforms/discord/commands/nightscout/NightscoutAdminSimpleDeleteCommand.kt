@@ -44,7 +44,7 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
 
                 val channelId = args[0]
                 event.guild.getTextChannelById(channelId)
-                        ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
+                    ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
             } else {
                 event.message.mentions.channels[0]
             }
@@ -52,13 +52,13 @@ class NightscoutAdminSimpleDeleteCommand(category: Category, parent: Command?) :
             logger.info("Removing channel ${channel.id} as short channel for ${event.guild.id}")
 
             ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, false)
-                    .subscribe({
-                        event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
-                    }, {
-                        val msg = "Could not remove channel ${channel.name} (${channel.id}) as short reply channel"
-                        logger.warn(msg, it)
-                        event.replyError(msg)
-                    })
+                .subscribe({
+                    event.replySuccess("Removed channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                }, {
+                    val msg = "Could not remove channel ${channel.name} (${channel.id}) as short reply channel"
+                    logger.warn(msg, it)
+                    event.replyError(msg)
+                })
         } catch (ex: Exception) {
             event.replyError(ex.message)
             return

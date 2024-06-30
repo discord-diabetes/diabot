@@ -21,15 +21,15 @@ class EstimationApplicationCommand : ApplicationCommand {
 
     override fun config(): CommandData {
         return Commands.slash(commandName, "Perform A1c and average glucose estimations").addSubcommands(
-                SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
-                        .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
-                        .addOptions(
-                                OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
-                                        .addChoice("mmol/L", "mmol/L")
-                                        .addChoice("mg/dL", "mg/dL")
-                        ),
-                SubcommandData(commandModeAverage, "Estimate average glucose from A1c")
-                        .addOption(OptionType.NUMBER, commandArgA1c, "A1c value", true)
+            SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
+                .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
+                .addOptions(
+                    OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
+                        .addChoice("mmol/L", "mmol/L")
+                        .addChoice("mg/dL", "mg/dL")
+                ),
+            SubcommandData(commandModeAverage, "Estimate average glucose from A1c")
+                .addOption(OptionType.NUMBER, commandArgA1c, "A1c value", true)
         )
     }
 
@@ -49,10 +49,10 @@ class EstimationApplicationCommand : ApplicationCommand {
         }
 
         event.reply(
-                String.format(
-                        "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
-                        result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
-                )
+            String.format(
+                "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
+                result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
+            )
         ).queue()
     }
 
@@ -61,33 +61,33 @@ class EstimationApplicationCommand : ApplicationCommand {
         val inputUnit = event.getOption(commandArgUnit)
 
         val result = A1cConverter.estimateA1c(inputNumber.asString, inputUnit?.asString)
-                .getOrElse {
-                    event.reply("Could not estimate A1c: ${it.message}").queue()
-                    return
-                }
+            .getOrElse {
+                event.reply("Could not estimate A1c: ${it.message}").queue()
+                return
+            }
 
         val message = when (result.original.inputUnit) {
             GlucoseUnit.MMOL ->
                 String.format(
                     "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
-                        result.original.mmol, result.dcct, result.ifcc
+                    result.original.mmol, result.dcct, result.ifcc
                 )
 
             GlucoseUnit.MGDL ->
                 String.format(
                     "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
-                        result.original.mgdl, result.dcct, result.ifcc
+                    result.original.mgdl, result.dcct, result.ifcc
                 )
 
             else -> {
                 String.format(
                     "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n",
-                        result.original.original, result.getDcct(GlucoseUnit.MGDL), result.getIfcc(GlucoseUnit.MGDL)
+                    result.original.original, result.getDcct(GlucoseUnit.MGDL), result.getIfcc(GlucoseUnit.MGDL)
                 ) +
-                        String.format(
-                            "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
-                                result.original.original, result.getDcct(GlucoseUnit.MMOL), result.getIfcc(GlucoseUnit.MMOL)
-                        )
+                    String.format(
+                        "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                        result.original.original, result.getDcct(GlucoseUnit.MMOL), result.getIfcc(GlucoseUnit.MMOL)
+                    )
             }
         }
 

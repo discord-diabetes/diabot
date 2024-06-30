@@ -17,9 +17,9 @@ class NightscoutAdminSimpleCommand(category: Category, parent: DiscordCommand) :
         this.examples = arrayOf("diabot nsadmin sc add <channel>", "diabot nsadmin sc list", "diabot nsadmin sc delete <channel>")
         this.userPermissions = arrayOf(Permission.MANAGE_CHANNEL)
         this.children = arrayOf(
-                NightscoutAdminSimpleListCommand(category, this),
-                NightscoutAdminSimpleAddCommand(category, this),
-                NightscoutAdminSimpleDeleteCommand(category, this)
+            NightscoutAdminSimpleListCommand(category, this),
+            NightscoutAdminSimpleAddCommand(category, this),
+            NightscoutAdminSimpleDeleteCommand(category, this)
         )
     }
 

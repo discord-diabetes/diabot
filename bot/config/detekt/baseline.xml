@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:NightscoutMigrator.kt$NightscoutMigrator$url == null &amp;&amp; token == null &amp;&amp; display.isEmpty() &amp;&amp; public.isEmpty()</ID>
+    <ID>ComplexMethod:NightscoutApplicationCommand.kt$NightscoutApplicationCommand$override suspend fun execute(event: SlashCommandInteractionEvent)</ID>
+    <ID>ComplexMethod:QuoteListener.kt$QuoteListener$@Suppress("CyclomaticComplexMethod", "ReturnCount") private suspend fun onMessageReactionAdd(event: MessageReactionAddEvent)</ID>
+    <ID>LongMethod:AboutCommand.kt$AboutCommand$override fun execute(event: CommandEvent)</ID>
+    <ID>LongMethod:QuoteImportCommand.kt$QuoteImportCommand$private fun parse(event: CommandEvent, args: String = event.args, message: Message = event.message)</ID>
+    <ID>LoopWithTooManyJumpStatements:HelpListener.kt$HelpListener$for (command in commands) { if (command.isHidden) { continue } val requiredPermissions = command.userPermissions if (requiredPermissions.isEmpty()) { allowedCommands.add(command) continue } var userPermissions: EnumSet&lt;Permission&gt; = Permission.getPermissions(Permission.ALL_PERMISSIONS) if (event.member != null) { userPermissions = event.member.permissions } var userIsAllowedToUseCommand = true for (requiredPermission in requiredPermissions) { if (!userPermissions.contains(requiredPermission)) { userIsAllowedToUseCommand = false } } if (userIsAllowedToUseCommand) { allowedCommands.add(command) } }</ID>
+    <ID>MemberNameEqualsClassName:Main.kt$Main$@Throws(LoginException::class) @JvmStatic fun main(args: Array&lt;String&gt;)</ID>
+    <ID>SwallowedException:HelpListener.kt$HelpListener$ex: IllegalStateException</ID>
+    <ID>ThrowsCount:NightscoutCommand.kt$NightscoutCommand$private suspend fun getUnstoredData(event: CommandEvent): NightscoutUserDTO</ID>
+    <ID>TooGenericExceptionThrown:Awyisser.kt$Awyisser$throw Exception("Could not find awyiss image link")</ID>
+    <ID>TooGenericExceptionThrown:NightscoutCommand.kt$NightscoutCommand$throw Exception("Could not determine Nightscout hostname")</ID>
+    <ID>UnusedPrivateMember:PatternsTest.kt$PatternsTest.Companion$@JvmStatic private fun inlineBgProvider()</ID>
+    <ID>UnusedPrivateMember:PatternsTest.kt$PatternsTest.Companion$@JvmStatic private fun unitBgProvider()</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -21,30 +21,30 @@ interface NightscoutService {
 
     @GET(NightscoutEndpoints.ENTRIES)
     fun getEntriesResponse(
-            @QueryMap
-            extraParams: Map<String, String> = emptyMap()
+        @QueryMap
+        extraParams: Map<String, String> = emptyMap()
     ): Mono<Response<ResponseBody>>
 
     @GET(NightscoutEndpoints.ENTRIES)
     fun getEntriesJson(
-            @Query("count")
-            count: Int = 1,
-            @QueryMap
-            extraParams: Map<String, String> = emptyMap()
+        @Query("count")
+        count: Int = 1,
+        @QueryMap
+        extraParams: Map<String, String> = emptyMap()
     ): Mono<JsonNode>
 
     @GET(NightscoutEndpoints.ENTRIES)
     fun getEntriesJson(
-            @QueryMap
-            extraParams: Map<String, String> = emptyMap()
+        @QueryMap
+        extraParams: Map<String, String> = emptyMap()
     ): Mono<JsonNode>
 
     @Headers("Accept: application/json")
     @GET(NightscoutEndpoints.ENTRIES_SPEC)
     fun getEntriesSpecJson(
-            @Path("spec")
-            spec: String = "",
-            @Query("count")
-            count: Int = 1
+        @Path("spec")
+        spec: String = "",
+        @Query("count")
+        count: Int = 1
     ): Mono<JsonNode>
 }

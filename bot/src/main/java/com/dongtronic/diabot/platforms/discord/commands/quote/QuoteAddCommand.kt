@@ -51,13 +51,13 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
         }
 
         val quoteDto = QuoteDTO(
-                guildId = event.guild.id,
-                channelId = event.channel.id,
-                author = author,
-                authorId = authorId.toString(),
-                quoterId = event.author.id,
-                message = message,
-                messageId = event.message.id
+            guildId = event.guild.id,
+            channelId = event.channel.id,
+            author = author,
+            authorId = authorId.toString(),
+            quoterId = event.author.id,
+            message = message,
+            messageId = event.message.id
         )
 
         try {
@@ -80,9 +80,9 @@ class QuoteAddCommand(category: Category, parent: QuoteCommand) : DiscordCommand
          */
         fun createAddedMessage(quoterMention: String, quoteId: String, jumpUrl: String? = null): MessageCreateData {
             val msg = MessageCreateBuilder()
-                    // mentions are used here solely for identifying who created the quote, so don't ping for it
-                    .setAllowedMentions(emptyList())
-                    .addContent("New quote added by $quoterMention as #$quoteId")
+                // mentions are used here solely for identifying who created the quote, so don't ping for it
+                .setAllowedMentions(emptyList())
+                .addContent("New quote added by $quoterMention as #$quoteId")
 
             if (jumpUrl != null) {
                 msg.addContent(" (<$jumpUrl>)")

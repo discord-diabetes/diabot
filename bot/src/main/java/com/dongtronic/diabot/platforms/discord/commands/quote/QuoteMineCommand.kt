@@ -24,12 +24,12 @@ class QuoteMineCommand(category: Category, parent: QuoteCommand) : DiscordComman
         if (!QuoteDAO.checkRestrictions(event.guildChannel, warnDisabledGuild = true, checkQuoteLimit = false)) return
 
         QuoteDAO.getInstance().getQuotes(event.guild.id, QuoteDTO::authorId eq event.member.id)
-                .collectList().subscribe(
-                        {
-                            event.reply(createEmbed(event.author.name, it))
-                        }, {
-                    logger.info("Error finding all quotes for " + event.author.asTag)
-                })
+            .collectList().subscribe(
+                {
+                    event.reply(createEmbed(event.author.name, it))
+                }, {
+                logger.info("Error finding all quotes for " + event.author.name)
+            })
     }
 
     private fun createEmbed(author: String, quoteDTOs: List<QuoteDTO>): MessageEmbed {

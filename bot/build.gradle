@@ -10,12 +10,12 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
     // Parsing
-    implementation "com.rometools:rome:${romeVersion}"
+//    implementation "com.rometools:rome:${romeVersion}"
     implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // Apache Commons
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
-    implementation "commons-configuration:commons-configuration:${commonsConfigurationVersion}"
+    implementation "org.apache.commons:commons-configuration2:${commonsConfigurationVersion}"
 
     // Networking
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"

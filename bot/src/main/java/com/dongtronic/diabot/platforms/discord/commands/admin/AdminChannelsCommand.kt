@@ -22,9 +22,9 @@ class AdminChannelsCommand(category: Category, parent: Command?) : DiscordComman
         this.aliases = arrayOf("c")
         this.examples = arrayOf("diabot admin channels add <channel>", "diabot admin channels delete <channel>", "diabot admin channels list")
         this.children = arrayOf(
-                AdminChannelAddCommand(category, this),
-                AdminChannelDeleteCommand(category, this),
-                AdminChannelListCommand(category, this)
+            AdminChannelAddCommand(category, this),
+            AdminChannelDeleteCommand(category, this),
+            AdminChannelListCommand(category, this)
         )
     }
 

@@ -19,10 +19,10 @@ class MigrationManager {
         driver.changeLogRepositoryName = "mongock-changelog"
         driver.lockRepositoryName = "mongock-lock"
         MongockStandalone.builder()
-                .setDriver(driver)
-                .addChangeLogsScanPackage("com.dongtronic.diabot.data.migration")
-                .buildRunner()
-                .execute()
+            .setDriver(driver)
+            .addChangeLogsScanPackage("com.dongtronic.diabot.data.migration")
+            .buildRunner()
+            .execute()
     }
 
     companion object {

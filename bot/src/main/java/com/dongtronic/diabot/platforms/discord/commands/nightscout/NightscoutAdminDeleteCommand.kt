@@ -47,7 +47,7 @@ class NightscoutAdminDeleteCommand(category: Category, parent: Command?) : Disco
                 val userId = args[0]
                 // this can be left unisolated because this is an owner-only command
                 event.jda.getUserById(userId)
-                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+                    ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentions.users[0]
             }
@@ -57,19 +57,20 @@ class NightscoutAdminDeleteCommand(category: Category, parent: Command?) : Disco
             logger.info("Deleting Nightscout URL for user $userId [requested by ${event.author.name}]")
 
             NightscoutDAO.instance.deleteUser(user.id, NightscoutUserDTO::url)
-                    .ofType(UpdateResult::class.java)
-                    .subscribe({
-                        if (it.modifiedCount == 0L) {
-                            event.reply("User **${event.nameOf(user)}** (`$userId`) does not have a Nightscout URL configured")
-                        } else {
-                            event.replySuccess("Deleted Nightscout URL for user **${event.nameOf(user)}** (`$userId`)")
-                        }
-                    }, {
-                        val msg = "Could not delete Nightscout URL ${event.nameOf(user)} (`$userId`)"
-                        logger.warn(msg, it)
-                        event.replyError(msg)
-                    })
+                .ofType(UpdateResult::class.java)
+                .subscribe({
+                    if (it.modifiedCount == 0L) {
+                        event.reply("User **${event.nameOf(user)}** (`$userId`) does not have a Nightscout URL configured")
+                    } else {
+                        event.replySuccess("Deleted Nightscout URL for user **${event.nameOf(user)}** (`$userId`)")
+                    }
+                }, {
+                    val msg = "Could not delete Nightscout URL ${event.nameOf(user)} (`$userId`)"
+                    logger.warn(msg, it)
+                    event.replyError(msg)
+                })
         } catch (ex: NullPointerException) {
+            logger.warn("Encountered NullPointerException while attempting to delete nightscout data", ex)
             event.replyError("Invalid user ID provided")
         } catch (ex: IllegalArgumentException) {
             event.replyError(ex.message)

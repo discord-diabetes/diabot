@@ -15,7 +15,7 @@ import reactor.kotlin.core.publisher.toMono
 class GraphDisableDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<GraphDisableDTO> =
-            mongo.getCollection(DiabotCollection.GRAPH_DISABLE.getEnv(), GraphDisableDTO::class.java)
+        mongo.getCollection(DiabotCollection.GRAPH_DISABLE.getEnv(), GraphDisableDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -23,8 +23,8 @@ class GraphDisableDAO private constructor() {
         // Create a unique index
         val options = IndexOptions().unique(true)
         collection.createIndex(descending(GraphDisableDTO::guildId), options).toMono()
-                .subscribeOn(scheduler)
-                .subscribe()
+            .subscribeOn(scheduler)
+            .subscribe()
     }
 
     /**
@@ -34,12 +34,12 @@ class GraphDisableDAO private constructor() {
      * @return If graphs are enabled for the given guild
      */
     fun getGraphEnabled(guildId: String): Mono<Boolean> =
-            collection.find(GraphDisableDTO::guildId eq guildId)
-                    .toMono()
-                    .hasElement()
-                    // present element means graphs are disabled, so we must flip it
-                    .map { !it }
-                    .subscribeOn(scheduler)
+        collection.find(GraphDisableDTO::guildId eq guildId)
+            .toMono()
+            .hasElement()
+            // present element means graphs are disabled, so we must flip it
+            .map { !it }
+            .subscribeOn(scheduler)
 
     /**
      * Changes the graph enabled setting.
@@ -50,11 +50,11 @@ class GraphDisableDAO private constructor() {
      */
     fun changeGraphEnabled(guildId: String, enabled: Boolean? = null): Mono<Boolean> {
         val filter = GraphDisableDTO::guildId eq guildId
-        val desiredSetting = enabled?.toMono()
-                // invert the current graph setting as the desired setting to toggle it
-                ?: getGraphEnabled(guildId).map { !it }
+        val desiredSettings = enabled?.toMono()
+            // invert the current graph setting as the desired setting to toggle it
+            ?: getGraphEnabled(guildId).map { !it }
 
-        val update = desiredSetting.flatMap { desiredSetting ->
+        val update = desiredSettings.flatMap { desiredSetting ->
             if (desiredSetting) {
                 collection.deleteOne(filter).toMono()
             } else {

@@ -33,7 +33,7 @@ class AdminRewardDeleteCommand(category: Category, parent: Command?) : DiscordCo
 
                 val roleId = args[0]
                 event.guild.getRoleById(roleId)
-                        ?: throw IllegalArgumentException("Role `$roleId` does not exist")
+                    ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
                 event.message.mentions.roles[0]
             }
@@ -47,7 +47,7 @@ class AdminRewardDeleteCommand(category: Category, parent: Command?) : DiscordCo
 
                 val roleId = args[1]
                 event.guild.getRoleById(roleId)
-                        ?: throw IllegalArgumentException("Role `$roleId` does not exist")
+                    ?: throw IllegalArgumentException("Role `$roleId` does not exist")
             } else {
                 event.message.mentions.roles[1]
             }

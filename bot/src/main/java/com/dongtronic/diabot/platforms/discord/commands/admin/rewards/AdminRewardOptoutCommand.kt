@@ -34,7 +34,7 @@ class AdminRewardOptoutCommand(category: Category, parent: Command?) : DiscordCo
 
                 val userId = args[0]
                 event.guild.getMemberById(userId)?.user
-                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+                    ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentions.users[0]
             }
@@ -42,10 +42,10 @@ class AdminRewardOptoutCommand(category: Category, parent: Command?) : DiscordCo
             val guildId = event.guild.id
 
             RewardsDAO.instance.changeOpt(guildId, user.id, true).subscribe({
-                logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards, $it")
+                logger.info("User ${user.name} (${user.id}) opted out of rewards, $it")
                 event.reply("User ${event.nameOf(user)} opted out of rewards")
             }, {
-                logger.warn("Error while opting user ${user.name}#${user.discriminator} (${user.id}) out of rewards", it)
+                logger.warn("Error while opting user ${user.name} (${user.id}) out of rewards", it)
                 event.replyError("Could not opt user ${event.nameOf(user)} out of rewards")
             })
         } catch (ex: IllegalArgumentException) {

@@ -25,10 +25,10 @@ class RewardsOptInCommand(category: Category, parent: Command) : DiscordCommand(
         val user = event.author
 
         RewardsDAO.instance.changeOpt(guildId, user.id, false).subscribe({
-            logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted in to rewards, $it")
+            logger.info("User ${user.name} (${user.id}) opted in to rewards, $it")
             event.reply("User ${event.nameOf(user)} opted in to rewards")
         }, {
-            logger.warn("Error while opting user ${user.name}#${user.discriminator} (${user.id}) in to rewards", it)
+            logger.warn("Error while opting user ${user.name} (${user.id}) in to rewards", it)
             event.replyError("Could not opt user ${event.nameOf(user)} in to rewards")
         })
     }

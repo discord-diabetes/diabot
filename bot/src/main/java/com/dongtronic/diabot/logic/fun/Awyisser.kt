@@ -24,9 +24,9 @@ object Awyisser {
         val mediaType = "application/json".toMediaType()
 
         val request = Request.Builder()
-                .url(url)
-                .post(jsonRequest.toRequestBody(mediaType))
-                .build()
+            .url(url)
+            .post(jsonRequest.toRequestBody(mediaType))
+            .build()
 
         return Mono.fromCallable {
             httpClient.newCall(request).execute()
@@ -37,7 +37,7 @@ object Awyisser {
                     val json = jacksonObjectMapper().readTree(body)
 
                     json.get("image")?.textValue()
-                            ?: throw Exception("Could not find awyiss image link")
+                        ?: throw Exception("Could not find awyiss image link")
                 } else {
                     throw RequestStatusException(it.code)
                 }

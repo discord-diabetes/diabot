@@ -32,15 +32,15 @@ class ConvertCommand(category: Category) : DiscordCommand(category, null) {
             val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
             val result = BloodGlucoseConverter.convert(args[0], args.getOrNull(1))
-                    .getOrElse {
-                        if (it is IllegalArgumentException) {
-                            // Ignored on purpose
-                            logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
-                        } else if (it is UnknownUnitException) {
-                            event.replyError("I don't know how to convert from " + args[1])
-                        }
-                        return
+                .getOrElse {
+                    if (it is IllegalArgumentException) {
+                        // Ignored on purpose
+                        logger.warn("IllegalArgumentException occurred but was ignored in BG conversion")
+                    } else if (it is UnknownUnitException) {
+                        event.replyError("I don't know how to convert from " + args[1])
                     }
+                    return
+                }
 
             val reply = when {
                 result.inputUnit === GlucoseUnit.MMOL -> String.format("%s mmol/L is %s mg/dL", result.mmol, result.mgdl)
@@ -54,7 +54,7 @@ class ConvertCommand(category: Category) : DiscordCommand(category, null) {
                         ).joinToString(
                             "%n"
                         ),
-                                args[0], result.mmol, args[0], result.mgdl
+                        args[0], result.mmol, args[0], result.mgdl
                     )
                 }
             }

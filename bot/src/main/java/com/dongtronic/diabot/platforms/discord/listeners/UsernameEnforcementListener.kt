@@ -54,14 +54,14 @@ class UsernameEnforcementListener : ListenerAdapter() {
             event is GuildMemberUpdateNicknameEvent ->
                 "You just changed your username in **${event.guild.name}** to $username. \n" +
                     "However, your new username does not match our naming rules. Please update your username to " +
-                        "something that matches these rules: \n" +
+                    "something that matches these rules: \n" +
                     rules.hintMessage
 
             event is GuildMemberJoinEvent ->
                 "Thank you for joining **${event.guild.name}**. \n" +
                     "We have some guidelines regarding usernames so everyone can easily type your name. " +
                     "Unfortunately, your current nickname does not match our guidelines. Please update your username to" +
-                        " something that matches these rules: \n" +
+                    " something that matches these rules: \n" +
                     rules.hintMessage
 
             else -> "Thank you for joining **${event.guild.name}**"

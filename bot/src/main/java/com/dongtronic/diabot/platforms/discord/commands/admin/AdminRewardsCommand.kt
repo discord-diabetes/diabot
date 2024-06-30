@@ -20,12 +20,12 @@ class AdminRewardsCommand(category: Category, parent: Command?) : DiscordCommand
         this.examples = arrayOf("diabot admin rewards list", "diabot admin rewards add <required role> <reward role>")
         this.userPermissions = arrayOf(Permission.MANAGE_ROLES)
         this.children = arrayOf(
-                AdminRewardAddCommand(category, this),
-                AdminRewardDeleteCommand(category, this),
-                AdminRewardListCommand(category, this),
-                AdminRewardOptinCommand(category, this),
-                AdminRewardOptoutCommand(category, this),
-                AdminRewardListOptoutsCommand(category, this)
+            AdminRewardAddCommand(category, this),
+            AdminRewardDeleteCommand(category, this),
+            AdminRewardListCommand(category, this),
+            AdminRewardOptinCommand(category, this),
+            AdminRewardOptoutCommand(category, this),
+            AdminRewardListOptoutsCommand(category, this)
         )
     }
 

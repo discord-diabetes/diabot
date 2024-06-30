@@ -58,15 +58,15 @@ class QuoteListener(private val client: CommandClient) : CoroutineEventListener 
 
         val quote = try {
             QuoteDAO.getInstance().addQuote(
-                    QuoteDTO(
-                            guildId = event.guild.id,
-                            channelId = event.guildChannel.id,
-                            author = message.author.name,
-                            authorId = message.author.id,
-                            quoterId = reactor.id,
-                            message = message.contentRaw,
-                            messageId = message.id
-                    )
+                QuoteDTO(
+                    guildId = event.guild.id,
+                    channelId = event.guildChannel.id,
+                    author = message.author.name,
+                    authorId = message.author.id,
+                    quoterId = reactor.id,
+                    message = message.contentRaw,
+                    messageId = message.id
+                )
             ).awaitFirstOrNull()
         } catch (_: Exception) {
             null

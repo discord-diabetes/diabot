@@ -41,10 +41,10 @@ class QuoteEditCommand(category: Category, parent: Command) : DiscordCommand(cat
 
         oldQuote.flatMap {
             val dto = it.copy(
-                    author = author,
-                    message = message,
-                    messageId = event.message.id,
-                    channelId = event.channel.id
+                author = author,
+                message = message,
+                messageId = event.message.id,
+                channelId = event.channel.id
             )
             QuoteDAO.getInstance().updateQuote(dto)
         }.subscribe({

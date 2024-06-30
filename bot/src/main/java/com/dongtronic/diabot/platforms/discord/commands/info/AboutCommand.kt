@@ -5,15 +5,14 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.exceptions.AccountTypeException
 import java.awt.Color
 
 class AboutCommand(
-        category: Category,
-        private val color: Color,
-        private val description: String,
-        private val features: Array<String>,
-        private val perms: Array<Permission>
+    category: Category,
+    private val color: Color,
+    private val description: String,
+    private val features: Array<String>,
+    private val perms: Array<Permission>
 ) : DiscordCommand(category, null) {
     private val replacementIcon = "+"
     private var oauthLink: String? = null
@@ -34,8 +33,8 @@ class AboutCommand(
                     info.setRequiredScopes("applications.commands")
                     info.getInviteUrl(*perms)
                 } else ""
-            } catch (e: AccountTypeException) {
-                logger.warn("Logged in as normal user", e)
+            } catch (e: Exception) {
+                logger.warn("Encountered exception while generating bot invite link", e)
                 ""
             }
         }
@@ -65,14 +64,14 @@ class AboutCommand(
         }
 
         val description = StringBuilder()
-                .append("Hello! I am **${event.selfUser.name}**, ")
-                .append("$description.")
-                .append("\nI was written in Kotlin by **$author**")
-                .append(" using Chew's [JDA-Utilities fork](https://github.com/Chew/JDA-Chewtils)")
-                .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
-                .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
-                .append(" $inviteMessage.")
-                .append("\n\nSome of my features include: ```css")
+            .append("Hello! I am **${event.selfUser.name}**, ")
+            .append("$description.")
+            .append("\nI was written in Kotlin by **$author**")
+            .append(" using Chew's [JDA-Utilities fork](https://github.com/Chew/JDA-Chewtils)")
+            .append(" and the [JDA library](https://github.com/DV8FromTheWorld/JDA).")
+            .append("\nType `${event.client.textualPrefix}${event.client.helpWord}` to see my commands!")
+            .append(" $inviteMessage.")
+            .append("\n\nSome of my features include: ```css")
 
         for (feature in features) {
             description.append("\n")

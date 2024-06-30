@@ -24,10 +24,10 @@ class RewardsOptOutCommand(category: Category, parent: Command) : DiscordCommand
 
         val user = event.author
         RewardsDAO.instance.changeOpt(guildId, user.id, true).subscribe({
-            logger.info("User ${user.name}#${user.discriminator} (${user.id}) opted out of rewards, $it")
+            logger.info("User ${user.name} (${user.id}) opted out of rewards, $it")
             event.reply("User ${event.nameOf(user)} opted out of rewards")
         }, {
-            logger.warn("Error while opting user ${user.name}#${user.discriminator} (${user.id}) out of rewards", it)
+            logger.warn("Error while opting user ${user.name} (${user.id}) out of rewards", it)
             event.replyError("Could not opt user ${event.nameOf(user)} out of rewards")
         })
     }

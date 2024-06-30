@@ -31,27 +31,27 @@ class NightscoutAdminSimpleListCommand(category: Category, parent: Command?) : D
 
     private fun runCommand(event: CommandEvent) {
         ChannelDAO.instance.getChannels(event.guild.id)
-                .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT) }
-                .mapNotNull { event.guild.getTextChannelById(it.channelId) }
-                .collectList()
-                .subscribe({ channels ->
-                    val builder = EmbedBuilder()
+            .filter { it.attributes.contains(ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT) }
+            .mapNotNull { event.guild.getTextChannelById(it.channelId) }
+            .collectList()
+            .subscribe({ channels ->
+                val builder = EmbedBuilder()
 
-                    builder.setTitle("Short Nightscout channels")
+                builder.setTitle("Short Nightscout channels")
 
-                    if (channels.isEmpty()) {
-                        builder.setDescription("No short channels are configured")
-                    } else {
-                        channels.forEach {
-                            builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
-                        }
+                if (channels.isEmpty()) {
+                    builder.setDescription("No short channels are configured")
+                } else {
+                    channels.forEach {
+                        builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
                     }
+                }
 
-                    event.reply(builder.build())
-                }, {
-                    val msg = "Could not access list of short Nightscout channels"
-                    logger.warn(msg + " for ${event.guild.id}", it)
-                    event.replyError(msg)
-                })
+                event.reply(builder.build())
+            }, {
+                val msg = "Could not access list of short Nightscout channels"
+                logger.warn(msg + " for ${event.guild.id}", it)
+                event.replyError(msg)
+            })
     }
 }

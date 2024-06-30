@@ -17,7 +17,7 @@ object A1cConverter {
      */
     fun estimateA1c(originalValue: String, unit: String?): Result<A1cDTO> {
         val glucoseConversionResult = BloodGlucoseConverter.convert(originalValue, unit)
-                .getOrElse { return Result.failure(it) }
+            .getOrElse { return Result.failure(it) }
 
         return Result.success(estimateA1c(glucoseConversionResult))
     }
@@ -48,7 +48,7 @@ object A1cConverter {
         val ifcc = convertDcctToIfcc(dcct)
 
         val conversion = BloodGlucoseConverter.convert(mgdl.toString(), "mgdl")
-                .getOrElse { return Result.failure(it) }
+            .getOrElse { return Result.failure(it) }
 
         return Result.success(A1cDTO(conversion, dcct, ifcc, 0.0, 0.0))
     }
@@ -58,7 +58,7 @@ object A1cConverter {
         val dcct = convertIfccToDcct(ifcc)
 
         val conversion = BloodGlucoseConverter.convert(mgdl.toString(), "mgdl")
-                .getOrElse { return Result.failure(it) }
+            .getOrElse { return Result.failure(it) }
 
         return Result.success(A1cDTO(conversion, dcct, ifcc, 0.0, 0.0))
     }

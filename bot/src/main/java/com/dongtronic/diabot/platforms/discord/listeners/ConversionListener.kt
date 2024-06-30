@@ -48,14 +48,14 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
         }
 
         val sortedMatches = unitMatches
-                .plus(inlineMatches)
-                .take(MAX_MATCHES)
-                .filter { it.groups["value"] != null }
-                .sortedBy { it.range.first }
-                .distinctBy {
-                    val pair = getNumberUnit(it)
-                    pair.first + pair.second
-                }
+            .plus(inlineMatches)
+            .take(MAX_MATCHES)
+            .filter { it.groups["value"] != null }
+            .sortedBy { it.range.first }
+            .distinctBy {
+                val pair = getNumberUnit(it)
+                pair.first + pair.second
+            }
 
         val multipleMatches = sortedMatches.count() > 1
 
@@ -68,15 +68,15 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
 
     private fun getResult(
         originalNumString: String,
-                          originalUnitString: String?,
-                          event: MessageReceivedEvent,
-                          multipleMatches: Boolean = false
+        originalUnitString: String?,
+        event: MessageReceivedEvent,
+        multipleMatches: Boolean = false
     ): String {
         val separator = if (multipleMatches) "─ " else ""
         val numberString = originalNumString.replace(',', '.')
 
         val result: ConversionDTO = BloodGlucoseConverter.convert(numberString, originalUnitString)
-                .getOrElse { return "" }
+            .getOrElse { return "" }
 
         BloodGlucoseConverter.getReactions(result).forEach {
             event.message.addReaction(Emoji.fromUnicode(it)).queue()
@@ -87,11 +87,11 @@ class ConversionListener(private val prefix: String) : ListenerAdapter() {
             result.inputUnit === GlucoseUnit.MGDL -> String.format("$separator%s mg/dL is %s mmol/L", result.mgdl, result.mmol)
             else -> {
                 val reply = arrayOf(
-                        "$separator*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
-                        "┌%s mg/dL is **%s mmol/L**",
-                        "└%s mmol/L is **%s mg/dL**"
+                    "$separator*I'm not sure if you gave me mmol/L or mg/dL, so I'll give you both.*",
+                    "┌%s mg/dL is **%s mmol/L**",
+                    "└%s mmol/L is **%s mg/dL**"
                 ).joinToString(
-                        "%n"
+                    "%n"
                 )
 
                 String.format(reply, numberString, result.mmol, numberString, result.mgdl)

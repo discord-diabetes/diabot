@@ -37,30 +37,30 @@ class NightscoutMigrator {
 
             // if all of their data is empty then skip them
             if (url == null
-                    && token == null
-                    && display.isEmpty()
-                    && public.isEmpty()
+                && token == null
+                && display.isEmpty()
+                && public.isEmpty()
             ) {
                 return@mapNotNull null
             }
 
             NightscoutUserDTO(
-                    userId = userId,
-                    url = url,
-                    token = token,
-                    displayOptions = display,
-                    publicGuilds = public
+                userId = userId,
+                url = url,
+                token = token,
+                displayOptions = display,
+                publicGuilds = public
             )
         }
 
         dtos.toFlux()
-                .flatMap { mongo.addUser(it) }
-                .map { it.wasAcknowledged() }
-                .onErrorContinue { t, u ->
-                    logger.warn("Could not import nightscout: $u", t)
-                }
-                .filter { it }
-                .blockLast()!!
+            .flatMap { mongo.addUser(it) }
+            .map { it.wasAcknowledged() }
+            .onErrorContinue { t, u ->
+                logger.warn("Could not import nightscout: $u", t)
+            }
+            .filter { it }
+            .blockLast()!!
     }
 
     /**
@@ -68,8 +68,8 @@ class NightscoutMigrator {
      */
     private fun getPublicGuilds(userId: String): Set<String> {
         return jedis.keys("$userId:*:nightscoutpublic")
-                .map { it.split(":")[1] }
-                .toSet()
+            .map { it.split(":")[1] }
+            .toSet()
     }
 
     /**
@@ -77,7 +77,7 @@ class NightscoutMigrator {
      */
     private fun getAllUids(): Set<String> {
         return jedis.keys("*:nightscout*")
-                .map { it.substringBefore(":") }
-                .toSet()
+            .map { it.substringBefore(":") }
+            .toSet()
     }
 }

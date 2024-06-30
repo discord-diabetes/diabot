@@ -28,51 +28,51 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
         if (token != null) {
             client.interceptors().add(
                 Interceptor {
-                // adds the auth token to the parameters
-                val newUrl = it.request()
+                    // adds the auth token to the parameters
+                    val newUrl = it.request()
                         .url
                         .newBuilder()
                         .addQueryParameter("token", token)
                         .build()
 
-                val newRequest = it.request()
+                    val newRequest = it.request()
                         .newBuilder()
                         .url(newUrl)
                         .build()
 
-                return@Interceptor it.proceed(newRequest)
-            }
+                    return@Interceptor it.proceed(newRequest)
+                }
             )
         }
 
         client.interceptors().add(
             Interceptor { chain ->
-            // provide cached responses / cache network responses
-            val request = chain.request()
+                // provide cached responses / cache network responses
+                val request = chain.request()
 
-            return@Interceptor responseCache[request.toString()].let { cached ->
-                if (cached == null) {
-                    logger.debug("Performing network request for endpoint ${request.url.encodedPath}")
-                    val networkResponse = chain.proceed(request)
-                    val body = networkResponse.peekBody(1024L * 1024L)
-                    responseCache[request.toString()] = networkResponse.newBuilder().body(body)
-                    networkResponse
-                } else {
-                    logger.debug("Providing cached response for endpoint ${request.url.encodedPath}")
-                    cached.build()
+                return@Interceptor responseCache[request.toString()].let { cached ->
+                    if (cached == null) {
+                        logger.debug("Performing network request for endpoint ${request.url.encodedPath}")
+                        val networkResponse = chain.proceed(request)
+                        val body = networkResponse.peekBody(1024L * 1024L)
+                        responseCache[request.toString()] = networkResponse.newBuilder().body(body)
+                        networkResponse
+                    } else {
+                        logger.debug("Providing cached response for endpoint ${request.url.encodedPath}")
+                        cached.build()
+                    }
                 }
             }
-        }
         )
 
         httpClient = client.build()
         service = Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .client(httpClient)
-                .addCallAdapterFactory(ReactorCallAdapterFactory.create())
-                .addConverterFactory(JacksonConverterFactory.create(jacksonObjectMapper()))
-                .build()
-                .create(NightscoutService::class.java)
+            .baseUrl(baseUrl)
+            .client(httpClient)
+            .addCallAdapterFactory(ReactorCallAdapterFactory.create())
+            .addConverterFactory(JacksonConverterFactory.create(jacksonObjectMapper()))
+            .build()
+            .create(NightscoutService::class.java)
     }
 
     /**
@@ -114,13 +114,13 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             val high = ranges.path("bgHigh").asInt()
 
             return@map dto.newBuilder()
-                    .title(title)
-                    .low(low)
-                    .bottom(bottom)
-                    .top(top)
-                    .high(high)
-                    .units(units)
-                    .build()
+                .title(title)
+                .low(low)
+                .bottom(bottom)
+                .top(top)
+                .high(high)
+                .units(units)
+                .build()
         }
     }
 
@@ -151,8 +151,8 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
             }
             val newestBg = dto.getNewestEntryOrNull()
             if (newestBg != null && newestBg.delta == null ||
-                    // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
-                    newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0
+                // Set delta if the original is zero and the pebble endpoint is providing non-zero delta
+                newestBg?.delta?.original == 0.0 && bgDelta.toDouble() != 0.0
             ) {
                 val bgBuilder = newestBg.newBuilder()
                 BloodGlucoseConverter.convert(bgDelta, dto.units).onSuccess {
@@ -173,9 +173,9 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      */
     fun getRecentSgv(dto: NightscoutDTO = NightscoutDTO(), count: Int = 1): Mono<NightscoutDTO> {
         val findParam = EntriesParameters()
-                .find("sgv", operator = MongoOperator.exists)
-                .count(count)
-                .toMap()
+            .find("sgv", operator = MongoOperator.exists)
+            .count(count)
+            .toMap()
         return getSgv(dto, findParam)
     }
 
@@ -189,9 +189,9 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
      * @return The [NightscoutDTO] instance with glucose data (sgv, timestamp, trend, delta)
      */
     fun getSgv(
-            dto: NightscoutDTO = NightscoutDTO(),
-            params: Map<String, String> = emptyMap(),
-            throwOnConversion: Boolean = true,
+        dto: NightscoutDTO = NightscoutDTO(),
+        params: Map<String, String> = emptyMap(),
+        throwOnConversion: Boolean = true,
     ): Mono<NightscoutDTO> {
         return service.getEntriesJson(params).map { json ->
             if (json.isEmpty) {
@@ -231,12 +231,12 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
 
                 bgBuilder.glucose(
                     BloodGlucoseConverter.convert(sgv, "mg").getOrElse {
-                    if (throwOnConversion) {
-                        throw it
-                    } else {
-                        return@forEach
+                        if (throwOnConversion) {
+                            throw it
+                        } else {
+                            return@forEach
+                        }
                     }
-                }
                 )
                 bgBuilder.dateTime(Instant.ofEpochMilli(timestamp))
                 bgBuilder.trend(trend)

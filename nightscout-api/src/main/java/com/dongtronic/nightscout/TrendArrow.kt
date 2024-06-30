@@ -20,12 +20,12 @@ enum class TrendArrow(val unicode: String = "") {
             val sanitised = name.uppercase().replace(' ', '_')
 
             return values().firstOrNull { it.name == sanitised }
-                    ?: throw IllegalArgumentException("Unknown direction $name")
+                ?: throw IllegalArgumentException("Unknown direction $name")
         }
 
         fun getTrend(trend: Int): TrendArrow {
             return values().firstOrNull { it.ordinal == trend }
-                    ?: throw IllegalArgumentException("Unknown trend $trend")
+                ?: throw IllegalArgumentException("Unknown trend $trend")
         }
     }
 }

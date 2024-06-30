@@ -26,8 +26,8 @@ class NightscoutDAO private constructor() {
         // Create a unique index
         val options = IndexOptions().unique(true)
         collection.createIndex(descending(NightscoutUserDTO::userId), options).toMono()
-                .subscribeOn(scheduler)
-                .subscribe()
+            .subscribeOn(scheduler)
+            .subscribe()
     }
 
     /**
@@ -48,7 +48,7 @@ class NightscoutDAO private constructor() {
      */
     fun getUsersForURL(url: String): Flux<NightscoutUserDTO> {
         return collection.findMany(NightscoutUserDTO::url eq url)
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -60,7 +60,7 @@ class NightscoutDAO private constructor() {
      */
     fun addUser(dto: NightscoutUserDTO): Mono<InsertOneResult> {
         return collection.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -76,13 +76,13 @@ class NightscoutDAO private constructor() {
         if (fields.isEmpty()) {
             // delete all the user's data
             return collection.deleteOne(filter(userId)).toMono()
-                    .subscribeOn(scheduler)
+                .subscribeOn(scheduler)
         }
 
         val unsets = fields.map { unset(it) }
         val combined = combine(unsets)
         return collection.updateOne(filter(userId), combined).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -95,10 +95,10 @@ class NightscoutDAO private constructor() {
     fun setUrl(userId: String, url: String): Mono<UpdateResult> {
         return collection.updateOne(
             NightscoutUserDTO::userId eq userId,
-                setValue(NightscoutUserDTO::url, url), upsert()
+            setValue(NightscoutUserDTO::url, url), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
+            .toMono()
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -129,8 +129,8 @@ class NightscoutDAO private constructor() {
         }
 
         return update.flatMap { collection.findOneAndUpdate(userFilter, it, upsertAfter).toMono() }
-                .map { it.publicGuilds.contains(guildId) }
-                .subscribeOn(scheduler)
+            .map { it.publicGuilds.contains(guildId) }
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -162,10 +162,10 @@ class NightscoutDAO private constructor() {
     fun setToken(userId: String, token: String): Mono<UpdateResult> {
         return collection.updateOne(
             NightscoutUserDTO::userId eq userId,
-                setValue(NightscoutUserDTO::token, token), upsert()
+            setValue(NightscoutUserDTO::token, token), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
+            .toMono()
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -186,7 +186,7 @@ class NightscoutDAO private constructor() {
         if (displaySettings.isEmpty()) {
             // delete the key instead of making it blank
             return deleteUser(userId, NightscoutUserDTO::displayOptions)
-                    .flatMap { Mono.just(listOf("reset")) }
+                .flatMap { Mono.just(listOf("reset")) }
         }
 
         if (settingsList.any { it == "none" }) {
@@ -206,8 +206,8 @@ class NightscoutDAO private constructor() {
         }
 
         return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
-                .map { it.displayOptions.ifEmpty { listOf("none") } }
-                .subscribeOn(scheduler)
+            .map { it.displayOptions.ifEmpty { listOf("none") } }
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -223,14 +223,14 @@ class NightscoutDAO private constructor() {
         if (graphSettings == null) {
             // delete the key
             return deleteUser(userId, NightscoutUserDTO::graphSettings)
-                    .map { GraphSettings() }
+                .map { GraphSettings() }
         }
 
         val update = setValue(NightscoutUserDTO::graphSettings, graphSettings)
 
         return collection.findOneAndUpdate(filter(userId), update, upsertAfter).toMono()
-                .map { it.graphSettings }
-                .subscribeOn(scheduler)
+            .map { it.graphSettings }
+            .subscribeOn(scheduler)
     }
 
     companion object {

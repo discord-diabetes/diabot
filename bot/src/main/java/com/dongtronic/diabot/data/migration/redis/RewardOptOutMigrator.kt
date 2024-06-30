@@ -30,13 +30,13 @@ class RewardOptOutMigrator {
         if (!needsMigration()) return
 
         getAllRewardOptOuts().toFlux()
-                .flatMap { mongo.importOptOuts(it) }
-                .map { it.wasAcknowledged() }
-                .onErrorContinue { t, u ->
-                    logger.warn("Could not import reward opt-outs: $u", t)
-                }
-                .filter { it }
-                .blockLast()!!
+            .flatMap { mongo.importOptOuts(it) }
+            .map { it.wasAcknowledged() }
+            .onErrorContinue { t, u ->
+                logger.warn("Could not import reward opt-outs: $u", t)
+            }
+            .filter { it }
+            .blockLast()!!
     }
 
     /**
@@ -44,8 +44,8 @@ class RewardOptOutMigrator {
      */
     private fun getAllRewardOptOuts(): List<RewardOptOutsDTO> {
         return jedis.keys("*:rewardoptouts")
-                .map { it.substringBefore(":") }
-                .toSet()
-                .map { RewardOptOutsDTO(it, redis.getOptOuts(it)!!) }
+            .map { it.substringBefore(":") }
+            .toSet()
+            .map { RewardOptOutsDTO(it, redis.getOptOuts(it)!!) }
     }
 }

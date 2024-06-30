@@ -3,11 +3,11 @@ package com.dongtronic.diabot.data
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 
 class A1cDTO(
-        val original: ConversionDTO,
-        dcctMgdl: Double,
-        ifccMgdl: Double,
-        dcctMmol: Double,
-        ifccMmol: Double
+    val original: ConversionDTO,
+    dcctMgdl: Double,
+    ifccMgdl: Double,
+    dcctMmol: Double,
+    ifccMmol: Double
 ) {
     private val dcctMgdl: Double
     private val ifccMgdl: Double

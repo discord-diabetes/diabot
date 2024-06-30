@@ -44,7 +44,7 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
 
                 val channelId = args[0]
                 event.guild.getTextChannelById(channelId)
-                        ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
+                    ?: throw IllegalArgumentException("Channel `$channelId` does not exist")
             } else {
                 event.message.mentions.channels[0]
             }
@@ -52,13 +52,13 @@ class NightscoutAdminSimpleAddCommand(category: Category, parent: Command?) : Di
             logger.info("Adding channel ${channel.id} as short channel for ${event.guild.id}")
 
             ChannelDAO.instance.changeAttribute(event.guild.id, channel.id, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
-                    .subscribe({
-                        event.replySuccess("Set channel **${channel.name}** (`${channel.id}`) as short reply channel")
-                    }, {
-                        val msg = "Could not set channel ${channel.name} (${channel.id}) as short reply channel"
-                        logger.warn(msg, it)
-                        event.replyError(msg)
-                    })
+                .subscribe({
+                    event.replySuccess("Set channel **${channel.name}** (`${channel.id}`) as short reply channel")
+                }, {
+                    val msg = "Could not set channel ${channel.name} (${channel.id}) as short reply channel"
+                    logger.warn(msg, it)
+                    event.replyError(msg)
+                })
         } catch (ex: Exception) {
             event.replyError(ex.message)
             return

@@ -22,20 +22,20 @@ class RewardListener : ListenerAdapter() {
         val member = guild.getMember(author) ?: return
 
         RewardsDAO.instance.isOptOut(guild.id, author.id)
-                // if the user isn't opted out
-                .filter { !it }
-                // get the rewards for this guild
-                .flatMap { RewardsDAO.instance.getRewards(guild.id) }
-                .doOnNext { rewards ->
-                    rewards.forEach { applyRoles(member, it) }
+            // if the user isn't opted out
+            .filter { !it }
+            // get the rewards for this guild
+            .flatMap { RewardsDAO.instance.getRewards(guild.id) }
+            .doOnNext { rewards ->
+                rewards.forEach { applyRoles(member, it) }
+            }
+            .subscribe({}, {
+                if (it is InsufficientPermissionException) {
+                    logger.warn("Could not assign reward to user ${member.effectiveName} due to lack of permission")
+                } else {
+                    logger.warn("Could not assign reward to user ${member.effectiveName}", it)
                 }
-                .subscribe({}, {
-                    if (it is InsufficientPermissionException) {
-                        logger.warn("Could not assign reward to user ${member.effectiveName} due to lack of permission")
-                    } else {
-                        logger.warn("Could not assign reward to user ${member.effectiveName}", it)
-                    }
-                })
+            })
     }
 
     private fun applyRoles(member: Member, dto: RewardsDTO) {

@@ -14,10 +14,10 @@ class AdminCommand(category: Category) : DiscordCommand(category, null) {
         this.examples = arrayOf()
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.children = arrayOf(
-                AdminUsernameCommand(category, this),
-                AdminRewardsCommand(category, this),
-                AdminChannelsCommand(category, this),
-                AdminAnnounceCommand(category, this),
+            AdminUsernameCommand(category, this),
+            AdminRewardsCommand(category, this),
+            AdminChannelsCommand(category, this),
+            AdminAnnounceCommand(category, this),
         )
     }
 

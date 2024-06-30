@@ -17,9 +17,9 @@ class SampleSubCommand(category: Category, parent: Command?) : DiscordCommand(ca
         this.category = category
         this.examples = arrayOf(this.parent!!.name + " sub")
         this.children = arrayOf(
-                SampleListSubCommand(category, this),
-                SampleAddSubCommand(category, this),
-                SampleDeleteSubCommand(category, this)
+            SampleListSubCommand(category, this),
+            SampleAddSubCommand(category, this),
+            SampleDeleteSubCommand(category, this)
         )
     }
 

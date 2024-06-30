@@ -7,16 +7,16 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.User
 
 data class NightscoutUserDTO(
-        val userId: String = "",
-        val url: String? = null,
-        val token: String? = null,
-        val displayOptions: List<String> = NightscoutSetDisplayCommand.enabledOptions.toList(),
-        val publicGuilds: List<String> = emptyList(),
-        val graphSettings: GraphSettings = GraphSettings(),
-        @JsonIgnore
-        val jdaUser: User? = null,
-        @JsonIgnore
-        val jdaMember: Member? = null,
+    val userId: String = "",
+    val url: String? = null,
+    val token: String? = null,
+    val displayOptions: List<String> = NightscoutSetDisplayCommand.enabledOptions.toList(),
+    val publicGuilds: List<String> = emptyList(),
+    val graphSettings: GraphSettings = GraphSettings(),
+    @JsonIgnore
+    val jdaUser: User? = null,
+    @JsonIgnore
+    val jdaMember: Member? = null,
 ) {
     /**
      * Nightscout's API endpoint

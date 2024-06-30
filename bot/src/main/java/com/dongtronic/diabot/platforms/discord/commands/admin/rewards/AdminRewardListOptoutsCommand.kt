@@ -26,26 +26,26 @@ class AdminRewardListOptoutsCommand(category: Category, parent: Command?) : Disc
     private fun runCommand(event: CommandEvent) {
         logger.info("Listing all reward opt-outs for ${event.author.name}")
         RewardsDAO.instance.getOptOuts(event.guild.id)
-                .map { it.optOut }
-                .defaultIfEmpty(emptyList())
-                .subscribe({ optouts ->
-                    val builder = EmbedBuilder()
+            .map { it.optOut }
+            .defaultIfEmpty(emptyList())
+            .subscribe({ optouts ->
+                val builder = EmbedBuilder()
 
-                    builder.setTitle("Reward opt-outs")
+                builder.setTitle("Reward opt-outs")
 
-                    if (optouts.isEmpty()) {
-                        builder.setDescription("No users are opted-out.")
-                    }
-                    optouts.forEach { optout ->
-                        val user = event.guild.getMemberById(optout)
+                if (optouts.isEmpty()) {
+                    builder.setDescription("No users are opted-out.")
+                }
+                optouts.forEach { optout ->
+                    val user = event.guild.getMemberById(optout)
 
-                        builder.appendDescription("**${user!!.effectiveName}** (`${user.user.id}`)")
-                    }
+                    builder.appendDescription("**${user!!.effectiveName}** (`${user.user.id}`)")
+                }
 
-                    event.reply(builder.build())
-                }, {
-                    logger.warn("Could not retrieve opt outs for guild ${event.guild.id}", it)
-                    event.replyError("Could not retrieve list of opt outs for this guild")
-                })
+                event.reply(builder.build())
+            }, {
+                logger.warn("Could not retrieve opt outs for guild ${event.guild.id}", it)
+                event.replyError("Could not retrieve list of opt outs for this guild")
+            })
     }
 }

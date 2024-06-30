@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
-import net.dv8tion.jda.internal.requests.Requester
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import reactor.core.Exceptions
@@ -37,7 +36,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
     private val mapper = jacksonObjectMapper()
     private val logger = logger()
     private val pendingRequests = mutableSetOf<User>()
-    private var guildMessages = DirectProcessor.create<MessageReceivedEvent>()
+    private val guildMessages = DirectProcessor.create<MessageReceivedEvent>()
     private var eventListening = false
 
     init {
@@ -65,28 +64,28 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
         // create an interactive session:
         // listens for a URL or attachment from the user's next message
         guildMessages.filter { it.author == event.author && it.channel == event.channel && it.guild == event.guild }
-                .map { it.message }
-                .toMono()
-                .timeout(Duration.ofSeconds(90))
-                .subscribeOn(Schedulers.parallel())
-                .doOnSubscribe {
-                    // send the initial message
-                    event.reply("${event.author.asMention} - Type a URL, attach a file, or type `cancel`")
-                }
-                .subscribe({
-                    if (it.contentStripped == "cancel") {
-                        pendingRequests.remove(event.author)
-                        event.replySuccess("${event.author.asMention} - Import cancelled")
-                        return@subscribe
-                    }
-
-                    parse(event, it.contentDisplay, it)
-                }, {
+            .map { it.message }
+            .toMono()
+            .timeout(Duration.ofSeconds(90))
+            .subscribeOn(Schedulers.parallel())
+            .doOnSubscribe {
+                // send the initial message
+                event.reply("${event.author.asMention} - Type a URL, attach a file, or type `cancel`")
+            }
+            .subscribe({
+                if (it.contentStripped == "cancel") {
                     pendingRequests.remove(event.author)
-                    if (it is TimeoutException) {
-                        event.replyWarning("${event.author.asMention} - Import timed out")
-                    }
-                })
+                    event.replySuccess("${event.author.asMention} - Import cancelled")
+                    return@subscribe
+                }
+
+                parse(event, it.contentDisplay, it)
+            }, {
+                pendingRequests.remove(event.author)
+                if (it is TimeoutException) {
+                    event.replyWarning("${event.author.asMention} - Import timed out")
+                }
+            })
     }
 
     /**
@@ -124,38 +123,38 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
         } else {
             getUrlText(args)
         }.subscribeOn(Schedulers.boundedElastic())
-                // Delete the message which has the file/attachment once retrieved and indicate the task started
-                .doFinally {
-                    // if we delete their first message then send a new message
-                    if (message == event.message) {
-                        event.reply("$mention Starting import task..")
-                    } else {
-                        event.reactSuccess()
-                    }
-
-                    message.delete().queue()
+            // Delete the message which has the file/attachment once retrieved and indicate the task started
+            .doFinally {
+                // if we delete their first message then send a new message
+                if (message == event.message) {
+                    event.reply("$mention Starting import task..")
+                } else {
+                    event.reactSuccess()
                 }
-                // Map from JSON to data class
-                .flatMapMany { mapper.readValue<List<Ub3rQuote>>(it).toFlux() }
-                // Upsert
-                .flatMap {
-                    if (it.server.isNotBlank() && it.server != event.guild.id) {
-                        return@flatMap Mono.error<QuoteDTO>(IllegalArgumentException("Quotes must be from the current server"))
-                    }
 
-                    val diabotQuote = it.toDiabotQuote(event.guild)
-                    upsertQuote(diabotQuote)
-                            // Used for final statistics
-                            .doOnNext { successful.getAndIncrement() }
-                            .onErrorContinue { throwable, quote ->
-                                failed.getAndIncrement()
-                                logger.warn("Could not import $quote", throwable)
-                            }
+                message.delete().queue()
+            }
+            // Map from JSON to data class
+            .flatMapMany { mapper.readValue<List<Ub3rQuote>>(it).toFlux() }
+            // Upsert
+            .flatMap {
+                if (it.server.isNotBlank() && it.server != event.guild.id) {
+                    return@flatMap Mono.error<QuoteDTO>(IllegalArgumentException("Quotes must be from the current server"))
                 }
-                // Unwrap throwables from `ReactiveException`
-                .onErrorMap(Exceptions::unwrap)
-                // Remove user from the pending requests once all quotes have been processed
-                .doFinally { pendingRequests.remove(message.author) }
+
+                val diabotQuote = it.toDiabotQuote(event.guild)
+                upsertQuote(diabotQuote)
+                    // Used for final statistics
+                    .doOnNext { successful.getAndIncrement() }
+                    .onErrorContinue { throwable, quote ->
+                        failed.getAndIncrement()
+                        logger.warn("Could not import $quote", throwable)
+                    }
+            }
+            // Unwrap throwables from `ReactiveException`
+            .onErrorMap(Exceptions::unwrap)
+            // Remove user from the pending requests once all quotes have been processed
+            .doFinally { pendingRequests.remove(message.author) }
 
         importQuotes.subscribe({
             // on each
@@ -251,10 +250,10 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
         return Mono.fromCallable {
             val client = OkHttpClient()
             val request = Request.Builder()
-                    .get()
-                    .url(URL(url))
-                    .addHeader("user-agent", Requester.USER_AGENT)
-                    .build()
+                .get()
+                .url(URL(url))
+                .addHeader("user-agent", "github.com_reddit-diabetes_diabot")
+                .build()
 
             client.newCall(request).execute().use { response ->
                 val body = response.body
@@ -283,15 +282,15 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
      */
     @JsonAutoDetect
     data class Ub3rQuote(
-            val id: String,
-            val nick: String,
-            val userId: String,
-            val channel: String? = null,
-            val server: String,
-            val text: String,
-            val messageId: String,
-            val time: Long,
-            val dateTime: String
+        val id: String,
+        val nick: String,
+        val userId: String,
+        val channel: String? = null,
+        val server: String,
+        val text: String,
+        val messageId: String,
+        val time: Long,
+        val dateTime: String
     ) {
         /**
          * Converts this UB3R-B0T quote into a Diabot [QuoteDTO]
@@ -309,13 +308,13 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
 
             return QuoteDTO(
                 quoteId = id,
-                    guildId = server,
-                    channelId = channelId,
-                    author = nick,
-                    authorId = userId,
-                    message = text,
-                    messageId = messageId,
-                    time = time
+                guildId = server,
+                channelId = channelId,
+                author = nick,
+                authorId = userId,
+                message = text,
+                messageId = messageId,
+                time = time
             )
         }
     }

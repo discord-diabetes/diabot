@@ -45,7 +45,7 @@ class NightscoutAdminSetCommand(category: Category, parent: Command?) : DiscordC
                 val userId = args[0]
                 // this can be left unisolated because this is an owner-only command
                 event.jda.getUserById(userId)
-                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+                    ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentions.users[0]
             }

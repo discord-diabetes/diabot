@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.*
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder(
     "food_name", "brand_name", "serving_qty", "serving_unit", "serving_weight_grams", "nf_calories",
-        "nf_total_fat", "nf_saturated_fat", "nf_cholesterol", "nf_sodium", "nf_total_carbohydrate", "nf_dietary_fiber",
-        "nf_sugars", "nf_protein", "nf_potassium", "nf_p", "full_nutrients", "nix_brand_name", "nix_brand_id",
-        "nix_item_name", "nix_item_id", "upc", "consumed_at", "metadata", "source", "ndb_no", "tags", "alt_measures",
-        "lat", "lng", "meal_type", "photo", "sub_recipe"
+    "nf_total_fat", "nf_saturated_fat", "nf_cholesterol", "nf_sodium", "nf_total_carbohydrate", "nf_dietary_fiber",
+    "nf_sugars", "nf_protein", "nf_potassium", "nf_p", "full_nutrients", "nix_brand_name", "nix_brand_id",
+    "nix_item_name", "nix_item_id", "upc", "consumed_at", "metadata", "source", "ndb_no", "tags", "alt_measures",
+    "lat", "lng", "meal_type", "photo", "sub_recipe"
 )
 class Food {
     @get:JsonProperty("food_name")

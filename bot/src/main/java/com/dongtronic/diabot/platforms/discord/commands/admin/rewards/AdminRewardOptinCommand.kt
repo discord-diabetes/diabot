@@ -33,7 +33,7 @@ class AdminRewardOptinCommand(category: Category, parent: Command?) : DiscordCom
 
                 val userId = args[0]
                 event.guild.getMemberById(userId)
-                        ?: throw IllegalArgumentException("User `$userId` is not in the server")
+                    ?: throw IllegalArgumentException("User `$userId` is not in the server")
             } else {
                 event.message.mentions.members[0]
             }

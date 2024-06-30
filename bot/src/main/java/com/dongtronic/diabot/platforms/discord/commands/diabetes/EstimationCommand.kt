@@ -19,10 +19,10 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         this.arguments = "<a1c/average> <number> [unit]"
         this.examples = arrayOf(
             "diabot estimate a1c 120",
-                "diabot estimate a1c 5.7",
-                "diabot estimate a1c 120 mg/dL",
-                "diabot estimate average 6.7",
-                "diabot estimate average 42"
+            "diabot estimate a1c 5.7",
+            "diabot estimate a1c 120 mg/dL",
+            "diabot estimate average 6.7",
+            "diabot estimate average 42"
         )
     }
 
@@ -56,10 +56,10 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         }
 
         event.reply(
-                String.format(
-                        "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
-                        result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
-                )
+            String.format(
+                "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
+                result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
+            )
         )
     }
 
@@ -68,22 +68,22 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
         val items = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
         val result = A1cConverter.estimateA1c(items[1], items.getOrNull(2))
-                .getOrElse {
-                    when (it) {
-                        is IllegalArgumentException -> {
-                            event.replyError("Could not estimate A1c: ${it.message}")
-                        }
-
-                        is UnknownUnitException -> {
-                            event.replyError("I don't know how to convert from " + items[1])
-                        }
-
-                        else -> {
-                            logger.warn("Unknown error when estimating A1c", it)
-                        }
+            .getOrElse {
+                when (it) {
+                    is IllegalArgumentException -> {
+                        event.replyError("Could not estimate A1c: ${it.message}")
                     }
-                    return
+
+                    is UnknownUnitException -> {
+                        event.replyError("I don't know how to convert from " + items[1])
+                    }
+
+                    else -> {
+                        logger.warn("Unknown error when estimating A1c", it)
+                    }
                 }
+                return
+            }
 
         when (result.original.inputUnit) {
             MMOL ->
@@ -106,12 +106,12 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                 // TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
                 val reply = String.format(
                     "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n",
-                        result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)
+                    result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)
                 ) +
-                        String.format(
-                            "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
-                                result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL)
-                        )
+                    String.format(
+                        "An average of %s mg/dL is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC)",
+                        result.original.original, result.getDcct(MMOL), result.getIfcc(MMOL)
+                    )
                 event.reply(reply)
             }
         }

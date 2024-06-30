@@ -3,15 +3,15 @@ package com.dongtronic.nightscout.data
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 
 data class NightscoutDTO(
-        val entries: Set<BgEntry> = emptySet(),
-        val low: Int = 0,
-        val bottom: Int = 0,
-        val top: Int = 0,
-        val high: Int = 0,
-        val iob: Float = 0.0F,
-        val cob: Int = 0,
-        val units: String = "",
-        val title: String = "Nightscout"
+    val entries: Set<BgEntry> = emptySet(),
+    val low: Int = 0,
+    val bottom: Int = 0,
+    val top: Int = 0,
+    val high: Int = 0,
+    val iob: Float = 0.0F,
+    val cob: Int = 0,
+    val units: String = "",
+    val title: String = "Nightscout"
 ) {
     /**
      * Gets the most recent BG entry.
@@ -21,7 +21,7 @@ data class NightscoutDTO(
      */
     fun getNewestEntry(): BgEntry {
         return entries.maxByOrNull { it.dateTime }
-                ?: throw NoNightscoutDataException()
+            ?: throw NoNightscoutDataException()
     }
 
     /**
@@ -99,15 +99,15 @@ data class NightscoutDTO(
         fun title(title: String) = apply { this.title = title }
 
         fun build() = NightscoutDTO(
-                entries = entries,
-                low = low,
-                bottom = bottom,
-                top = top,
-                high = high,
-                iob = iob,
-                cob = cob,
-                units = units,
-                title = title
+            entries = entries,
+            low = low,
+            bottom = bottom,
+            top = top,
+            high = high,
+            iob = iob,
+            cob = cob,
+            units = units,
+            title = title
         )
     }
 }

@@ -49,15 +49,15 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
         this.guildOnly = false
         this.aliases = arrayOf("ns", "bg", "bs")
         this.examples = arrayOf(
-                "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
-                "diabot ns @SomeUser#1234", "diabot ns public false"
+            "diabot nightscout casscout", "diabot ns", "diabot ns set https://casscout.herokuapp.com",
+            "diabot ns @SomeUser#1234", "diabot ns public false"
         )
         this.children = arrayOf(
-                NightscoutSetUrlCommand(category, this),
-                NightscoutDeleteCommand(category, this),
-                NightscoutPublicCommand(category, this),
-                NightscoutSetTokenCommand(category, this),
-                NightscoutSetDisplayCommand(category, this)
+            NightscoutSetUrlCommand(category, this),
+            NightscoutDeleteCommand(category, this),
+            NightscoutPublicCommand(category, this),
+            NightscoutSetTokenCommand(category, this),
+            NightscoutSetDisplayCommand(category, this)
         )
     }
 
@@ -82,11 +82,11 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
             logger.debug("Sent Nightscout embed: {}", message)
         } catch (e: Exception) {
             event.reply(
-                    if (e is NightscoutFetchException) {
-                        handleGrabError(e.originalException, event.author, e.userDTO)
-                    } else {
-                        handleError(e)
-                    }
+                if (e is NightscoutFetchException) {
+                    handleGrabError(e.originalException, event.author, e.userDTO)
+                } else {
+                    handleError(e)
+                }
             )
         }
     }
@@ -110,55 +110,49 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
     private suspend fun getUnstoredData(event: CommandEvent): NightscoutUserDTO {
         val args = event.args.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        val namedMembers = event.event.guild.members.filter {
-            it.effectiveName.equals(event.args, true) ||
-                    it.user.name.equals(event.args, true)
-        }
         val mentionedMembers = event.event.message.mentions.members
 
-        val dto = when {
-            mentionedMembers.size > 1 ->
-                throw IllegalArgumentException("Too many mentioned users.")
+        if (mentionedMembers.size > 1) throw IllegalArgumentException("Too many mentioned users.")
 
-            event.event.message.mentions.mentionsEveryone() ->
-                throw IllegalArgumentException("Cannot handle mentioning everyone.")
+        if (event.event.message.mentions.mentionsEveryone()) throw IllegalArgumentException("Cannot handle mentioning everyone.")
 
-            mentionedMembers.size == 1 -> {
-                val member = mentionedMembers[0]
-                val exception = IllegalArgumentException("User does not have a configured Nightscout URL.")
-                val dto = getUserDto(member.user, member, exception)
+        if (mentionedMembers.size == 1) {
+            return getMentionedMemberNightscoutData(mentionedMembers, event)
+        } else if (args.isNotEmpty() && args[0].matches("^https?://.*".toRegex())) {
+            // is a URL
+            val url = NightscoutFacade.parseNightscoutUrl(args[0]).first
+            return getDataFromDomain(url, event)
+        }
+
+        // Try to get nightscout data from username/nickname
+        val namedMember = event.event.guild.members.filter {
+            it.effectiveName.equals(event.args, true) ||
+                it.user.name.equals(event.args, true)
+        }.getOrNull(0)
+
+        if (namedMember != null) {
+            try {
+                val dto = getUserDto(namedMember.user, namedMember)
                 if (!dto.isNightscoutPublic(event.guild.id)) {
-                    throw NightscoutPrivateException(member.effectiveName)
+                    throw NightscoutPrivateException(namedMember.effectiveName)
                 }
-
-                dto
+                return dto
+            } catch (_: UnconfiguredNightscoutException) {
             }
+        }
 
-            args.isNotEmpty() && args[0].matches("^https?://.*".toRegex()) -> {
-                // is a URL
-                val url = NightscoutFacade.parseNightscoutUrl(args[0]).first
-                getDataFromDomain(url, event)
-            }
+        throw Exception("Could not determine Nightscout hostname")
+    }
 
-            else -> {
-                // Try to get nightscout data from username/nickname, otherwise just try to get from hostname
-                val member = namedMembers.getOrNull(0)
-                val domain = "https://${args[0]}.herokuapp.com"
-                val fallbackDto = NightscoutUserDTO(url = domain)
-
-                if (member != null) {
-                    try {
-                        val dto = getUserDto(member.user, member)
-                        if (!dto.isNightscoutPublic(event.guild.id)) {
-                            throw NightscoutPrivateException(member.effectiveName)
-                        }
-                        return dto
-                    } catch (_: UnconfiguredNightscoutException) {
-                    }
-                }
-
-                fallbackDto
-            }
+    private suspend fun NightscoutCommand.getMentionedMemberNightscoutData(
+        mentionedMembers: List<Member>,
+        event: CommandEvent
+    ): NightscoutUserDTO {
+        val member = mentionedMembers[0]
+        val exception = IllegalArgumentException("User does not have a configured Nightscout URL.")
+        val dto = getUserDto(member.user, member, exception)
+        if (!dto.isNightscoutPublic(event.guild.id)) {
+            throw NightscoutPrivateException(member.effectiveName)
         }
 
         return dto
@@ -249,10 +243,10 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return The embed which was created
      */
     private fun buildResponse(
-            nsDTO: NightscoutDTO,
-            userDTO: NightscoutUserDTO,
-            short: Boolean,
-            builder: EmbedBuilder = EmbedBuilder()
+        nsDTO: NightscoutDTO,
+        userDTO: NightscoutUserDTO,
+        short: Boolean,
+        builder: EmbedBuilder = EmbedBuilder()
     ): EmbedBuilder {
         val newest = nsDTO.getNewestEntry()
         val displayOptions = userDTO.displayOptions
@@ -391,9 +385,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      */
     private fun getUsersForDomain(domain: String): Flow<NightscoutUserDTO> {
         return NightscoutDAO.instance.getUsersForURL(domain)
-                // if there are no users then return an empty Flux
-                .onErrorResume(NoSuchElementException::class) { Flux.empty() }
-                .asFlow()
+            // if there are no users then return an empty Flux
+            .onErrorResume(NoSuchElementException::class) { Flux.empty() }
+            .asFlow()
     }
 
     /**
@@ -405,9 +399,9 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
      * @return A [NightscoutUserDTO] instance belonging to the given user
      */
     private suspend fun getUserDto(
-            user: User,
-            member: Member? = null,
-            throwable: Throwable = UnconfiguredNightscoutException()
+        user: User,
+        member: Member? = null,
+        throwable: Throwable = UnconfiguredNightscoutException()
     ): NightscoutUserDTO {
         try {
             val nsUser = NightscoutDAO.instance.getUser(user.id).awaitSingle()
@@ -489,7 +483,7 @@ class NightscoutCommand(category: Category) : DiscordCommand(category, null) {
                     if (ex.code() == 401) {
                         message += if (userDTO.jdaUser != null && userDTO.jdaUser == author) {
                             "Could not authenticate to Nightscout. Please set an authentication token with `/nightscout set token <token>`, " +
-                                    "or view our [setup guide](https://github.com/discord-diabetes/diabot/blob/main/docs/nightscout_setup.md)."
+                                "or view our [setup guide](https://github.com/discord-diabetes/diabot/blob/main/docs/nightscout_setup.md)."
                         } else {
                             "Nightscout data is unreadable due to missing token."
                         }

@@ -12,6 +12,6 @@ class QuoteMessageLinkMigrator {
     @ChangeSet(order = "001", id = "removeQuoteMessageLink", author = "Garlic")
     fun migrate(db: MongoDatabase) {
         db.getCollection(DiabotCollection.QUOTES.getEnv())
-                .updateMany(Document(), Updates.unset("messageLink"))
+            .updateMany(Document(), Updates.unset("messageLink"))
     }
 }

@@ -8,6 +8,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
  */
 @JsonAutoDetect
 data class QuoteIndexDTO(
-        val guildId: String,
-        val quoteIndex: Long = 1
+    val guildId: String,
+    val quoteIndex: Long = 1
 )

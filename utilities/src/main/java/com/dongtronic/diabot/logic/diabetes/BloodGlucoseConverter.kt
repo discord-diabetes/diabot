@@ -41,8 +41,8 @@ object BloodGlucoseConverter {
 
         // #36 and #60: Reply with :100: when value is 100 mg/dL, 5.5 mmol/L, or 10.0 mmol/L
         if (mmol == 5.5 ||
-                mmol == 10.0 ||
-                mgdl == 100
+            mmol == 10.0 ||
+            mgdl == 100
         ) {
             reactions.add("\uD83D\uDCAF")
         }
@@ -62,7 +62,7 @@ object BloodGlucoseConverter {
      */
     fun convert(value: String, unit: String?): Result<ConversionDTO> {
         val input = value.toDoubleOrNull()
-                ?: return Result.failure(IllegalArgumentException("value must be numeric"))
+            ?: return Result.failure(IllegalArgumentException("value must be numeric"))
 
         if (input < -999 || input > 999) {
             return Result.failure(IllegalArgumentException("value must be between -999 and 999"))

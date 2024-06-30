@@ -33,7 +33,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
             this["raccoon-dropped-their-pump-20240627-824x818.png"] = "DJ"
         }
 
-        private const val creditsPrefix = "Image Credits: "
+        private const val CREDITS_PREFIX = "Image Credits: "
     }
 
     override fun getChartBackgroundColor(): Color {
@@ -84,9 +84,9 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
 
     override fun getImageHeight(chart: BgGraph): Int {
         val textLayout = TextLayout(
-                creditsPrefix,
-                chart.styler.chartTitleFont,
-                FontRenderContext(null, true, true)
+            CREDITS_PREFIX,
+            chart.styler.chartTitleFont,
+            FontRenderContext(null, true, true)
         )
 
         return (super.getImageHeight(chart) + textLayout.bounds.height * 2).roundToInt()
@@ -135,7 +135,7 @@ class DiabotAnimalsTheme : DiabotTheme(true) {
             g.drawImage(cat, imgBounds.x, imgBounds.y, imgBounds.width, imgBounds.height, null)
         }
 
-        val credits = usedCredits.joinToString(separator = " | ", prefix = creditsPrefix)
+        val credits = usedCredits.joinToString(separator = " | ", prefix = CREDITS_PREFIX)
 
         // Draw credits
         g.font = chart.styler.chartTitleFont

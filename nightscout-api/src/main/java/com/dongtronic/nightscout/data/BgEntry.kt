@@ -5,10 +5,10 @@ import com.dongtronic.nightscout.TrendArrow
 import java.time.Instant
 
 data class BgEntry(
-        val glucose: ConversionDTO,
-        val delta: ConversionDTO? = null,
-        val dateTime: Instant,
-        val trend: TrendArrow = TrendArrow.NONE
+    val glucose: ConversionDTO,
+    val delta: ConversionDTO? = null,
+    val dateTime: Instant,
+    val trend: TrendArrow = TrendArrow.NONE
 ) {
     fun newBuilder(): Builder = Builder(this)
 
@@ -54,10 +54,10 @@ data class BgEntry(
         fun trend(trend: TrendArrow) = apply { this.trend = trend }
 
         fun build() = BgEntry(
-                glucose = checkNotNull(glucose) { "glucose == null" },
-                delta = delta,
-                dateTime = checkNotNull(dateTime) { "dateTime == null" },
-                trend = trend
+            glucose = checkNotNull(glucose) { "glucose == null" },
+            delta = delta,
+            dateTime = checkNotNull(dateTime) { "dateTime == null" },
+            trend = trend
         )
     }
 }

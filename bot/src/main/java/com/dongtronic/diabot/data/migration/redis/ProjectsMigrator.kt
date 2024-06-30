@@ -34,12 +34,12 @@ class ProjectsMigrator {
         }
 
         dtos.toFlux()
-                .flatMap { mongo.addProject(it) }
-                .map { it.wasAcknowledged() }
-                .onErrorContinue { t, u ->
-                    logger.warn("Could not import project: $u", t)
-                }
-                .filter { it }
-                .blockLast()!!
+            .flatMap { mongo.addProject(it) }
+            .map { it.wasAcknowledged() }
+            .onErrorContinue { t, u ->
+                logger.warn("Could not import project: $u", t)
+            }
+            .filter { it }
+            .blockLast()!!
     }
 }

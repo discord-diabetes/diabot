@@ -25,7 +25,7 @@ class HelpListener : Consumer<CommandEvent> {
      */
     private fun sendingError(exc: Throwable, event: CommandEvent) {
         if (exc is ErrorResponseException &&
-                exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER
+            exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER
         ) {
             // Print a warning in console if the error code was not related to DMs being blocked
             logger.warn("Unexpected error response when sending DM: ${exc.errorCode} - ${exc.meaning}")
@@ -53,13 +53,13 @@ class HelpListener : Consumer<CommandEvent> {
             try {
                 // Open the DM channel and send the message
                 event.author.openPrivateChannel().submit()
-                        .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
-                        .whenComplete { _: Message?, exc: Throwable? ->
-                            if (exc != null) {
-                                // If there's a throwable then assume it failed
-                                sendingError(exc, event)
-                            }
+                    .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
+                    .whenComplete { _: Message?, exc: Throwable? ->
+                        if (exc != null) {
+                            // If there's a throwable then assume it failed
+                            sendingError(exc, event)
                         }
+                    }
             } catch (ex: InsufficientPermissionException) {
                 event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
             }
@@ -78,15 +78,15 @@ class HelpListener : Consumer<CommandEvent> {
 
             // Store the CompletableFuture in the queue, so we can cancel it later
             val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
-                    .whenComplete { _: Message?, exc: Throwable? ->
-                        if (exc != null) {
-                            sendingError(exc, event)
-                            // Cancel the other messages in the queue
-                            messageQueue.forEach { it.cancel(true) }
-                        }
-
-                        messageQueue.clear()
+                .whenComplete { _: Message?, exc: Throwable? ->
+                    if (exc != null) {
+                        sendingError(exc, event)
+                        // Cancel the other messages in the queue
+                        messageQueue.forEach { it.cancel(true) }
                     }
+
+                    messageQueue.clear()
+                }
             messageQueue.add(message)
         }
     }

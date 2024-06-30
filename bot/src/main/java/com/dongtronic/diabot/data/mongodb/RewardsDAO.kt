@@ -21,21 +21,21 @@ import java.util.concurrent.TimeUnit
 class RewardsDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val rewards: MongoCollection<RewardsDTO> =
-            mongo.getCollection(DiabotCollection.REWARDS.getEnv(), RewardsDTO::class.java)
+        mongo.getCollection(DiabotCollection.REWARDS.getEnv(), RewardsDTO::class.java)
     val optOuts: MongoCollection<RewardOptOutsDTO> =
-            mongo.getCollection(DiabotCollection.REWARDS_OPTOUT.getEnv(), RewardOptOutsDTO::class.java)
+        mongo.getCollection(DiabotCollection.REWARDS_OPTOUT.getEnv(), RewardOptOutsDTO::class.java)
 
     private val guildRewardsCache: Cache<String, List<RewardsDTO>> = Caffeine.newBuilder()
-            .expireAfterAccess(240, TimeUnit.MINUTES)
-            .maximumWeight(2000)
-            .weigher { _: String, rewards: List<RewardsDTO> -> rewards.size }
-            .build()
+        .expireAfterAccess(240, TimeUnit.MINUTES)
+        .maximumWeight(2000)
+        .weigher { _: String, rewards: List<RewardsDTO> -> rewards.size }
+        .build()
 
     private val optOutCache: Cache<String, List<String>> = Caffeine.newBuilder()
-            .expireAfterAccess(240, TimeUnit.MINUTES)
-            .maximumWeight(2000)
-            .weigher { _: String, optOuts: List<String> -> optOuts.size }
-            .build()
+        .expireAfterAccess(240, TimeUnit.MINUTES)
+        .maximumWeight(2000)
+        .weigher { _: String, optOuts: List<String> -> optOuts.size }
+        .build()
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -45,9 +45,9 @@ class RewardsDAO private constructor() {
         // `guildId` in the `rewards-optout` collection
         val options = IndexOptions().unique(true)
         rewards.createIndex(descending(RewardsDTO::requiredRole), options).toMono()
-                .subscribeOn(scheduler)
-                .then(optOuts.createIndex(descending(RewardOptOutsDTO::guildId), options).toMono())
-                .subscribe()
+            .subscribeOn(scheduler)
+            .then(optOuts.createIndex(descending(RewardOptOutsDTO::guildId), options).toMono())
+            .subscribe()
     }
 
     /**
@@ -63,8 +63,8 @@ class RewardsDAO private constructor() {
         }
 
         return optOuts.find(filter(guildId))
-                .toMono().subscribeOn(scheduler)
-                .doOnNext { optOutCache.put(it.guildId, it.optOut) }
+            .toMono().subscribeOn(scheduler)
+            .doOnNext { optOutCache.put(it.guildId, it.optOut) }
     }
 
     /**
@@ -81,10 +81,10 @@ class RewardsDAO private constructor() {
         }
 
         return optOuts.countDocuments(filterUser(guildId, userId))
-                .toMono().subscribeOn(scheduler)
-                // fetch all the opted-out users for this guild for caching
-                .doOnNext { getOptOuts(guildId).subscribe() }
-                .map { it != 0L }
+            .toMono().subscribeOn(scheduler)
+            // fetch all the opted-out users for this guild for caching
+            .doOnNext { getOptOuts(guildId).subscribe() }
+            .map { it != 0L }
     }
 
     /**
@@ -100,9 +100,9 @@ class RewardsDAO private constructor() {
         }
 
         return rewards.find(filter(guildId))
-                .toFlux().subscribeOn(scheduler)
-                .collectList()
-                .doOnNext { guildRewardsCache.put(guildId, it) }
+            .toFlux().subscribeOn(scheduler)
+            .collectList()
+            .doOnNext { guildRewardsCache.put(guildId, it) }
     }
 
     /**
@@ -114,8 +114,8 @@ class RewardsDAO private constructor() {
      */
     fun importReward(dto: RewardsDTO): Mono<InsertOneResult> {
         return rewards.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { guildRewardsCache.invalidate(dto.guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { guildRewardsCache.invalidate(dto.guildId) }
     }
 
     /**
@@ -127,8 +127,8 @@ class RewardsDAO private constructor() {
      */
     fun importOptOuts(dto: RewardOptOutsDTO): Mono<InsertOneResult> {
         return optOuts.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { optOutCache.invalidate(dto.guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { optOutCache.invalidate(dto.guildId) }
     }
 
     /**
@@ -140,8 +140,8 @@ class RewardsDAO private constructor() {
      */
     fun deleteReward(guildId: String, requiredRole: String): Mono<DeleteResult> {
         return rewards.deleteOne(filterReward(requiredRole, guildId)).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { guildRewardsCache.invalidate(guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { guildRewardsCache.invalidate(guildId) }
     }
 
     /**
@@ -152,8 +152,8 @@ class RewardsDAO private constructor() {
      */
     fun deleteGuildOptOuts(guildId: String): Mono<DeleteResult> {
         return optOuts.deleteOne(filter(guildId)).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { optOutCache.invalidate(guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { optOutCache.invalidate(guildId) }
     }
 
     /**
@@ -166,10 +166,10 @@ class RewardsDAO private constructor() {
      * @return The updated [RewardsDTO]
      */
     fun changeRewardRole(
-            guildId: String,
-            requiredRole: String,
-            rewardRole: String,
-            add: Boolean = true
+        guildId: String,
+        requiredRole: String,
+        rewardRole: String,
+        add: Boolean = true
     ): Mono<RewardsDTO> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         val rewardFilter = filterReward(requiredRole, guildId)
@@ -181,10 +181,10 @@ class RewardsDAO private constructor() {
         }
 
         return rewards.findOneAndUpdate(rewardFilter, update, upsertAfter).toMono()
-                .subscribeOn(scheduler)
-                // delete document if rewards are empty
-                .doOnNext { if (it.roleRewards.isEmpty()) deleteReward(it.guildId, it.requiredRole).subscribe() }
-                .doOnNext { guildRewardsCache.invalidate(it.guildId) }
+            .subscribeOn(scheduler)
+            // delete document if rewards are empty
+            .doOnNext { if (it.roleRewards.isEmpty()) deleteReward(it.guildId, it.requiredRole).subscribe() }
+            .doOnNext { guildRewardsCache.invalidate(it.guildId) }
     }
 
     /**
@@ -196,9 +196,9 @@ class RewardsDAO private constructor() {
      * @return The updated guild's [RewardOptOutsDTO]
      */
     fun changeOpt(
-            guildId: String,
-            userId: String,
-            optOut: Boolean = true
+        guildId: String,
+        userId: String,
+        optOut: Boolean = true
     ): Mono<RewardOptOutsDTO> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         val guildFilter = filter(guildId)
@@ -210,10 +210,10 @@ class RewardsDAO private constructor() {
         }
 
         return optOuts.findOneAndUpdate(guildFilter, update, upsertAfter).toMono()
-                .subscribeOn(scheduler)
-                // delete document if nobody is opted out
-                .doOnNext { if (it.optOut.isEmpty()) deleteGuildOptOuts(it.guildId).subscribe() }
-                .doOnNext { optOutCache.put(it.guildId, it.optOut) }
+            .subscribeOn(scheduler)
+            // delete document if nobody is opted out
+            .doOnNext { if (it.optOut.isEmpty()) deleteGuildOptOuts(it.guildId).subscribe() }
+            .doOnNext { optOutCache.put(it.guildId, it.optOut) }
     }
 
     companion object {

@@ -19,7 +19,7 @@ import reactor.kotlin.core.publisher.toMono
 class ProjectDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<ProjectDTO> =
-            mongo.getCollection(DiabotCollection.PROJECTS.getEnv(), ProjectDTO::class.java)
+        mongo.getCollection(DiabotCollection.PROJECTS.getEnv(), ProjectDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -27,8 +27,8 @@ class ProjectDAO private constructor() {
         // Create a unique index
         val options = IndexOptions().unique(true)
         collection.createIndex(descending(ProjectDTO::name), options).toMono()
-                .subscribeOn(scheduler)
-                .subscribe()
+            .subscribeOn(scheduler)
+            .subscribe()
     }
 
     /**
@@ -39,7 +39,7 @@ class ProjectDAO private constructor() {
      */
     fun getProject(name: String): Mono<ProjectDTO> {
         return collection.findOne(filter(name))
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -49,7 +49,7 @@ class ProjectDAO private constructor() {
      */
     fun listProjects(): Flux<ProjectDTO> {
         return collection.findMany()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -61,7 +61,7 @@ class ProjectDAO private constructor() {
      */
     fun addProject(dto: ProjectDTO): Mono<InsertOneResult> {
         return collection.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -72,7 +72,7 @@ class ProjectDAO private constructor() {
      */
     fun deleteProject(name: String): Mono<DeleteResult> {
         return collection.deleteOne(filter(name)).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -85,10 +85,10 @@ class ProjectDAO private constructor() {
     fun setInfo(name: String, text: String): Mono<UpdateResult> {
         return collection.updateOne(
             filter(name),
-                setValue(ProjectDTO::text, text), upsert()
+            setValue(ProjectDTO::text, text), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
+            .toMono()
+            .subscribeOn(scheduler)
     }
 
     companion object {

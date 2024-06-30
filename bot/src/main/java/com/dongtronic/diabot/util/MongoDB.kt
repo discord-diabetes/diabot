@@ -24,13 +24,13 @@ import java.util.concurrent.TimeUnit
 
 class MongoDB {
     private val clientSettings: MongoClientSettings = MongoClientSettings.builder()
-            .applyToConnectionPoolSettings {
-                // close connections after 1 hour of inactivity
-                it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
-                it.maxSize(mongoEnv("CONNECTIONS", "30").toInt())
-            }
-            .applyConnectionString(ConnectionString(connectionURI))
-            .build()
+        .applyToConnectionPoolSettings {
+            // close connections after 1 hour of inactivity
+            it.maxConnectionIdleTime(60, TimeUnit.MINUTES)
+            it.maxSize(mongoEnv("CONNECTIONS", "30").toInt())
+        }
+        .applyConnectionString(ConnectionString(connectionURI))
+        .build()
     val client = KMongo.createClient(clientSettings)
     val database: MongoDatabase = client.getDatabase(defaultDatabase)
 
@@ -78,9 +78,9 @@ fun mongoEnv(key: String, default: String? = null): String {
  * Collation for case-insensitive queries
  */
 val caseCollation: Collation = Collation.builder()
-        .collationStrength(CollationStrength.SECONDARY)
-        .locale("en")
-        .build()
+    .collationStrength(CollationStrength.SECONDARY)
+    .locale("en")
+    .build()
 
 fun <T> MongoCollection<T>.findOne(vararg filter: Bson): Mono<T> {
     return Mono.from(find(*filter).collation(caseCollation).limit(1)).errorOnEmpty()

@@ -22,12 +22,12 @@ import kotlin.reflect.KProperty
 class NameRuleDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<NameRuleDTO> =
-            mongo.getCollection(DiabotCollection.NAME_RULES.getEnv(), NameRuleDTO::class.java)
+        mongo.getCollection(DiabotCollection.NAME_RULES.getEnv(), NameRuleDTO::class.java)
 
     private val ruleCache: Cache<String, NameRuleDTO> = Caffeine.newBuilder()
-            .expireAfterAccess(240, TimeUnit.MINUTES)
-            .maximumSize(200)
-            .build()
+        .expireAfterAccess(240, TimeUnit.MINUTES)
+        .maximumSize(200)
+        .build()
 
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
@@ -36,8 +36,8 @@ class NameRuleDAO private constructor() {
         // Create a unique index
         val options = IndexOptions().unique(true)
         collection.createIndex(descending(NameRuleDTO::guildId), options).toMono()
-                .subscribeOn(scheduler)
-                .subscribe()
+            .subscribeOn(scheduler)
+            .subscribe()
     }
 
     /**
@@ -53,10 +53,10 @@ class NameRuleDAO private constructor() {
         }
 
         return collection.findOne(filter(guildId))
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.put(it.guildId, it) }
-                // cache a non-enforcing NameRuleDTO if there are no rules for this guild
-                .doOnError(NoSuchElementException::class.java) { ruleCache.put(guildId, NameRuleDTO(guildId)) }
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.put(it.guildId, it) }
+            // cache a non-enforcing NameRuleDTO if there are no rules for this guild
+            .doOnError(NoSuchElementException::class.java) { ruleCache.put(guildId, NameRuleDTO(guildId)) }
     }
 
     /**
@@ -68,8 +68,8 @@ class NameRuleDAO private constructor() {
      */
     fun addGuild(dto: NameRuleDTO): Mono<InsertOneResult> {
         return collection.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.invalidate(dto.guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.invalidate(dto.guildId) }
     }
 
     /**
@@ -85,15 +85,15 @@ class NameRuleDAO private constructor() {
         if (fields.isEmpty()) {
             // delete all of the guild's data
             return collection.deleteOne(filter(guildId)).toMono()
-                    .subscribeOn(scheduler)
-                    .doOnNext { ruleCache.invalidate(guildId) }
+                .subscribeOn(scheduler)
+                .doOnNext { ruleCache.invalidate(guildId) }
         }
 
         val unsets = fields.map { unset(it) }
         val combined = combine(unsets)
         return collection.updateOne(filter(guildId), combined).toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.invalidate(guildId) }
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.invalidate(guildId) }
     }
 
     /**
@@ -111,11 +111,11 @@ class NameRuleDAO private constructor() {
 
         return collection.updateOne(
             filter(guildId),
-                setValue(NameRuleDTO::pattern, pattern), upsert()
+            setValue(NameRuleDTO::pattern, pattern), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.invalidate(guildId) }
+            .toMono()
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.invalidate(guildId) }
     }
 
     /**
@@ -133,11 +133,11 @@ class NameRuleDAO private constructor() {
 
         return collection.updateOne(
             filter(guildId),
-                setValue(NameRuleDTO::hintMessage, hintMessage), upsert()
+            setValue(NameRuleDTO::hintMessage, hintMessage), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.invalidate(guildId) }
+            .toMono()
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.invalidate(guildId) }
     }
 
     /**
@@ -155,11 +155,11 @@ class NameRuleDAO private constructor() {
 
         return collection.updateOne(
             filter(guildId),
-                setValue(NameRuleDTO::enforce, enforce), upsert()
+            setValue(NameRuleDTO::enforce, enforce), upsert()
         )
-                .toMono()
-                .subscribeOn(scheduler)
-                .doOnNext { ruleCache.invalidate(guildId) }
+            .toMono()
+            .subscribeOn(scheduler)
+            .doOnNext { ruleCache.invalidate(guildId) }
     }
 
     companion object {

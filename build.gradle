@@ -10,7 +10,7 @@ plugins {
     id 'net.researchgate.release' version "${releasePluginVersion}"
 }
 
-task reportMerge(type: ReportMergeTask) {
+tasks.register('reportMerge', ReportMergeTask) {
     output = project.layout.buildDirectory.file("reports/detekt/merge.sarif") // or "reports/detekt/merge.sarif"
 }
 
@@ -44,38 +44,26 @@ allprojects {
 
     group = 'com.dongtronic.diabot'
 
-    sourceCompatibility = 11
-    targetCompatibility = 11
-
-    // from: https://kotlinlang.org/docs/reference/using-gradle.html
-    //noinspection GroovyAssignabilityCheck,GrUnresolvedAccess
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        //noinspection GrUnresolvedAccess
-        kotlinOptions {
-            jvmTarget = "11"
-            freeCompilerArgs = [
-                    "-Xjvm-default=all"
-            ]
-        }
-    }
+    sourceCompatibility = 17
+    targetCompatibility = 17
 
     detekt {
         buildUponDefaultConfig = true // preconfigure defaults
         allRules = false // activate all available (even unstable) rules.
         config = files("$rootDir/config/detekt/detekt.yml")
         // point to your custom config defining rules to run, overwriting default behavior
-        baseline = file("$rootDir/config/detekt/baseline.xml")
+        baseline = file("config/detekt/baseline.xml")
 
         source = objects.fileCollection().from(
                 "src/main/java",
-                "src/test/java",
-                "bot/src/main/java",
-                "bg-graph/src/main/java",
-                "nightscout-api/src/main/java",
-                "utilities/src/main/java"
+                "src/test/java"
+//                "bot/src/main/java",
+//                "bg-graph/src/main/java",
+//                "nightscout-api/src/main/java",
+//                "utilities/src/main/java"
         )
 
-        autoCorrect = true
+        autoCorrect(true)
 
         reports {
             html.enabled = true // observe findings in your browser with structure and code snippets
@@ -100,6 +88,7 @@ allprojects {
         }
     }
 }
+
 
 task stage(dependsOn: ['clean', 'shadowJar'])
 

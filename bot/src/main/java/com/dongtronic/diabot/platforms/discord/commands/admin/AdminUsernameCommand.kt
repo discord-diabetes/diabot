@@ -22,10 +22,10 @@ class AdminUsernameCommand(category: Category, parent: Command?) : DiscordComman
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.aliases = arrayOf("u")
         this.children = arrayOf(
-                AdminUsernamePatternCommand(category, this),
-                AdminUsernameEnableCommand(category, this),
-                AdminUsernameDisableCommand(category, this),
-                AdminUsernameHintCommand(category, this)
+            AdminUsernamePatternCommand(category, this),
+            AdminUsernameEnableCommand(category, this),
+            AdminUsernameDisableCommand(category, this),
+            AdminUsernameHintCommand(category, this)
         )
     }
 

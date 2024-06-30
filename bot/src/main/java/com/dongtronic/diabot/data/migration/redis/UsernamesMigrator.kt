@@ -36,28 +36,28 @@ class UsernamesMigrator {
 
             // if all the data is useless then skip this guild
             if (!enforcing
-                    && hint.isNullOrEmpty()
-                    && pattern.isNullOrEmpty()
+                && hint.isNullOrEmpty()
+                && pattern.isNullOrEmpty()
             ) {
                 return@mapNotNull null
             }
 
             NameRuleDTO(
-                    guildId = guildId,
-                    enforce = enforcing,
-                    pattern = pattern ?: "",
-                    hintMessage = hint ?: ""
+                guildId = guildId,
+                enforce = enforcing,
+                pattern = pattern ?: "",
+                hintMessage = hint ?: ""
             )
         }
 
         dtos.toFlux()
-                .flatMap { mongo.addGuild(it) }
-                .map { it.wasAcknowledged() }
-                .onErrorContinue { t, u ->
-                    logger.warn("Could not import guild username rule: $u", t)
-                }
-                .filter { it }
-                .blockLast()!!
+            .flatMap { mongo.addGuild(it) }
+            .map { it.wasAcknowledged() }
+            .onErrorContinue { t, u ->
+                logger.warn("Could not import guild username rule: $u", t)
+            }
+            .filter { it }
+            .blockLast()!!
     }
 
     /**
@@ -65,7 +65,7 @@ class UsernamesMigrator {
      */
     private fun getAllGids(): Set<String> {
         return jedis.keys("*:*username*")
-                .map { it.substringBefore(":") }
-                .toSet()
+            .map { it.substringBefore(":") }
+            .toSet()
     }
 }

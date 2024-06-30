@@ -1,7 +1,6 @@
 package com.dongtronic.diabot.data.nutrition
 
 import com.fasterxml.jackson.annotation.*
-import java.util.*
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder("foods")
@@ -39,9 +38,9 @@ class NutritionResponseDTO {
         val returned = StringBuilder()
         for (food in foods) {
             returned.append(food.foodName)
-                    .append(" (").append(food.servingQty)
-                    .append(" ").append(food.servingUnit)
-                    .append(")\n")
+                .append(" (").append(food.servingQty)
+                .append(" ").append(food.servingUnit)
+                .append(")\n")
         }
         return returned.toString()
     }

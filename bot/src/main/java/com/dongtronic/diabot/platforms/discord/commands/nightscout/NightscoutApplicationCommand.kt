@@ -143,15 +143,15 @@ class NightscoutApplicationCommand : ApplicationCommand {
         val plottingStyle = PlottingStyle.values().first { it.name.startsWith(mode, true) }
 
         NightscoutDAO.instance.getUser(event.user.id)
-                .map { it.graphSettings }
-                .map { it.copy(plotMode = plottingStyle) }
-                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
-                .subscribe({
-                    event.reply("Plotting style changed to `${it.plotMode.name}`").setEphemeral(true).queue()
-                }, {
-                    replyError(event, it, "Could not update plotting style: ${it.javaClass.simpleName}")
-                    logger.warn("Unexpected error when changing graph mode for ${event.user}", it)
-                })
+            .map { it.graphSettings }
+            .map { it.copy(plotMode = plottingStyle) }
+            .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+            .subscribe({
+                event.reply("Plotting style changed to `${it.plotMode.name}`").setEphemeral(true).queue()
+            }, {
+                replyError(event, it, "Could not update plotting style: ${it.javaClass.simpleName}")
+                logger.warn("Unexpected error when changing graph mode for ${event.user}", it)
+            })
     }
 
     private fun setGraphHours(event: SlashCommandInteractionEvent) {
@@ -163,46 +163,46 @@ class NightscoutApplicationCommand : ApplicationCommand {
         }
 
         NightscoutDAO.instance.getUser(event.user.id)
-                .map { it.graphSettings.copy(hours = hours) }
-                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
-                .subscribe({
-                    val plural = if (it.hours != 1L) "s" else ""
-                    event.reply("Your future graphs will now display ${it.hours} hour$plural of data").setEphemeral(true).queue()
-                }, {
-                    replyError(event, it, "Could not change the graph hours: ${it.javaClass.simpleName}")
-                    logger.warn("Unexpected error when changing graph hours for ${event.user}", it)
-                })
+            .map { it.graphSettings.copy(hours = hours) }
+            .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+            .subscribe({
+                val plural = if (it.hours != 1L) "s" else ""
+                event.reply("Your future graphs will now display ${it.hours} hour$plural of data").setEphemeral(true).queue()
+            }, {
+                replyError(event, it, "Could not change the graph hours: ${it.javaClass.simpleName}")
+                logger.warn("Unexpected error when changing graph hours for ${event.user}", it)
+            })
     }
 
     private fun setGraphAnimals(event: SlashCommandInteractionEvent) {
         val enabled = event.getOption(commandArgEnabled)?.asBoolean
 
         NightscoutDAO.instance.getUser(event.user.id)
-                .map {
-                    val newState = enabled ?: (it.graphSettings.theme != GraphTheme.ANIMALS)
-                    val theme = if (newState) GraphTheme.ANIMALS else GraphTheme.DARK
-                    it.graphSettings.copy(theme = theme)
+            .map {
+                val newState = enabled ?: (it.graphSettings.theme != GraphTheme.ANIMALS)
+                val theme = if (newState) GraphTheme.ANIMALS else GraphTheme.DARK
+                it.graphSettings.copy(theme = theme)
+            }
+            .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
+            .subscribe({
+                val msg = if (it.theme == GraphTheme.ANIMALS) {
+                    "Congratulations, you've successfully unlocked the purr-fect 'Furry Friends' mode! From now on, your graphs will " +
+                        "have an extra dose of cuteness. It's like having a virtual pet on your screen. We hope you're feline good " +
+                        "about your decision! Meow!"
+                } else {
+                    "Oh no, you've decided to paws our 'Furry Friends' mode. We'll miss those cute little noses and wagging tails in " +
+                        "your graphs, but we understand that not everyone can handle so much adorableness at once. Thanks for " +
+                        "playing along, and happy graphing without our furry companions!"
                 }
-                .flatMap { NightscoutDAO.instance.updateGraphSettings(event.user.id, it) }
-                .subscribe({
-                    val msg = if (it.theme == GraphTheme.ANIMALS) {
-                        "Congratulations, you've successfully unlocked the purr-fect 'Furry Friends' mode! From now on, your graphs will " +
-                                "have an extra dose of cuteness. It's like having a virtual pet on your screen. We hope you're feline good " +
-                                "about your decision! Meow!"
-                    } else {
-                        "Oh no, you've decided to paws our 'Furry Friends' mode. We'll miss those cute little noses and wagging tails in " +
-                                "your graphs, but we understand that not everyone can handle so much adorableness at once. Thanks for " +
-                                "playing along, and happy graphing without our furry companions!"
-                    }
 
-                    event.reply(msg).setEphemeral(true).queue()
-                }, {
-                    replyError(event, it, "Oops! It looks like there's been an error (`${it.javaClass.simpleName}`) while trying to " +
-                            "change the 'Furry Friends' mode. Maybe the cats and dogs got too excited? Report this issue to Diabot's GitHub " +
-                            "and we'll get this fixed faster than you can say 'pawsome'. Thanks for your patience and " +
-                            "happy graphing without any technical ruff-les!")
-                    logger.warn("Unexpected error when changing graph theme for ${event.user}", it)
-                })
+                event.reply(msg).setEphemeral(true).queue()
+            }, {
+                replyError(event, it, "Oops! It looks like there's been an error (`${it.javaClass.simpleName}`) while trying to " +
+                    "change the 'Furry Friends' mode. Maybe the cats and dogs got too excited? Report this issue to Diabot's GitHub " +
+                    "and we'll get this fixed faster than you can say 'pawsome'. Thanks for your patience and " +
+                    "happy graphing without any technical ruff-les!")
+                logger.warn("Unexpected error when changing graph theme for ${event.user}", it)
+            })
     }
 
     private fun clearToken(event: SlashCommandInteractionEvent) {
@@ -259,17 +259,17 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
     private fun confirmDeleteData(event: SlashCommandInteractionEvent) {
         event.reply("Are you sure you wish to **delete** your Nightscout settings?\n**This will remove all your Nightscout settings**")
-                .addActionRow(
-                        Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings"),
-                        Button.secondary(commandButtonDeleteCancel, "Cancel")
-                ).setEphemeral(true).queue()
+            .addActionRow(
+                Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings"),
+                Button.secondary(commandButtonDeleteCancel, "Cancel")
+            ).setEphemeral(true).queue()
     }
 
     private fun deleteData(event: ButtonInteractionEvent) {
         NightscoutFacade.clearAll(event.user).subscribe({
             event.editMessage("Your Nightscout settings have been deleted").setActionRow(
-                    Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
-                    Button.secondary(commandButtonDeleteCancel, "Cancel").asDisabled()
+                Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
+                Button.secondary(commandButtonDeleteCancel, "Cancel").asDisabled()
             ).queue()
         }, {
             replyError(event, it, "There was an error while removing your Nightscout settings. Please try again later.")
@@ -278,8 +278,8 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
     private fun cancelDeleteData(event: ButtonInteractionEvent) {
         event.editMessage("Your Nightscout settings were **not** deleted.").setActionRow(
-                Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
-                Button.secondary(commandButtonDeleteCancel, "Cancel").asDisabled()
+            Button.danger(commandButtonDeleteConfirm, "Yes, delete all settings").asDisabled(),
+            Button.secondary(commandButtonDeleteCancel, "Cancel").asDisabled()
         ).queue()
     }
 
@@ -289,42 +289,42 @@ class NightscoutApplicationCommand : ApplicationCommand {
 
     override fun config(): CommandData {
         return Commands.slash(commandName, "Manage your Nightscout settings").addSubcommandGroups(
-                SubcommandGroupData(groupNameSet, "Set Nightscout settings").addSubcommands(
-                        SubcommandData(commandModeUrl, "Set Nightscout url")
-                                .addOption(OptionType.STRING, commandArgUrl, "URL of your Nightscout instance", true),
-                        SubcommandData(commandModeToken, "Set Nightscout token")
-                                .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
-                        SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
-                                .addOptions(
-                                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                                .addChoice(commandArgPrivate, commandArgPrivate)
-                                                .addChoice(commandArgPublic, commandArgPublic)
-                                ),
-                        SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
-                                .addOptions(
-                                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
-                                                .addChoice(commandArgPrivate, commandArgPrivate)
-                                ),
-                        SubcommandData(commandModeGraphMode, "Set the plotting style for Nightscout graphs")
-                                .addOptions(
-                                        OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
-                                                .addChoice(commandArgScatter, commandArgScatter)
-                                                .addChoice(commandArgLine, commandArgLine)
-                                ),
-                        SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
-                                .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true)),
-                        SubcommandData(commandModeGraphAnimals, "Toggles the April Fools' joke in Nightscout graphs")
-                                .addOptions(OptionData(OptionType.BOOLEAN, commandArgEnabled, "Enabled", false)),
-                ),
-                SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
-                        SubcommandData(commandModeUrl, "Clear Nightscout url"),
-                        SubcommandData(commandModeToken, "Clear Nightscout token"),
-                        SubcommandData(commandModeAll, "Clear all Nightscout data")
-                ),
-                SubcommandGroupData(groupNameGet, "Get Nightscout settings (private)").addSubcommands(
-                        SubcommandData(commandModeUrl, "Get Nightscout URL"),
-                        SubcommandData(commandModeToken, "Get Nightscout token")
-                )
+            SubcommandGroupData(groupNameSet, "Set Nightscout settings").addSubcommands(
+                SubcommandData(commandModeUrl, "Set Nightscout url")
+                    .addOption(OptionType.STRING, commandArgUrl, "URL of your Nightscout instance", true),
+                SubcommandData(commandModeToken, "Set Nightscout token")
+                    .addOption(OptionType.STRING, commandArgToken, "The authentication token of your Nightscout instance", true),
+                SubcommandData(commandModePrivacy, "Set Nightscout privacy setting in this server")
+                    .addOptions(
+                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                            .addChoice(commandArgPrivate, commandArgPrivate)
+                            .addChoice(commandArgPublic, commandArgPublic)
+                    ),
+                SubcommandData(commandModeGlobalPrivacy, "Set Nightscout privacy setting in all servers")
+                    .addOptions(
+                        OptionData(OptionType.STRING, commandArgPrivacy, "Privacy setting", true)
+                            .addChoice(commandArgPrivate, commandArgPrivate)
+                    ),
+                SubcommandData(commandModeGraphMode, "Set the plotting style for Nightscout graphs")
+                    .addOptions(
+                        OptionData(OptionType.STRING, commandArgMode, "Plotting style", true)
+                            .addChoice(commandArgScatter, commandArgScatter)
+                            .addChoice(commandArgLine, commandArgLine)
+                    ),
+                SubcommandData(commandModeGraphHours, "Set the number of hours displayed in Nightscout graphs")
+                    .addOptions(OptionData(OptionType.INTEGER, commandArgHours, "Hours", true)),
+                SubcommandData(commandModeGraphAnimals, "Toggles the April Fools' joke in Nightscout graphs")
+                    .addOptions(OptionData(OptionType.BOOLEAN, commandArgEnabled, "Enabled", false)),
+            ),
+            SubcommandGroupData(groupNameClear, "Clear Nightscout settings").addSubcommands(
+                SubcommandData(commandModeUrl, "Clear Nightscout url"),
+                SubcommandData(commandModeToken, "Clear Nightscout token"),
+                SubcommandData(commandModeAll, "Clear all Nightscout data")
+            ),
+            SubcommandGroupData(groupNameGet, "Get Nightscout settings (private)").addSubcommands(
+                SubcommandData(commandModeUrl, "Get Nightscout URL"),
+                SubcommandData(commandModeToken, "Get Nightscout token")
+            )
         )
     }
 }

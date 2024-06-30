@@ -10,15 +10,15 @@ object CommandUtils {
 
     fun requireAdminChannel(event: CommandEvent): Mono<Boolean> {
         return ChannelDAO.instance.hasAttribute(event.channel.id, ChannelDTO.ChannelAttribute.ADMIN)
-                // assume it's not an admin channel if an error occurred
-                .onErrorReturn(false)
-                .flatMap {
-                    return@flatMap if (!it) {
-                        event.replyError("This command can only be executed in an admin channel")
-                        Mono.empty()
-                    } else {
-                        it.toMono()
-                    }
+            // assume it's not an admin channel if an error occurred
+            .onErrorReturn(false)
+            .flatMap {
+                return@flatMap if (!it) {
+                    event.replyError("This command can only be executed in an admin channel")
+                    Mono.empty()
+                } else {
+                    it.toMono()
                 }
+            }
     }
 }

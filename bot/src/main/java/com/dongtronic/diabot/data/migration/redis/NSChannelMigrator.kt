@@ -26,12 +26,12 @@ class NSChannelMigrator {
         val keys = jedis.keys("*:nightscoutshortchannels")
 
         return mongo.collection
-                .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
-                .toMono()
-                .map {
-                    return@map it == 0L || keys.size.toLong() > it
-                }
-                .block()!!
+            .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT)
+            .toMono()
+            .map {
+                return@map it == 0L || keys.size.toLong() > it
+            }
+            .block()!!
     }
 
     @ChangeSet(order = "001", id = "redisNightscoutShortChannels", author = "Garlic")
@@ -42,17 +42,17 @@ class NSChannelMigrator {
 
         logger.info("Got keys $keys")
         Flux.fromIterable(keys)
-                .map {
-                    val guildId = it.substringBefore(":")
-                    val channels = redis.listShortChannels(guildId)
-                    // convert to a pair: guildId<=>listOfShortChannels
-                    it to channels
-                }.flatMap { pair ->
-                    val guildId = pair.first.substringBefore(":")
-                    return@flatMap pair.second.toFlux().flatMap {
-                        // add the NIGHTSCOUT_SHORT attribute to each channel
-                        mongo.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, true)
-                    }.count()
-                }.blockLast()!!
+            .map {
+                val guildId = it.substringBefore(":")
+                val channels = redis.listShortChannels(guildId)
+                // convert to a pair: guildId<=>listOfShortChannels
+                it to channels
+            }.flatMap { pair ->
+                val guildId = pair.first.substringBefore(":")
+                return@flatMap pair.second.toFlux().flatMap {
+                    // add the NIGHTSCOUT_SHORT attribute to each channel
+                    mongo.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.NIGHTSCOUT_SHORT, true)
+                }.count()
+            }.blockLast()!!
     }
 }

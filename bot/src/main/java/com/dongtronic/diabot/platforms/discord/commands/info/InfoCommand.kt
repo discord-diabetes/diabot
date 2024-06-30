@@ -17,9 +17,9 @@ class InfoCommand(category: Category) : DiscordCommand(category, null) {
         this.aliases = arrayOf("i")
         this.examples = arrayOf()
         this.children = arrayOf(
-                InfoSetCommand(category, this),
-                InfoListCommand(category, this),
-                InfoDeleteCommand(category, this)
+            InfoSetCommand(category, this),
+            InfoListCommand(category, this),
+            InfoDeleteCommand(category, this)
         )
     }
 

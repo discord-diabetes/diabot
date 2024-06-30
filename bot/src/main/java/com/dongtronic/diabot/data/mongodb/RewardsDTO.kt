@@ -7,9 +7,9 @@ import net.dv8tion.jda.api.entities.Role
  * Holds the rewards that a (required) role gives
  */
 data class RewardsDTO(
-        val guildId: String,
-        val requiredRole: String,
-        val roleRewards: List<String> = emptyList()
+    val guildId: String,
+    val requiredRole: String,
+    val roleRewards: List<String> = emptyList()
 ) {
     /**
      * Converts the required role ID to a [Role].

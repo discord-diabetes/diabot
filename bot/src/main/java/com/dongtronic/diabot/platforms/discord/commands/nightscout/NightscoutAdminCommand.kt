@@ -17,10 +17,10 @@ class NightscoutAdminCommand(category: Category) : DiscordCommand(category, null
         this.examples = arrayOf("diabot nsadmin list", "diabot nsadmin set <user> <url>", "diabot nsadmin delete <user>")
         this.userPermissions = arrayOf(Permission.ADMINISTRATOR)
         this.children = arrayOf(
-                NightscoutAdminSetCommand(category, this),
-                NightscoutAdminDeleteCommand(category, this),
-                NightscoutAdminSimpleCommand(category, this),
-                NightscoutAdminGraphCommand(category, this),
+            NightscoutAdminSetCommand(category, this),
+            NightscoutAdminDeleteCommand(category, this),
+            NightscoutAdminSimpleCommand(category, this),
+            NightscoutAdminGraphCommand(category, this),
         )
     }
 

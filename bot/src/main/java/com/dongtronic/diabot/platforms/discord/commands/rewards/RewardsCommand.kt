@@ -14,8 +14,8 @@ class RewardsCommand(category: Category) : DiscordCommand(category, null) {
         this.guildOnly = true
         this.aliases = arrayOf("reward", "r")
         this.children = arrayOf(
-                RewardsOptInCommand(category, this),
-                RewardsOptOutCommand(category, this)
+            RewardsOptInCommand(category, this),
+            RewardsOptOutCommand(category, this)
         )
     }
 

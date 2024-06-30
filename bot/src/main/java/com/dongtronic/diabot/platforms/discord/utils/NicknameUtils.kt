@@ -19,8 +19,8 @@ object NicknameUtils {
 
         return if (event.channelType == ChannelType.TEXT) {
             event.guild.retrieveMember(user).submitMono()
-                    .map { it.effectiveName }
-                    .onErrorResume { fallback }
+                .map { it.effectiveName }
+                .onErrorResume { fallback }
         } else {
             fallback
         }

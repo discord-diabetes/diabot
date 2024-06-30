@@ -40,11 +40,11 @@ class MongoQuoteConversion {
      * Mongo filter for the old quote format.
      */
     private val oldQuoteFilter: Bson = or(
-            QuoteDTO::authorId type BsonType.INT64,
-            QuoteDTO::channelId type BsonType.INT64,
-            QuoteDTO::guildId type BsonType.INT64,
-            QuoteDTO::messageId type BsonType.INT64,
-            QuoteDTO::quoteId type BsonType.INT64
+        QuoteDTO::authorId type BsonType.INT64,
+        QuoteDTO::channelId type BsonType.INT64,
+        QuoteDTO::guildId type BsonType.INT64,
+        QuoteDTO::messageId type BsonType.INT64,
+        QuoteDTO::quoteId type BsonType.INT64
     )
 
     /**
@@ -65,8 +65,8 @@ class MongoQuoteConversion {
      */
     fun convertIndexes(): Mono<Long> {
         return quoteIndexes.updateMany(oldQuoteIndexFilter, updatePipeline(QuoteIndexDTO::class)).toMono()
-                .doOnNext { logger.debug("Converted ${it.modifiedCount} quote indexes") }
-                .map { it.modifiedCount }
+            .doOnNext { logger.debug("Converted ${it.modifiedCount} quote indexes") }
+            .map { it.modifiedCount }
     }
 
     /**
@@ -76,8 +76,8 @@ class MongoQuoteConversion {
      */
     fun convertQuotes(): Mono<Long> {
         return quotes.updateMany(oldQuoteFilter, updatePipeline(QuoteDTO::class)).toMono()
-                .doOnNext { logger.debug("Converted ${it.modifiedCount} quotes") }
-                .map { it.modifiedCount }
+            .doOnNext { logger.debug("Converted ${it.modifiedCount} quotes") }
+            .map { it.modifiedCount }
     }
 
     /**

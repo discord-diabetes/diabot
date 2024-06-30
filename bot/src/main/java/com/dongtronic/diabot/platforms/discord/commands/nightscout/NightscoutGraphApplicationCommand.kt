@@ -40,8 +40,8 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
         if (cooldownSeconds != null) {
             val plural = if (abs(cooldownSeconds) != 1L) "s" else ""
             event.reply("This command is currently on a cooldown. You can use it again in $cooldownSeconds second$plural")
-                    .setEphemeral(true)
-                    .queue()
+                .setEphemeral(true)
+                .queue()
             return
         }
 
@@ -49,14 +49,14 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
         if (hours != null && (hours < 1 || hours > 24)) {
             event.reply("The number of hours must be between 1 and 24")
-                    .setEphemeral(true)
-                    .queue()
+                .setEphemeral(true)
+                .queue()
             return
         }
 
         try {
             val enabled = !event.isFromGuild ||
-                    GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
+                GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
             if (!enabled) {
                 event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
@@ -97,54 +97,54 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
     private fun cleanCooldowns() {
         cooldowns.filter { it.value <= System.currentTimeMillis() }
-                .forEach { cooldowns.remove(it.key) }
+            .forEach { cooldowns.remove(it.key) }
     }
 
     override fun config(): CommandData {
         return Commands.slash(commandName, "Generate a graph from Nightscout")
-                .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
+            .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
     }
 
     private fun getDataSet(senderId: String, hours: Long?): Mono<BgGraph> {
         return NightscoutDAO.instance.getUser(senderId)
-                .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
-                .zipWhen { userDTO ->
-                    if (userDTO.url == null) {
-                        return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
-                    }
-
-                    val ns = Nightscout(userDTO.url, userDTO.token)
-
-                    val time = (hours ?: userDTO.graphSettings.hours)
-                            .let { Duration.ofHours(it) }
-
-                    // calculate the amount of readings there should be.
-                    // assume 1 reading every 5 minutes and a minimum of 1 reading
-                    val count = max(time.toMinutes() / 5, 1).toInt()
-                    val startTime = Instant.now()
-                            .minus(time)
-                            .toEpochMilli()
-                            .toString()
-                    val findParam = EntriesParameters()
-                            .find("sgv", operator = MongoOperator.exists)
-                            .find("date", startTime, MongoOperator.gte)
-                            .count(count)
-                            .toMap()
-                    ns.getSgv(params = findParam, throwOnConversion = false)
-                            // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
-                            .onErrorMap({ error ->
-                                error is HttpException ||
-                                        error is UnknownHostException ||
-                                        error is JsonProcessingException ||
-                                        error is NoNightscoutDataException
-                            }, {
-                                NightscoutFetchException(userDTO, it)
-                            })
-                            .flatMap { ns.getSettings(it) }
-                }.map { tuple ->
-                    val userDTO = tuple.t1
-                    val ns = tuple.t2
-                    BgGraph(userDTO.graphSettings).addEntries(ns)
+            .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
+            .zipWhen { userDTO ->
+                if (userDTO.url == null) {
+                    return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
                 }
+
+                val ns = Nightscout(userDTO.url, userDTO.token)
+
+                val time = (hours ?: userDTO.graphSettings.hours)
+                    .let { Duration.ofHours(it) }
+
+                // calculate the amount of readings there should be.
+                // assume 1 reading every 5 minutes and a minimum of 1 reading
+                val count = max(time.toMinutes() / 5, 1).toInt()
+                val startTime = Instant.now()
+                    .minus(time)
+                    .toEpochMilli()
+                    .toString()
+                val findParam = EntriesParameters()
+                    .find("sgv", operator = MongoOperator.exists)
+                    .find("date", startTime, MongoOperator.gte)
+                    .count(count)
+                    .toMap()
+                ns.getSgv(params = findParam, throwOnConversion = false)
+                    // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
+                    .onErrorMap({ error ->
+                        error is HttpException ||
+                            error is UnknownHostException ||
+                            error is JsonProcessingException ||
+                            error is NoNightscoutDataException
+                    }, {
+                        NightscoutFetchException(userDTO, it)
+                    })
+                    .flatMap { ns.getSettings(it) }
+            }.map { tuple ->
+                val userDTO = tuple.t1
+                val ns = tuple.t2
+                BgGraph(userDTO.graphSettings).addEntries(ns)
+            }
     }
 }

@@ -19,7 +19,7 @@ import reactor.kotlin.core.publisher.toMono
 class ChannelDAO private constructor() {
     private val mongo = MongoDB.getInstance().database
     val collection: MongoCollection<ChannelDTO> =
-            mongo.getCollection(DiabotCollection.CHANNELS.getEnv(), ChannelDTO::class.java)
+        mongo.getCollection(DiabotCollection.CHANNELS.getEnv(), ChannelDTO::class.java)
     private val scheduler = Schedulers.boundedElastic()
     private val logger = logger()
 
@@ -27,8 +27,8 @@ class ChannelDAO private constructor() {
         // Create a unique index
         val options = IndexOptions().unique(true)
         collection.createIndex(descending(ChannelDTO::channelId), options).toMono()
-                .subscribeOn(scheduler)
-                .subscribe()
+            .subscribeOn(scheduler)
+            .subscribe()
     }
 
     /**
@@ -39,7 +39,7 @@ class ChannelDAO private constructor() {
      */
     fun getChannels(guildId: String): Flux<ChannelDTO> {
         return collection.find(filterGuild(guildId))
-                .toFlux().subscribeOn(scheduler)
+            .toFlux().subscribeOn(scheduler)
     }
 
     /**
@@ -51,7 +51,7 @@ class ChannelDAO private constructor() {
      */
     fun getChannel(channelId: String, guildId: String? = null): Mono<ChannelDTO> {
         return collection.find(filter(channelId, guildId))
-                .toMono().subscribeOn(scheduler)
+            .toMono().subscribeOn(scheduler)
     }
 
     /**
@@ -63,8 +63,8 @@ class ChannelDAO private constructor() {
      */
     fun hasAttribute(channelId: String, attribute: ChannelDTO.ChannelAttribute): Mono<Boolean> {
         return collection.countDocuments(and(filter(channelId), ChannelDTO::attributes `in` listOf(attribute)))
-                .toMono().subscribeOn(scheduler)
-                .map { it != 0L }
+            .toMono().subscribeOn(scheduler)
+            .map { it != 0L }
     }
 
     /**
@@ -76,7 +76,7 @@ class ChannelDAO private constructor() {
      */
     fun addChannel(dto: ChannelDTO): Mono<InsertOneResult> {
         return collection.insertOne(dto).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -87,7 +87,7 @@ class ChannelDAO private constructor() {
      */
     fun deleteChannel(channelId: String): Mono<DeleteResult> {
         return collection.deleteOne(filter(channelId)).toMono()
-                .subscribeOn(scheduler)
+            .subscribeOn(scheduler)
     }
 
     /**
@@ -101,10 +101,10 @@ class ChannelDAO private constructor() {
      * @return The updated [ChannelDTO]
      */
     fun changeAttribute(
-            guildId: String,
-            channelId: String,
-            attribute: ChannelDTO.ChannelAttribute,
-            add: Boolean = true
+        guildId: String,
+        channelId: String,
+        attribute: ChannelDTO.ChannelAttribute,
+        add: Boolean = true
     ): Mono<ChannelDTO> {
         val upsertAfter = findOneAndUpdateUpsert().returnDocument(ReturnDocument.AFTER)
         val channelFilter = filter(channelId, guildId)
@@ -115,9 +115,9 @@ class ChannelDAO private constructor() {
         }
 
         return collection.findOneAndUpdate(channelFilter, update, upsertAfter).toMono()
-                .subscribeOn(scheduler)
-                // delete document if channel attributes are empty
-                .doOnNext { if (it.attributes.isEmpty()) deleteChannel(it.channelId).subscribe() }
+            .subscribeOn(scheduler)
+            // delete document if channel attributes are empty
+            .doOnNext { if (it.attributes.isEmpty()) deleteChannel(it.channelId).subscribe() }
     }
 
     companion object {

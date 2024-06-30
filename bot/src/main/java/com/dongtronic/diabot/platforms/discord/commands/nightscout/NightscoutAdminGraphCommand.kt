@@ -19,8 +19,8 @@ class NightscoutAdminGraphCommand(category: Category, parent: Command?) : Discor
         this.ownerCommand = false
         this.category = category
         this.examples = arrayOf(
-                this.parent!!.name + " graph",
-                this.parent.name + " graph false"
+            this.parent!!.name + " graph",
+            this.parent.name + " graph false"
         )
     }
 

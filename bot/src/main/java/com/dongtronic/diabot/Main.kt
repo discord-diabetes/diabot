@@ -37,19 +37,19 @@ import javax.security.auth.login.LoginException
 object Main {
     private val debug = System.getenv("DIABOT_DEBUG") != null
     private val permissions = arrayOf(
-            // General Permissions
-            Permission.MANAGE_ROLES,
-            Permission.NICKNAME_MANAGE,
-            Permission.VIEW_CHANNEL,
-            // Text Permissions
-            Permission.MESSAGE_SEND,
-            Permission.MESSAGE_SEND_IN_THREADS,
-            Permission.MESSAGE_MANAGE,
-            Permission.MESSAGE_EMBED_LINKS,
-            Permission.MESSAGE_HISTORY,
-            Permission.MESSAGE_EXT_EMOJI,
-            Permission.MESSAGE_ADD_REACTION,
-            Permission.USE_APPLICATION_COMMANDS,
+        // General Permissions
+        Permission.MANAGE_ROLES,
+        Permission.NICKNAME_MANAGE,
+        Permission.VIEW_CHANNEL,
+        // Text Permissions
+        Permission.MESSAGE_SEND,
+        Permission.MESSAGE_SEND_IN_THREADS,
+        Permission.MESSAGE_MANAGE,
+        Permission.MESSAGE_EMBED_LINKS,
+        Permission.MESSAGE_HISTORY,
+        Permission.MESSAGE_EXT_EMOJI,
+        Permission.MESSAGE_ADD_REACTION,
+        Permission.USE_APPLICATION_COMMANDS,
     )
 
     @Throws(LoginException::class)
@@ -59,14 +59,6 @@ object Main {
         MigrationManager().initialize()
 
         val token = System.getenv("DIABOTTOKEN") // token on dokku
-
-        // create command categories
-        val adminCategory = Category("Admin")
-        val bgCategory = Category("BG conversions")
-        val a1cCategory = Category("A1c estimations")
-        val funCategory = Category("Fun")
-        val utilitiesCategory = Category("Utilities")
-        val infoCategory = Category("Informative")
 
         // define a command client
         val client = CommandClientBuilder()
@@ -92,44 +84,7 @@ object Main {
         client.setManualUpsert(true)
 
         // add commands
-        client.addCommands(
-                // command to show information about the bot
-                AboutCommand(
-                    utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
-                        arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
-                        permissions
-                ),
-
-                // A1c
-                EstimationCommand(a1cCategory),
-
-                // BG
-                ConvertCommand(bgCategory),
-                NightscoutCommand(bgCategory),
-
-                // Utility
-                PingCommand(utilitiesCategory),
-                RewardsCommand(utilitiesCategory),
-                GithubCommand(utilitiesCategory),
-                DisclaimerCommand(utilitiesCategory),
-                NutritionCommand(utilitiesCategory),
-
-                // Info
-                InfoCommand(infoCategory),
-                SupportCommand(infoCategory),
-
-                // Fun
-                ExcuseCommand(funCategory),
-                OwnerCommand(funCategory),
-                QuoteCommand(funCategory),
-
-                // Admin
-                AdminCommand(adminCategory),
-                ShutdownCommand(adminCategory),
-                NightscoutAdminCommand(adminCategory),
-                RolesCommand(adminCategory),
-                GuildlistCommand(waiter)
-        )
+        addClientCommands(client, waiter)
 
         // Custom help handler
         client.setHelpConsumer(HelpListener())
@@ -137,38 +92,90 @@ object Main {
         val builtClient = client.build()
 
         val shardManager = DefaultShardManagerBuilder.createDefault(token)
-                .setEnabledIntents(
-                        GatewayIntent.DIRECT_MESSAGES,
-                        GatewayIntent.GUILD_MEMBERS,
-                        GatewayIntent.GUILD_MESSAGES,
-                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
-                        GatewayIntent.MESSAGE_CONTENT,
-                )
-                .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
-                .setShardsTotal(-1) // Let Discord decide how many shards we need
-                .injectKTX() // Add coroutine event support
-                .addEventListeners(
-                        waiter,
-                        builtClient,
-                        ConversionListener(prefix),
-                        RewardListener(),
-                        UsernameEnforcementListener(),
-                        OhNoListener(),
-                        QuoteListener(builtClient),
-                )
-                .build()
+            .setEnabledIntents(
+                GatewayIntent.DIRECT_MESSAGES,
+                GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                GatewayIntent.MESSAGE_CONTENT,
+            )
+            .disableCache(EnumSet.allOf(CacheFlag::class.java)) // We don't need any cached data
+            .setShardsTotal(-1) // Let Discord decide how many shards we need
+            .injectKTX() // Add coroutine event support
+            .addEventListeners(
+                waiter,
+                builtClient,
+                ConversionListener(prefix),
+                RewardListener(),
+                UsernameEnforcementListener(),
+                OhNoListener(),
+                QuoteListener(builtClient),
+            )
+            .build()
 
         registerSlashCommands(shardManager)
+    }
+
+    private fun addClientCommands(
+        client: CommandClientBuilder,
+        waiter: EventWaiter
+    ) {
+        // create command categories
+        val adminCategory = Category("Admin")
+        val bgCategory = Category("BG conversions")
+        val a1cCategory = Category("A1c estimations")
+        val funCategory = Category("Fun")
+        val utilitiesCategory = Category("Utilities")
+        val infoCategory = Category("Informative")
+
+        client.addCommands(
+            // command to show information about the bot
+            AboutCommand(
+                utilitiesCategory, Color(0, 0, 255), "a diabetes bot",
+                arrayOf("Converting between mmol/L and mg/dL", "Performing A1c estimations", "Showing Nightscout information"),
+                permissions
+            ),
+
+            // A1c
+            EstimationCommand(a1cCategory),
+
+            // BG
+            ConvertCommand(bgCategory),
+            NightscoutCommand(bgCategory),
+
+            // Utility
+            PingCommand(utilitiesCategory),
+            RewardsCommand(utilitiesCategory),
+            GithubCommand(utilitiesCategory),
+            DisclaimerCommand(utilitiesCategory),
+            NutritionCommand(utilitiesCategory),
+
+            // Info
+            InfoCommand(infoCategory),
+            SupportCommand(infoCategory),
+
+            // Fun
+            ExcuseCommand(funCategory),
+            OwnerCommand(funCategory),
+            QuoteCommand(funCategory),
+
+            // Admin
+            AdminCommand(adminCategory),
+            ShutdownCommand(adminCategory),
+            NightscoutAdminCommand(adminCategory),
+            RolesCommand(adminCategory),
+            GuildlistCommand(waiter)
+        )
     }
 
     private fun registerSlashCommands(shardManager: ShardManager) {
 
         val applicationCommandListener = ApplicationCommandListener(
-                EstimationApplicationCommand(),
-                NightscoutApplicationCommand(),
-                ConversionApplicationCommand(),
-                NightscoutGraphApplicationCommand(),
-                AwyissApplicationCommand()
+            EstimationApplicationCommand(),
+            NightscoutApplicationCommand(),
+            ConversionApplicationCommand(),
+            NightscoutGraphApplicationCommand(),
+            AwyissApplicationCommand()
         )
 
         val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()

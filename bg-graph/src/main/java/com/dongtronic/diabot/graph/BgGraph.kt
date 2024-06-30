@@ -21,9 +21,9 @@ private const val Y_AXIS_MIN = 40.0
 private const val Y_AXIS_MAX = 15.0
 
 class BgGraph(
-        private val settings: GraphSettings,
-        width: Int = 833,
-        height: Int = 500
+    private val settings: GraphSettings,
+    width: Int = 833,
+    height: Int = 500
 ) : XYChart(width, height) {
     init {
         styler.theme = settings.theme.instance
@@ -86,7 +86,7 @@ class BgGraph(
             }
         }
 
-        GlucoseUnit.values().forEach { unit ->
+        GlucoseUnit.entries.forEach { unit ->
             if (unit == GlucoseUnit.AMBIGUOUS) {
                 return@forEach
             }
@@ -96,43 +96,54 @@ class BgGraph(
             // if the nightscout instance does not have default units (either the settings for this instance have not
             // been fetched or something went horribly wrong): default to preferred if there's no data in the chart.
             val preferredUnits = GlucoseUnit.byName(nightscout.units)?.let { it == unit }
-                    ?: seriesMap.isEmpty()
+                ?: seriesMap.isEmpty()
 
             // don't display mmol/l series on the graph since they're less precise compared to mg/dl
             val hidden = unit == GlucoseUnit.MMOL
 
             ranges.forEach { (rangeColor, entries) ->
-                val data = getSeriesData(entries, unit)
-                val color = if (hidden) Color(0, 0, 0, 0) else rangeColor
-
-                val xySeries = addSeries(UUID.randomUUID().toString(), data.keys.toList(), data.values.toList())
-
-                if (settings.plotMode == PlottingStyle.LINE) {
-                    // set the line color if using line graph
-                    xySeries.lineColor = color
-                }
-
-                xySeries.marker = Circle()
-                xySeries.markerColor = color
-
-                // axis group 0 will be used for creating lines on the graph.
-                // the series which use the preferred glucose unit will then baseline creation off the tick labels for this unit
-                xySeries.yAxisGroup = if (preferredUnits) 0 else 1
-                xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
-
-                var yAxisMin = Y_AXIS_MIN
-                // add 15 to give extra room
-                var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + Y_AXIS_MAX
-
-                if (unit != GlucoseUnit.MGDL) {
-                    yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
-                    yAxisMax /= GlucoseUnit.CONVERSION_FACTOR
-                }
-
-                styler.setYAxisMin(xySeries.yAxisGroup, yAxisMin)
-                styler.setYAxisMax(xySeries.yAxisGroup, yAxisMax)
+                renderRange(entries, unit, hidden, rangeColor, preferredUnits, readings)
             }
         }
+    }
+
+    private fun renderRange(
+        entries: List<BgEntry>,
+        unit: GlucoseUnit,
+        hidden: Boolean,
+        rangeColor: Color,
+        preferredUnits: Boolean,
+        readings: List<BgEntry>
+    ) {
+        val data = getSeriesData(entries, unit)
+        val color = if (hidden) Color(0, 0, 0, 0) else rangeColor
+
+        val xySeries = addSeries(UUID.randomUUID().toString(), data.keys.toList(), data.values.toList())
+
+        if (settings.plotMode == PlottingStyle.LINE) {
+            // set the line color if using line graph
+            xySeries.lineColor = color
+        }
+
+        xySeries.marker = Circle()
+        xySeries.markerColor = color
+
+        // axis group 0 will be used for creating lines on the graph.
+        // the series which use the preferred glucose unit will then baseline creation off the tick labels for this unit
+        xySeries.yAxisGroup = if (preferredUnits) 0 else 1
+        xySeries.xySeriesRenderStyle = settings.plotMode.renderStyle
+
+        var yAxisMin = Y_AXIS_MIN
+        // add 15 to give extra room
+        var yAxisMax = max(readings.maxOf { it.glucose.mgdl }, 200) + Y_AXIS_MAX
+
+        if (unit != GlucoseUnit.MGDL) {
+            yAxisMin /= GlucoseUnit.CONVERSION_FACTOR
+            yAxisMax /= GlucoseUnit.CONVERSION_FACTOR
+        }
+
+        styler.setYAxisMin(xySeries.yAxisGroup, yAxisMin)
+        styler.setYAxisMax(xySeries.yAxisGroup, yAxisMax)
     }
 
     /**
@@ -204,7 +215,7 @@ class BgGraph(
          * @param glucoseUnit [GlucoseUnit] to ensure is not ambiguous
          */
         private fun requireNonAmbiguous(glucoseUnit: GlucoseUnit) =
-                require(glucoseUnit != GlucoseUnit.AMBIGUOUS) { "Glucose unit cannot be ambiguous" }
+            require(glucoseUnit != GlucoseUnit.AMBIGUOUS) { "Glucose unit cannot be ambiguous" }
 
         /**
          * Split and convert a list of [BgEntry]s into a [Map] consisting of the relative BG timestamp in hours and

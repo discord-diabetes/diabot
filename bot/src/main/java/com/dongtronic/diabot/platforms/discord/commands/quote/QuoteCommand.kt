@@ -19,18 +19,18 @@ class QuoteCommand(category: Category) : DiscordCommand(category, null) {
         this.guildOnly = true
         this.aliases = arrayOf("q")
         this.examples = arrayOf(
-                "diabot quote",
-                "diabot quote 1337",
-                "diabot quote @Cas",
-                "diabot quote 795873471530926100"
+            "diabot quote",
+            "diabot quote 1337",
+            "diabot quote @Cas",
+            "diabot quote 795873471530926100"
         )
         this.children = arrayOf(
-                QuoteAddCommand(category, this),
-                QuoteDeleteCommand(category, this),
-                QuoteEditCommand(category, this),
-                QuoteImportCommand(category, this),
-                QuoteMineCommand(category, this),
-                QuoteSearchCommand(category, this)
+            QuoteAddCommand(category, this),
+            QuoteDeleteCommand(category, this),
+            QuoteEditCommand(category, this),
+            QuoteImportCommand(category, this),
+            QuoteMineCommand(category, this),
+            QuoteSearchCommand(category, this)
         )
     }
 

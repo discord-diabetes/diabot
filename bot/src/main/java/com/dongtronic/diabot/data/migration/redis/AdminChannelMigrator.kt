@@ -26,12 +26,12 @@ class AdminChannelMigrator {
         val keys = jedis.keys("*:adminchannels")
 
         return mongo.collection
-                .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.ADMIN)
-                .toMono()
-                .map {
-                    return@map it == 0L || keys.size.toLong() > it
-                }
-                .block()!!
+            .countDocuments(ChannelDTO::attributes contains ChannelDTO.ChannelAttribute.ADMIN)
+            .toMono()
+            .map {
+                return@map it == 0L || keys.size.toLong() > it
+            }
+            .block()!!
     }
 
     @ChangeSet(order = "001", id = "redisAdminChannels", author = "Garlic")
@@ -42,17 +42,17 @@ class AdminChannelMigrator {
 
         logger.info("Got keys $keys")
         Flux.fromIterable(keys)
-                .map {
-                    val guildId = it.substringBefore(":")
-                    val channels = redis.listAdminChannels(guildId) ?: mutableListOf()
-                    // convert to a pair: guildId<=>listOfAdminChannels
-                    it to channels
-                }.flatMap { pair ->
-                    val guildId = pair.first.substringBefore(":")
-                    return@flatMap pair.second.toFlux().flatMap {
-                        // add the ADMIN attribute to each channel
-                        mongo.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
-                    }
-                }.blockLast()!!
+            .map {
+                val guildId = it.substringBefore(":")
+                val channels = redis.listAdminChannels(guildId) ?: mutableListOf()
+                // convert to a pair: guildId<=>listOfAdminChannels
+                it to channels
+            }.flatMap { pair ->
+                val guildId = pair.first.substringBefore(":")
+                return@flatMap pair.second.toFlux().flatMap {
+                    // add the ADMIN attribute to each channel
+                    mongo.changeAttribute(guildId, it, ChannelDTO.ChannelAttribute.ADMIN)
+                }
+            }.blockLast()!!
     }
 }

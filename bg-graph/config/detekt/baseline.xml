@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>LongParameterList:BgGraph.kt$BgGraph$( entries: List&lt;BgEntry&gt;, unit: GlucoseUnit, hidden: Boolean, rangeColor: Color, preferredUnits: Boolean, readings: List&lt;BgEntry&gt; )</ID>
+  </CurrentIssues>
+</SmellBaseline>

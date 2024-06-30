@@ -16,15 +16,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore
  */
 @JsonAutoDetect
 data class QuoteDTO(
-        val quoteId: String? = null,
-        val guildId: String,
-        val channelId: String,
-        val author: String,
-        val authorId: String = "",
-        val quoterId: String = "",
-        val message: String,
-        val messageId: String,
-        val time: Long = System.currentTimeMillis() / 1000
+    val quoteId: String? = null,
+    val guildId: String,
+    val channelId: String,
+    val author: String,
+    val authorId: String = "",
+    val quoterId: String = "",
+    val message: String,
+    val messageId: String,
+    val time: Long = System.currentTimeMillis() / 1000
 ) {
     /**
      * Checks whether a quote has a message link associated with it.
@@ -48,8 +48,8 @@ data class QuoteDTO(
         }
 
         return DISCORD_MESSAGE_LINK.replace("{guild}", guildId)
-                .replace("{channel}", channelId)
-                .replace("{message}", messageId)
+            .replace("{channel}", channelId)
+            .replace("{message}", messageId)
     }
 
     companion object {
