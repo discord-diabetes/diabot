@@ -4,7 +4,7 @@
 
 Please open an issue on GitHub to report security issues. If you believe your security issue is too sensitive for a public issue, email diabotsecurity@cascer1.space
 
-Use GPG key `D236 805B 975C 9C67 A7F1  9D12 E2AB F1E8 2708 2716` for encryption if you wish.
+Use GPG key [`11B9 1DA8 4CB9 0746`](0x4CB90746_public.asc) for encryption if you wish.
 
 ## Testing diabot for vulnerabilities
 
