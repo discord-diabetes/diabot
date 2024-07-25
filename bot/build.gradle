@@ -1,6 +1,6 @@
 dependencies {
     // JDA
-    implementation "com.github.MinnDevelopment:jda-ktx:${jdaKtxVersion}"
+    implementation "club.minnced:jda-ktx:${jdaKtxVersion}"
     implementation "pw.chew:jda-chewtils:${jdaChewtilsVersion}"
     implementation("net.dv8tion:JDA:${jdaVersion}") {
         exclude module: 'opus-java'

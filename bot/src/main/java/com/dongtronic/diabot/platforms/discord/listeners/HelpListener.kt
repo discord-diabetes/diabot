@@ -6,7 +6,6 @@ import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.exceptions.ErrorResponseException
@@ -25,7 +24,7 @@ class HelpListener : Consumer<CommandEvent> {
      */
     private fun sendingError(exc: Throwable, event: CommandEvent) {
         if (exc is ErrorResponseException &&
-            exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER
+                exc.errorResponse != ErrorResponse.CANNOT_SEND_TO_USER
         ) {
             // Print a warning in console if the error code was not related to DMs being blocked
             logger.warn("Unexpected error response when sending DM: ${exc.errorCode} - ${exc.meaning}")
@@ -53,13 +52,13 @@ class HelpListener : Consumer<CommandEvent> {
             try {
                 // Open the DM channel and send the message
                 event.author.openPrivateChannel().submit()
-                    .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
-                    .whenComplete { _: Message?, exc: Throwable? ->
-                        if (exc != null) {
-                            // If there's a throwable then assume it failed
-                            sendingError(exc, event)
+                        .thenCompose { it.sendMessageEmbeds(embedBuilder.build()).submit() }
+                        .whenComplete { _: Message?, exc: Throwable? ->
+                            if (exc != null) {
+                                // If there's a throwable then assume it failed
+                                sendingError(exc, event)
+                            }
                         }
-                    }
             } catch (ex: InsufficientPermissionException) {
                 event.replyError("Couldn't build help message due to missing permission: `${ex.permission}`")
             }
@@ -78,15 +77,15 @@ class HelpListener : Consumer<CommandEvent> {
 
             // Store the CompletableFuture in the queue, so we can cancel it later
             val message = channel.thenCompose { it.sendMessageEmbeds(categoryBuilder.build()).submit() }
-                .whenComplete { _: Message?, exc: Throwable? ->
-                    if (exc != null) {
-                        sendingError(exc, event)
-                        // Cancel the other messages in the queue
-                        messageQueue.forEach { it.cancel(true) }
-                    }
+                    .whenComplete { _: Message?, exc: Throwable? ->
+                        if (exc != null) {
+                            sendingError(exc, event)
+                            // Cancel the other messages in the queue
+                            messageQueue.forEach { it.cancel(true) }
+                        }
 
-                    messageQueue.clear()
-                }
+                        messageQueue.clear()
+                    }
             messageQueue.add(message)
         }
     }
@@ -226,41 +225,20 @@ class HelpListener : Consumer<CommandEvent> {
      * @param event original CommandEvent. Used for checking permissions
      * @return list of commands the user is authorized to use
      */
-    private fun filterAllowedCommands(commands: List<Command>, event: CommandEvent): ArrayList<Command> {
-        val allowedCommands = ArrayList<Command>()
+    private fun filterAllowedCommands(commands: List<Command>, event: CommandEvent): List<Command> {
+        val guildMember = event.member != null
+        val userPermissions = event.member?.permissions
 
-        // TODO: Refactor method to recude jump statements
-        for (command in commands) {
-            if (command.isHidden) {
-                continue
-            }
-
-            val requiredPermissions = command.userPermissions
-
-            if (requiredPermissions.isEmpty()) {
-                allowedCommands.add(command)
-                continue
-            }
-
-            var userPermissions: EnumSet<Permission> = Permission.getPermissions(Permission.ALL_PERMISSIONS)
-            if (event.member != null) {
-                userPermissions = event.member.permissions
-            }
-
-            var userIsAllowedToUseCommand = true
-
-            for (requiredPermission in requiredPermissions) {
-                if (!userPermissions.contains(requiredPermission)) {
-                    userIsAllowedToUseCommand = false
-                }
-            }
-
-            if (userIsAllowedToUseCommand) {
-                allowedCommands.add(command)
-            }
+        if (!guildMember) {
+            // Message in DM, no need to check for server permissions
+            return commands.filter { !it.isHidden }
         }
 
-        return allowedCommands
+        // Return all not-hidden commands that the user has permission for in the guild
+        return commands.filter { !it.isHidden }
+                .filter { command ->
+                    userPermissions!!.containsAll(command.userPermissions.filterNotNull())
+                }
     }
 
     /**

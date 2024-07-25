@@ -32,7 +32,9 @@ class AboutCommand(
                 if (info.isBotPublic) {
                     info.setRequiredScopes("applications.commands")
                     info.getInviteUrl(*perms)
-                } else ""
+                } else {
+                    ""
+                }
             } catch (e: Exception) {
                 logger.warn("Encountered exception while generating bot invite link", e)
                 ""
@@ -55,7 +57,9 @@ class AboutCommand(
             "Join my server [`here`](${event.client.serverInvite})"
         } else if (invite) {
             "Please [`invite`]($oauthLink) me to your server"
-        } else ""
+        } else {
+            ""
+        }
 
         val author = if (event.jda.getUserById(event.client.ownerId) == null) {
             "<@" + event.client.ownerId + ">"
