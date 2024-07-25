@@ -28,8 +28,8 @@ class QuoteMineCommand(category: Category, parent: QuoteCommand) : DiscordComman
                 {
                     event.reply(createEmbed(event.author.name, it))
                 }, {
-                logger.info("Error finding all quotes for " + event.author.name)
-            })
+                    logger.info("Error finding all quotes for " + event.author.name)
+                })
     }
 
     private fun createEmbed(author: String, quoteDTOs: List<QuoteDTO>): MessageEmbed {

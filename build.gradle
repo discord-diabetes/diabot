@@ -42,10 +42,17 @@ allprojects {
         systemProperty "junit.jupiter.testinstance.lifecycle.default", "per_class"
     }
 
-    group = 'com.dongtronic.diabot'
+    java {
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
 
-    sourceCompatibility = 17
-    targetCompatibility = 17
+    kotlin {
+        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
+    group = "com.dongtronic.diabot"
 
     detekt {
         buildUponDefaultConfig = true // preconfigure defaults
@@ -90,33 +97,33 @@ allprojects {
 }
 
 
-task stage(dependsOn: ['clean', 'shadowJar'])
+task stage(dependsOn: ["clean", "shadowJar"])
 
 shadowJar {
-    exclude 'logback-test.xml'
-    archiveBaseName.set('diabot')
-    archiveClassifier.set('')
-    archiveVersion.set('')
+    exclude "logback-test.xml"
+    archiveBaseName.set("diabot")
+    archiveClassifier.set("")
+    archiveVersion.set("")
     manifest {
         attributes(
-                'Implementation-Title': 'Diabot - a diabetes Discord bot',
-                'Implementation-Version': this.version,
-                'Main-Class': 'com.dongtronic.diabot.Main',
+                "Implementation-Title": "Diabot - a diabetes Discord bot",
+                "Implementation-Version": this.version,
+                "Main-Class": "com.dongtronic.diabot.Main",
                 // fixes retrofit v2.8 reflection warnings
-                'Add-Opens': 'java.base/java.lang.invoke'
+                "Add-Opens": "java.base/java.lang.invoke"
         )
     }
 }
 
 release {
-    tagTemplate = 'v$version'
+    tagTemplate = "v$version"
     git {
-        requireBranch.set('main')
+        requireBranch.set("main")
         signTag.set(true)
-        ignoredSnapshotDependencies = [ "pw.chew:jda-chewtils" ]
+        ignoredSnapshotDependencies = ["pw.chew:jda-chewtils"]
     }
 }
 
 dependencies {
-    implementation project(path: ':bot')
+    implementation project(path: ":bot")
 }

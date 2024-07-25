@@ -182,7 +182,8 @@ class BgGraph(
 
     fun getBitmapBytes(bitmapFormat: BitmapEncoder.BitmapFormat): ByteArray {
         val theme = settings.theme.instance
-        val bufferedImage = BufferedImage(theme.getImageWidth(this), theme.getImageHeight(this), BufferedImage.TYPE_INT_ARGB)
+        val bufferedImage =
+            BufferedImage(theme.getImageWidth(this), theme.getImageHeight(this), BufferedImage.TYPE_INT_ARGB)
         val g = bufferedImage.createGraphics()
 
         if (theme.overridePaint) {

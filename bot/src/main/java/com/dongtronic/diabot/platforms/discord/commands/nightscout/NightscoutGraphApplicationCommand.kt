@@ -67,7 +67,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
 
             val chart = getDataSet(event.user.id, hours).awaitSingle()
             val imageBytes = chart.getBitmapBytes(BitmapFormat.PNG)
-            event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).submit().await()
+            event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).await()
             applyCooldown(event.user.id)
         } catch (e: Exception) {
             logger.error("Error generating NS graph for ${event.user}")

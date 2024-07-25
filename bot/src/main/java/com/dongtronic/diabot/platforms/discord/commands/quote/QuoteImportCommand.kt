@@ -158,7 +158,7 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
 
         importQuotes.subscribe({
             // on each
-            logger.debug("Finished adding $it")
+            logger.debug("Finished adding {}", it)
         }, {
             // on error
             var errorMessage = "Import failed: ${it::class.simpleName} - ${it.message}"
@@ -304,7 +304,9 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
             // the channel key can be missing, which is why we need a null check
             val channelId = if (channel != null) {
                 guild?.channels?.firstOrNull { it.name == channel }?.id ?: ""
-            } else ""
+            } else {
+                ""
+            }
 
             return QuoteDTO(
                 quoteId = id,
