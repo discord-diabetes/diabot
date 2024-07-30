@@ -22,7 +22,7 @@ allprojects {
         mavenCentral()
         maven { url 'https://m2.dv8tion.net/releases' }
         maven { url 'https://jitpack.io' }
-        maven { url "https://m2.chew.pro/snapshots" }
+        maven { url "https://m2.chew.pro/releases" }
     }
 
     dependencies {
@@ -60,7 +60,7 @@ allprojects {
         config = files("$rootDir/config/detekt/detekt.yml")
         // point to your custom config defining rules to run, overwriting default behavior
         baseline = file("config/detekt/baseline.xml")
-
+        
         source = objects.fileCollection().from(
                 "src/main/java",
                 "src/test/java"
