@@ -23,7 +23,7 @@ Any support received will be used to pay for the hosting and improvement of Diab
 
 ### As Java application
 
-Development for Diabot is aimed at a Java 11 environment. Diabot may not function correctly when using other version of java.
+Development for Diabot is aimed at a Java 17 environment. Diabot may not function correctly when using other version of java.
 
 If you have Gradle installed, you can run the following two commands to quickly start Diabot:
 
