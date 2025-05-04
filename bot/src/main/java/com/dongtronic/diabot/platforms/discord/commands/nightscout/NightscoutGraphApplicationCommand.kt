@@ -118,9 +118,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                 val time = (hours ?: userDTO.graphSettings.hours)
                     .let { Duration.ofHours(it) }
 
-                // calculate the amount of readings there should be.
-                // assume 1 reading every 5 minutes and a minimum of 1 reading
-                val count = max(time.toMinutes() / 5, 1).toInt()
+                val maxReadings = max(time.toMinutes(), 1).toInt()
                 val startTime = Instant.now()
                     .minus(time)
                     .toEpochMilli()
@@ -128,7 +126,7 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                 val findParam = EntriesParameters()
                     .find("sgv", operator = MongoOperator.exists)
                     .find("date", startTime, MongoOperator.gte)
-                    .count(count)
+                    .count(maxReadings)
                     .toMap()
                 ns.getSgv(params = findParam, throwOnConversion = false)
                     // duplicate code from NightscoutCommand. will be cleaned up later with a refactor of both
