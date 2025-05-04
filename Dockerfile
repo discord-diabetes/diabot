@@ -1,9 +1,9 @@
-FROM gradle:6.7 as build
+FROM gradle:8.14 as build
 WORKDIR /app
 COPY . .
 RUN gradle stage
 
-FROM adoptopenjdk/openjdk11:alpine-jre
+FROM eclipse-temurin:17-alpine
 
 WORKDIR /app/
 

@@ -1,6 +1,6 @@
 # This Dockerfile copies an already-built JAR from `./build/libs/diabot.jar` rather than building it
 
-FROM adoptopenjdk/openjdk11:alpine-jre
+FROM eclipse-temurin:17-alpine
 
 WORKDIR /app/
 

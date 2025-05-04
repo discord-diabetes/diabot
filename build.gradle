@@ -1,6 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'java'
@@ -48,8 +49,9 @@ allprojects {
     }
 
     kotlin {
-        targetCompatibility = JavaVersion.VERSION_17
-        sourceCompatibility = JavaVersion.VERSION_17
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
 
     group = "com.dongtronic.diabot"
