@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.shadow)
     alias(libs.plugins.detekt)
     alias(libs.plugins.release)
+    alias(libs.plugins.versions)
 }
 
 tasks.register('reportMerge', ReportMergeTask) {
