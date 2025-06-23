@@ -1,45 +1,44 @@
 dependencies {
     // JDA
-    implementation "club.minnced:jda-ktx:${jdaKtxVersion}"
-    implementation "pw.chew:jda-chewtils:${jdaChewtilsVersion}"
-    implementation("net.dv8tion:JDA:${jdaVersion}") {
+    implementation libs.jda.ktx
+    implementation libs.jda.chewtils
+    implementation(libs.jda) {
         exclude module: 'opus-java'
     }
 
     // Logging
-    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation libs.logback.classic
 
     // Parsing
-//    implementation "com.rometools:rome:${romeVersion}"
-    implementation "org.jsoup:jsoup:${jsoupVersion}"
+    implementation libs.jsoup
 
     // Apache Commons
-    implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
-    implementation "org.apache.commons:commons-configuration2:${commonsConfigurationVersion}"
+    implementation libs.commons.lang3
+    implementation libs.commons.configuration2
 
     // Networking
-    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
-    implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
-    implementation "com.jakewharton.retrofit:retrofit2-reactor-adapter:${retrofitReactorVersion}"
+    implementation libs.okhttp
+    implementation libs.retrofit
+    implementation libs.retrofit.jackson
+    implementation libs.retrofit.reactor
 
     // Database
-    implementation "redis.clients:jedis:${jedisVersion}"
-    implementation "org.mongodb:mongodb-driver-reactivestreams:${mongodbVersion}"
-    implementation "org.litote.kmongo:kmongo-async:${kmongoVersion}"
+    implementation libs.jedis
+    implementation libs.mongodb.reactivestreams
+    implementation libs.kmongo.async
 
     // Database Migrations
-    implementation "com.github.cloudyrock.mongock:mongock-standalone:${mongockRunnerVersion}"
-    implementation "com.github.cloudyrock.mongock:mongodb-sync-v4-driver:${mongockDriverVersion}"
-    implementation "org.litote.kmongo:kmongo:${kmongoVersion}"
+    implementation libs.mongock.standalone
+    implementation libs.mongock.driver
+    implementation libs.kmongo
 
     // Cache
-    implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
+    implementation libs.caffeine
 
     // Misc
     implementation project(':utilities')
     implementation project(':nightscout-api')
     implementation project(':bg-graph')
-    implementation "io.projectreactor:reactor-core:${reactorCoreVersion}"
-    implementation "io.projectreactor.kotlin:reactor-kotlin-extensions:${reactorKotlinVersion}"
+    implementation libs.reactor.core
+    implementation libs.reactor.kotlin.extensions
 }

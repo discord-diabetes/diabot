@@ -5,10 +5,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}"
-    id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
-    id 'io.gitlab.arturbosch.detekt' version "${detektVersion}"
-    id 'net.researchgate.release' version "${releasePluginVersion}"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.release)
 }
 
 tasks.register('reportMerge', ReportMergeTask) {
@@ -21,21 +21,23 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven { url 'https://m2.dv8tion.net/releases' }
         maven { url = 'https://jitpack.io' }
         maven { url = 'https://m2.chew.pro/releases' }
     }
 
     dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-        implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
-        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}"
-        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${kotlinCoroutinesVersion}"
-        detekt "io.gitlab.arturbosch.detekt:detekt-formatting:${detektVersion}"
-        detekt "io.gitlab.arturbosch.detekt:detekt-cli:${detektVersion}"
-        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitVersion}"
-        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: "${junitVersion}"
-        api group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
+        implementation libs.kotlin.stdlib
+        implementation libs.kotlin.reflect
+        implementation libs.coroutines.core
+        implementation libs.coroutines.reactor
+
+        detekt libs.detekt.formatting
+        detekt libs.detekt.cli
+
+        testImplementation libs.junit.engine
+        testImplementation libs.junit.params
+
+        api libs.slf4j.api
     }
 
     test {

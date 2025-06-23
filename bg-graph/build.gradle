@@ -1,10 +1,10 @@
 dependencies {
     // Graph Generation
     api project(':nightscout-api')
-    api "org.knowm.xchart:xchart:${xchartVersion}"
+    api libs.xchart
 
     // Misc
     implementation project(':utilities')
-    implementation "io.projectreactor:reactor-core:${reactorCoreVersion}"
-    implementation "io.projectreactor.kotlin:reactor-kotlin-extensions:${reactorKotlinVersion}"
+    implementation libs.reactor.core
+    implementation libs.reactor.kotlin.extensions
 }
