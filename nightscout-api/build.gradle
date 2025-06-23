@@ -2,18 +2,18 @@ group = 'com.dongtronic'
 
 dependencies {
     // Networking
-    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
-    implementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
-    implementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
-    implementation "com.jakewharton.retrofit:retrofit2-reactor-adapter:${retrofitReactorVersion}"
+    implementation libs.okhttp
+    implementation libs.retrofit
+    implementation libs.retrofit.jackson
+    implementation libs.retrofit.reactor
 
-    api "org.litote.kmongo:kmongo-shared:${kmongoVersion}"
+    api libs.kmongo.shared
 
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
-    api group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: "${jacksonVersion}"
+    api libs.jackson.module.kotlin
 
     // Misc
     implementation project(':utilities')
-    implementation "io.projectreactor:reactor-core:${reactorCoreVersion}"
-    implementation "io.projectreactor.kotlin:reactor-kotlin-extensions:${reactorKotlinVersion}"
+    implementation libs.reactor.core
+    implementation libs.reactor.kotlin.extensions
 }

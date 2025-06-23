@@ -1,0 +1,106 @@
+[versions]
+# Plugins
+kotlin = "2.0.0"
+kotlin-coroutines = "1.9.0-RC"
+detekt = "1.23.6"
+shadow = "7.1.2"
+release-plugin = "3.0.2"
+
+# Testing
+junit = "5.8.2"
+
+# Logging
+slf4j = "1.7.25"
+logback = "1.5.6"
+
+# Project Reactor
+reactor-core = "3.3.8.RELEASE"
+reactor-kotlin = "1.0.2.RELEASE"
+
+# JDA
+jda = "5.0.1"
+jda-chewtils = "2.0"
+jda-ktx = "0.12.0"
+
+# Parsing
+jsoup = "1.17.2"
+jackson = "2.11.3"
+
+# Apache Commons
+commons-lang = "3.8.1"
+commons-configuration = "2.11.0"
+
+# Networking
+okhttp = "4.12.0"
+retrofit = "2.11.0"
+retrofit-reactor = "2.1.0"
+
+# Database
+jedis = "3.3.0"
+mongodb = "4.0.5"
+kmongo = "4.0.3"
+
+# Database Migration
+mongock-runner = "5.0.1.BETA"
+mongock-driver = "5.0.2.BETA"
+
+# Cache
+caffeine = "2.8.5"
+
+# Generation
+xchart = "3.8.1"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+release = { id = "net.researchgate.release", version.ref = "release-plugin" }
+
+[libraries]
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+
+coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+coroutines-reactor = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-reactor", version.ref = "kotlin-coroutines" }
+
+detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+detekt-cli = { group = "io.gitlab.arturbosch.detekt", name = "detekt-cli", version.ref = "detekt" }
+
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
+
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+
+reactor-core = { group = "io.projectreactor", name = "reactor-core", version.ref = "reactor-core" }
+reactor-kotlin-extensions = { group = "io.projectreactor.kotlin", name = "reactor-kotlin-extensions", version.ref = "reactor-kotlin" }
+
+jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
+jda-chewtils = { group = "pw.chew", name = "jda-chewtils", version.ref = "jda-chewtils" }
+jda-ktx = { group = "club.minnced", name = "jda-ktx", version.ref = "jda-ktx" }
+
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang" }
+commons-configuration2 = { group = "org.apache.commons", name = "commons-configuration2", version.ref = "commons-configuration" }
+
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-jackson = { group = "com.squareup.retrofit2", name = "converter-jackson", version.ref = "retrofit" }
+retrofit-reactor = { group = "com.jakewharton.retrofit", name = "retrofit2-reactor-adapter", version.ref = "retrofit-reactor" }
+
+jedis = { group = "redis.clients", name = "jedis", version.ref = "jedis" }
+
+mongodb-reactivestreams = { group = "org.mongodb", name = "mongodb-driver-reactivestreams", version.ref = "mongodb" }
+
+kmongo = { group = "org.litote.kmongo", name = "kmongo", version.ref = "kmongo" }
+kmongo-async = { group = "org.litote.kmongo", name = "kmongo-async", version.ref = "kmongo" }
+kmongo-shared = { group = "org.litote.kmongo", name = "kmongo-shared", version.ref = "kmongo" }
+
+mongock-standalone = { group = "com.github.cloudyrock.mongock", name = "mongock-standalone", version.ref = "mongock-runner" }
+mongock-driver = { group = "com.github.cloudyrock.mongock", name = "mongodb-sync-v4-driver", version.ref = "mongock-driver" }
+
+caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
+xchart = { group = "org.knowm.xchart", name = "xchart", version.ref = "xchart" }
