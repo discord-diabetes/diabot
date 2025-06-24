@@ -130,9 +130,7 @@ shadowJar {
         attributes(
                 "Implementation-Title": "Diabot - a diabetes Discord bot",
                 "Implementation-Version": this.version,
-                "Main-Class": "com.dongtronic.diabot.Main",
-                // fixes retrofit v2.8 reflection warnings
-                "Add-Opens": "java.base/java.lang.invoke"
+                "Main-Class": "com.dongtronic.diabot.Main"
         )
     }
 }
