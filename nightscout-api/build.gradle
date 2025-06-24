@@ -1,4 +1,4 @@
-group 'com.dongtronic'
+group = 'com.dongtronic'
 
 dependencies {
     // Networking
