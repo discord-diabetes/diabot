@@ -2,7 +2,6 @@ package com.dongtronic.diabot.platforms.discord.commands.admin.channels
 
 import com.dongtronic.diabot.data.mongodb.ChannelDAO
 import com.dongtronic.diabot.data.mongodb.ChannelDTO
-import com.dongtronic.diabot.mapNotNull
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.util.logger
 import com.jagrosh.jdautilities.command.Command
@@ -33,7 +32,7 @@ class AdminChannelListCommand(category: Category, parent: Command?) : DiscordCom
                     builder.setDescription("No admin channels are configured")
                 } else {
                     channels.forEach {
-                        builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
+                        builder.appendDescription("**${it!!.name}**  (`${it.id}`)\n")
                     }
                 }
                 event.reply(builder.build())

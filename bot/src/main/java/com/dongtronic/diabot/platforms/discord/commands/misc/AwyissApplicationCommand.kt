@@ -8,8 +8,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.utils.FileUpload
-import org.bson.internal.Base64
 import reactor.core.scheduler.Schedulers
+import java.util.*
 
 class AwyissApplicationCommand : ApplicationCommand {
     private val commandArgSfw = "sfw"
@@ -32,7 +32,7 @@ class AwyissApplicationCommand : ApplicationCommand {
         Awyisser.generate(stringValue, sfwValue)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe({ imageUrl ->
-                val imageStream = Base64.decode(imageUrl.removePrefix("data:image/png;base64,"))
+                val imageStream = Base64.getDecoder().decode(imageUrl.removePrefix("data:image/png;base64,"))
                 event.hook.editOriginalAttachments(FileUpload.fromData(imageStream, "awyiss.png")).queue()
             }, {
                 if (it is RequestStatusException && it.status == 500) {

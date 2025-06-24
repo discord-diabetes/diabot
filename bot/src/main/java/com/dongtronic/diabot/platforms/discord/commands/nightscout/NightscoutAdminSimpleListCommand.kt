@@ -2,7 +2,6 @@ package com.dongtronic.diabot.platforms.discord.commands.nightscout
 
 import com.dongtronic.diabot.data.mongodb.ChannelDAO
 import com.dongtronic.diabot.data.mongodb.ChannelDTO
-import com.dongtronic.diabot.mapNotNull
 import com.dongtronic.diabot.platforms.discord.commands.DiscordCommand
 import com.dongtronic.diabot.platforms.discord.utils.CommandUtils
 import com.dongtronic.diabot.util.logger
@@ -43,7 +42,7 @@ class NightscoutAdminSimpleListCommand(category: Category, parent: Command?) : D
                     builder.setDescription("No short channels are configured")
                 } else {
                     channels.forEach {
-                        builder.appendDescription("**${it.name}**  (`${it.id}`)\n")
+                        builder.appendDescription("**${it!!.name}**  (`${it.id}`)\n")
                     }
                 }
 

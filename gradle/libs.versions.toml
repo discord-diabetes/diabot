@@ -1,59 +1,60 @@
 [versions]
 # Plugins
-kotlin = "2.0.0"
-kotlin-coroutines = "1.9.0-RC"
-detekt = "1.23.6"
-shadow = "7.1.2"
-release-plugin = "3.0.2"
+kotlin = "2.2.10"
+kotlin-coroutines = "1.10.2"
+detekt = "1.23.8"
+shadow = "8.3.6"
+release-plugin = "3.1.0"
 versions-plugin = "0.52.0"
 
 # Testing
-junit = "5.8.2"
+junit = "5.13.4"
 
 # Logging
-slf4j = "1.7.25"
-logback = "1.5.6"
+slf4j = "2.0.17"
+logback = "1.5.18"
 
 # Project Reactor
-reactor-core = "3.3.8.RELEASE"
-reactor-kotlin = "1.0.2.RELEASE"
+reactor-core = "3.7.9"
+reactor-kotlin = "1.2.3"
 
 # JDA
-jda = "5.0.1"
+jda = "5.6.1"
+# chewtils is pinned to 2.0 since 2.1 introduces a lot of deprecation warnings as a result of deprecating guildOnly, which is used in all our text commands
 jda-chewtils = "2.0"
 jda-ktx = "0.12.0"
 
 # Parsing
-jsoup = "1.17.2"
-jackson = "2.11.3"
+jsoup = "1.21.1"
+jackson = "2.19.2"
 
 # Apache Commons
-commons-lang = "3.8.1"
-commons-configuration = "2.11.0"
+commons-lang = "3.18.0"
+commons-configuration = "2.12.0"
 
 # Networking
 okhttp = "4.12.0"
-retrofit = "2.11.0"
+retrofit = "3.0.0"
 retrofit-reactor = "2.1.0"
 
 # Database
 jedis = "3.3.0"
-mongodb = "4.0.5"
-kmongo = "4.0.3"
+mongodb = "5.5.1"
+kmongo = "5.5.1"
 
 # Database Migration
 mongock-runner = "5.0.1.BETA"
 mongock-driver = "5.0.2.BETA"
 
 # Cache
-caffeine = "2.8.5"
+caffeine = "3.2.2"
 
 # Generation
-xchart = "3.8.1"
+xchart = "3.8.8"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 release = { id = "net.researchgate.release", version.ref = "release-plugin" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions-plugin"}
