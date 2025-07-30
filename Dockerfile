@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN gradle stage
 
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17-ubi9-minimal
 
 WORKDIR /app/
 

@@ -1,6 +1,6 @@
 # This Dockerfile copies an already-built JAR from `./build/libs/diabot.jar` rather than building it
 
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17-ubi9-minimal
 
 WORKDIR /app/
 
