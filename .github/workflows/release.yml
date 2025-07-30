@@ -50,9 +50,10 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           # This will use a dockerfile which copies the already-built JAR from `build/libs/`
-          file: Dockerfile.nobuild
+          file: nobuild.Dockerfile
           context: .
           push: true
+          platforms: "linux/arm64,linux/amd64"
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Release

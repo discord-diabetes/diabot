@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           # This will use a dockerfile which copies the already-built JAR from `build/libs/`
-          file: Dockerfile.nobuild
+          file: nobuild.Dockerfile
           context: .
           push: true
           tags: ghcr.io/reddit-diabetes/diabot:dev
