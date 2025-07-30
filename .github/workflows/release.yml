@@ -39,6 +39,13 @@ jobs:
         with:
           name: release
           path: build/libs/diabot.jar
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
