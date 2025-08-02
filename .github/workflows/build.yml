@@ -30,7 +30,7 @@ jobs:
               ${{ github.workspace }}/build/reports/detekt/merge.sarif
           )" > ${{ github.workspace }}/build/reports/detekt/merge.sarif
 
-      - uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ github.workspace }}/build/reports/detekt/merge.sarif
           checkout_path: ${{ github.workspace }}
@@ -41,10 +41,10 @@ jobs:
     needs: [scan]
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v1
         with:
-          java-version: 17
+          java-version: 21
       - name: Build with Gradle
         run: |
           chmod +x gradlew
