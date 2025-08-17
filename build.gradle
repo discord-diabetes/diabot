@@ -16,6 +16,22 @@ tasks.register('reportMerge', ReportMergeTask) {
     output = project.layout.buildDirectory.file("reports/detekt/merge.sarif") // or "reports/detekt/merge.sarif"
 }
 
+// From https://github.com/ben-manes/gradle-versions-plugin#rejectversionsif-and-componentselection
+// Inverted check to be `isStable` for clarity
+def isStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return stableKeyword || version ==~ regex
+}
+
+// https://github.com/ben-manes/gradle-versions-plugin
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        // Exclude unstable dependency versions from update checker
+        !isStable(it.candidate.version) && isStable(it.currentVersion)
+    }
+}
+
 allprojects {
     apply plugin: "kotlin"
     apply plugin: "io.gitlab.arturbosch.detekt"
