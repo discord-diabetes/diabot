@@ -3,7 +3,7 @@
 kotlin = "2.2.10"
 kotlin-coroutines = "1.10.2"
 detekt = "1.23.8"
-shadow = "8.3.6"
+shadow = "9.0.2"
 release-plugin = "3.1.0"
 versions-plugin = "0.52.0"
 
