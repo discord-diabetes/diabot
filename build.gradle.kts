@@ -10,10 +10,6 @@ plugins {
     alias(libs.plugins.versions)
 }
 
-val reportMerge by tasks.registering(io.gitlab.arturbosch.detekt.report.ReportMergeTask::class) {
-    output.set(rootProject.layout.buildDirectory.file("reports/detekt/merge.sarif")) // or "reports/detekt/merge.sarif"
-}
-
 // From https://github.com/ben-manes/gradle-versions-plugin#rejectversionsif-and-componentselection
 // Inverted check(to be `isStable` for clarity)
 fun isStable(version: String): Boolean {
@@ -29,6 +25,10 @@ tasks.withType<DependencyUpdatesTask> {
         // Exclude unstable dependency versions from update check(er)
         !isStable(candidate.version) && isStable(currentVersion)
     }
+}
+
+val reportMerge by tasks.registering(io.gitlab.arturbosch.detekt.report.ReportMergeTask::class) {
+    output.set(rootProject.layout.buildDirectory.file("reports/detekt/merge.sarif")) // or "reports/detekt/merge.sarif"
 }
 
 allprojects {
@@ -82,23 +82,26 @@ allprojects {
         config.setFrom("$rootDir/config/detekt/detekt.yml")
         // point to your custom config defining rules to run, overwriting default behavior
         baseline = file("config/detekt/baseline.xml")
+        autoCorrect = true
 
         source.setFrom(
             "src/main/java",
             "src/test/java",
-//            "bot/src/main/java",
-//            "bg-graph/src/main/java",
-//            "nightscout-api/src/main/java",
-//            "utilities/src/main/java",
         )
+    }
 
-        autoCorrect = true
-
+    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
         reports {
-            html.required.set(true) // observe findings in your browser with structure and code snippets
-            xml.required.set(false) // checkstyle like format mainly for integrations like Jenkins
+            html.required.set(true)
+            html.outputLocation.set(file("build/reports/detekt.html"))
+
+            xml.required.set(false)
+
             txt.required.set(true)
+            txt.outputLocation.set(file("build/reports/detekt.txt"))
+
             sarif.required.set(true)
+            sarif.outputLocation.set(file("build/reports/detekt.sarif"))
         }
     }
 
@@ -133,8 +136,4 @@ release {
         signTag = true
         ignoredSnapshotDependencies = listOf("pw.chew:jda-chewtils")
     }
-}
-
-dependencies {
-    implementation(project(path = ":bot"))
 }
