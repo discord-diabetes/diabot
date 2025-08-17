@@ -27,7 +27,6 @@ import reactor.kotlin.core.publisher.toMono
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URISyntaxException
-import java.net.URL
 import java.time.Duration
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
@@ -251,17 +250,16 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
             val client = OkHttpClient()
             val request = Request.Builder()
                 .get()
-                .url(URL(url))
+                .url(url)
                 .addHeader("user-agent", "github.com_reddit-diabetes_diabot")
                 .build()
 
             client.newCall(request).execute().use { response ->
-                val body = response.body
-                if (!response.isSuccessful || body == null) {
+                if (!response.isSuccessful) {
                     throw RequestStatusException(response.code)
                 }
 
-                body.string()
+                response.body.string()
             }
         }
     }

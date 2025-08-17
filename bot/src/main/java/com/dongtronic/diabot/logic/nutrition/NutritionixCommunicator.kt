@@ -39,7 +39,7 @@ object NutritionixCommunicator {
             client.newCall(request.build()).execute()
         }.map {
             it.use { response ->
-                val bodyString = response.body!!.string()
+                val bodyString = response.body.string()
                 if (response.code != 200) {
                     logger.warn("Nutritionix communication error. Status ${response.message}\n$bodyString")
                     throw RequestStatusException(response.code)

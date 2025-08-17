@@ -33,7 +33,7 @@ object Awyisser {
         }.map {
             it.use { response ->
                 if (response.isSuccessful) {
-                    val body = response.body!!.string()
+                    val body = response.body.string()
                     val json = jacksonObjectMapper().readTree(body)
 
                     json.get("image")?.textValue()
