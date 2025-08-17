@@ -13,13 +13,10 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.hooks.EventListener
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import reactor.core.Exceptions
-import reactor.core.publisher.DirectProcessor
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.kotlin.core.publisher.toFlux
@@ -28,14 +25,12 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.time.Duration
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 
-class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent), EventListener {
+class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordCommand(category, parent) {
     private val mapper = jacksonObjectMapper()
     private val logger = logger()
     private val pendingRequests = mutableSetOf<User>()
-    private val guildMessages = DirectProcessor.create<MessageReceivedEvent>()
     private var eventListening = false
 
     init {
@@ -60,31 +55,24 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
             return
         }
 
+        event.reply("${event.author.asMention} - Type a URL, attach a file, or type `cancel`")
+
         // create an interactive session:
         // listens for a URL or attachment from the user's next message
-        guildMessages.filter { it.author == event.author && it.channel == event.channel && it.guild == event.guild }
-            .map { it.message }
-            .toMono()
-            .timeout(Duration.ofSeconds(90))
-            .subscribeOn(Schedulers.parallel())
-            .doOnSubscribe {
-                // send the initial message
-                event.reply("${event.author.asMention} - Type a URL, attach a file, or type `cancel`")
+        event.jda.listenOnce(MessageReceivedEvent::class.java)
+            .filter { e -> e.author == event.author && e.channel == event.channel }
+            .timeout(Duration.ofSeconds(90)) {
+                pendingRequests.remove(event.author)
+                event.replyWarning("${event.author.asMention} - Import timed out")
             }
-            .subscribe({
-                if (it.contentStripped == "cancel") {
+            .subscribe { e ->
+                if (e.message.contentStripped == "cancel") {
                     pendingRequests.remove(event.author)
                     event.replySuccess("${event.author.asMention} - Import cancelled")
-                    return@subscribe
+                } else {
+                    parse(event, e.message.contentDisplay, e.message)
                 }
-
-                parse(event, it.contentDisplay, it)
-            }, {
-                pendingRequests.remove(event.author)
-                if (it is TimeoutException) {
-                    event.replyWarning("${event.author.asMention} - Import timed out")
-                }
-            })
+            }
     }
 
     /**
@@ -262,17 +250,6 @@ class QuoteImportCommand(category: Category, parent: QuoteCommand) : DiscordComm
                 response.body.string()
             }
         }
-    }
-
-    /**
-     * Listens to incoming messages for the interactive mode
-     */
-    override fun onEvent(event: GenericEvent) {
-        if (event !is MessageReceivedEvent) return
-        if (!event.isFromGuild) return
-        if (event.author.isBot) return
-
-        guildMessages.onNext(event)
     }
 
     /**
