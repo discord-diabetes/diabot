@@ -103,7 +103,6 @@ class EstimationCommand(category: Category) : DiscordCommand(category, null) {
                 )
 
             else -> {
-                // TODO: Make arguments for result.getDcct and result.getIfcc less confusing. ie: not wrong
                 val reply = String.format(
                     "An average of %s mmol/L is about **%s%%** (DCCT) or **%s mmol/mol** (IFCC) %n",
                     result.original.original, result.getDcct(MGDL), result.getIfcc(MGDL)
