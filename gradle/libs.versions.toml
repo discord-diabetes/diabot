@@ -43,8 +43,8 @@ mongodb = "5.5.1"
 kmongo = "5.5.1"
 
 # Database Migration
-mongock-runner = "5.0.1.BETA"
-mongock-driver = "5.0.2.BETA"
+mongock-runner = "5.5.1"
+mongock-driver = "5.5.1"
 
 # Cache
 caffeine = "3.2.2"
@@ -102,8 +102,8 @@ kmongo = { group = "org.litote.kmongo", name = "kmongo", version.ref = "kmongo" 
 kmongo-async = { group = "org.litote.kmongo", name = "kmongo-async", version.ref = "kmongo" }
 kmongo-shared = { group = "org.litote.kmongo", name = "kmongo-shared", version.ref = "kmongo" }
 
-mongock-standalone = { group = "com.github.cloudyrock.mongock", name = "mongock-standalone", version.ref = "mongock-runner" }
-mongock-driver = { group = "com.github.cloudyrock.mongock", name = "mongodb-sync-v4-driver", version.ref = "mongock-driver" }
+mongock-standalone = { group = "io.mongock", name = "mongock-standalone", version.ref = "mongock-runner" }
+mongock-driver = { group = "io.mongock", name = "mongodb-sync-v4-driver", version.ref = "mongock-driver" }
 
 caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 xchart = { group = "org.knowm.xchart", name = "xchart", version.ref = "xchart" }

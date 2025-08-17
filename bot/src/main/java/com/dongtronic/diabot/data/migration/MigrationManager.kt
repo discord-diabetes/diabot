@@ -2,9 +2,9 @@ package com.dongtronic.diabot.data.migration
 
 import com.dongtronic.diabot.util.MongoDB
 import com.dongtronic.diabot.util.logger
-import com.github.cloudyrock.mongock.driver.mongodb.sync.v4.driver.MongoSync4Driver
-import com.github.cloudyrock.standalone.MongockStandalone
 import com.mongodb.client.MongoClients
+import io.mongock.driver.mongodb.sync.v4.driver.MongoSync4Driver
+import io.mongock.runner.standalone.MongockStandalone
 
 class MigrationManager {
     private val logger = logger()
@@ -16,11 +16,11 @@ class MigrationManager {
         val mongoClient = MongoClients.create(MongoDB.connectionURI)
         val driver = MongoSync4Driver.withDefaultLock(mongoClient, MongoDB.defaultDatabase)
         driver.disableTransaction()
-        driver.changeLogRepositoryName = "mongock-changelog"
+        driver.migrationRepositoryName = "mongock-changelog"
         driver.lockRepositoryName = "mongock-lock"
         MongockStandalone.builder()
             .setDriver(driver)
-            .addChangeLogsScanPackage("com.dongtronic.diabot.data.migration")
+            .addMigrationScanPackage("com.dongtronic.diabot.data.migration")
             .buildRunner()
             .execute()
     }
