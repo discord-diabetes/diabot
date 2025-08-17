@@ -1,3 +1,6 @@
+// Mongock v5 deprecated ChangeLog and ChangeSet, but recommends keeping existing uses the same.
+@file:Suppress("DEPRECATION")
+
 package com.dongtronic.diabot.data.migration.mongodb
 
 import com.dongtronic.diabot.data.mongodb.QuoteDAO
