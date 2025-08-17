@@ -53,6 +53,7 @@ allprojects {
 
         testImplementation(libs.junit.engine)
         testImplementation(libs.junit.params)
+        testRuntimeOnly(libs.junit.platform)
 
         api(libs.slf4j.api)
     }
