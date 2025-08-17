@@ -352,7 +352,7 @@ formatting:
   NoWildcardImports:
     active: false
   PackageName:
-    active: true
+    active: false
     autoCorrect: false
   ParameterListWrapping:
     active: false

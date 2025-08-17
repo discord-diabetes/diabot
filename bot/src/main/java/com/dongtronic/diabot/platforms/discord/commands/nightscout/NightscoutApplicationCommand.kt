@@ -45,6 +45,7 @@ class NightscoutApplicationCommand : ApplicationCommand {
     private val commandButtonDeleteConfirm = "nsdeleteyes".generateId()
     private val commandButtonDeleteCancel = "nsdeleteno".generateId()
 
+    @Suppress("detekt:CyclomaticComplexMethod")
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         when (event.subcommandGroup) {
             groupNameSet -> when (event.subcommandName) {
