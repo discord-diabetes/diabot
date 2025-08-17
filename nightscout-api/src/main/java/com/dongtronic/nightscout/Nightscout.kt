@@ -10,6 +10,7 @@ import com.jakewharton.retrofit2.adapter.reactor.ReactorCallAdapterFactory
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import okhttp3.ResponseBody
 import org.litote.kmongo.MongoOperator
 import reactor.core.publisher.Mono
 import retrofit2.Retrofit
@@ -251,7 +252,7 @@ class Nightscout(baseUrl: String, token: String? = null) : Closeable {
         logger.debug("Closing Nightscout API: ${responseCache.size} responses")
         responseCache.forEach { (_, response) ->
             // clear the cache bodies
-            response.body(null)
+            response.body(ResponseBody.EMPTY)
         }
         responseCache.clear()
     }

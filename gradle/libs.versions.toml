@@ -33,7 +33,7 @@ commons-lang = "3.18.0"
 commons-configuration = "2.12.0"
 
 # Networking
-okhttp = "4.12.0"
+okhttp = "5.1.0"
 retrofit = "3.0.0"
 retrofit-reactor = "2.1.0"
 
