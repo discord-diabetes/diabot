@@ -60,7 +60,7 @@ allprojects {
     }
 
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(23)
     }
 
     tasks.withType<Test>().configureEach {
