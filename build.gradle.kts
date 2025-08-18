@@ -93,6 +93,7 @@ allprojects {
             sarif.required.set(true)
             sarif.outputLocation.set(file("build/reports/detekt.sarif"))
 
+            md.required.set(false)
             xml.required.set(false)
         }
 
