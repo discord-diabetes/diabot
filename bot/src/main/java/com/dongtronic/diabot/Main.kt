@@ -5,30 +5,25 @@ import com.dongtronic.diabot.platforms.discord.commands.admin.AdminCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.OwnerCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.RolesCommand
 import com.dongtronic.diabot.platforms.discord.commands.admin.ShutdownCommand
-import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConversionApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.ConvertCommand
-import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.diabetes.EstimationCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.AboutCommand
 import com.dongtronic.diabot.platforms.discord.commands.info.InfoCommand
 import com.dongtronic.diabot.platforms.discord.commands.misc.*
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutAdminCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutCommand
-import com.dongtronic.diabot.platforms.discord.commands.nightscout.NightscoutGraphApplicationCommand
 import com.dongtronic.diabot.platforms.discord.commands.quote.QuoteCommand
 import com.dongtronic.diabot.platforms.discord.commands.rewards.RewardsCommand
 import com.dongtronic.diabot.platforms.discord.listeners.*
+import com.github.kaktushose.jda.commands.JDACommands
 import com.jagrosh.jdautilities.command.Command.Category
 import com.jagrosh.jdautilities.command.CommandClientBuilder
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter
 import com.jagrosh.jdautilities.examples.command.GuildlistCommand
 import dev.minn.jda.ktx.jdabuilder.injectKTX
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
-import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import java.awt.Color
 import java.util.*
@@ -113,7 +108,7 @@ object Main {
             )
             .build()
 
-        registerSlashCommands(shardManager)
+        JDACommands.start(shardManager, Main::class.java)
     }
 
     private fun addClientCommands(
@@ -166,30 +161,5 @@ object Main {
             RolesCommand(adminCategory),
             GuildlistCommand(waiter)
         )
-    }
-
-    private fun registerSlashCommands(shardManager: ShardManager) {
-
-        val applicationCommandListener = ApplicationCommandListener(
-            EstimationApplicationCommand(),
-            NightscoutApplicationCommand(),
-            ConversionApplicationCommand(),
-            NightscoutGraphApplicationCommand(),
-            AwyissApplicationCommand()
-        )
-
-        val commandConfigs = applicationCommandListener.commands.map { command -> command.config() }.toList()
-
-        if (debug) {
-            val guildId = System.getenv("HOME_GUILD_ID")
-            shardManager.shards.forEach(JDA::awaitReady)
-            val guild = shardManager.getGuildById(guildId)!!
-            guild.updateCommands().addCommands(commandConfigs).queue()
-        } else {
-            val jda = shardManager.shards.first()
-            jda.updateCommands().addCommands(commandConfigs).queue()
-        }
-
-        shardManager.addEventListener(applicationCommandListener)
     }
 }

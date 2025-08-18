@@ -3,36 +3,26 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.BloodGlucoseConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.Commands
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import com.github.kaktushose.jda.commands.annotations.interactions.Choices
+import com.github.kaktushose.jda.commands.annotations.interactions.Command
+import com.github.kaktushose.jda.commands.annotations.interactions.Interaction
+import com.github.kaktushose.jda.commands.annotations.interactions.Param
+import com.github.kaktushose.jda.commands.dispatching.events.interactions.CommandEvent
 
+@Interaction
 class ConversionApplicationCommand : ApplicationCommand {
-    private val commandArgGlucose = "glucose"
-    private val commandArgUnit = "unit"
-
-    override val commandName: String = "convert"
-
-    override fun config(): CommandData {
-        return Commands.slash(commandName, "Convert blood glucose values between mmol/L and mg/dL")
-            .addOption(OptionType.NUMBER, commandArgGlucose, "Blood glucose level", true)
-            .addOptions(
-                OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
-                    .addChoice("mmol/L", "mmol/L")
-                    .addChoice("mg/dL", "mg/dL")
-            )
-    }
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        val glucoseNumber = event.getOption(commandArgGlucose)!!.asString
-        val glucoseUnit = event.getOption(commandArgUnit)?.asString
-
-        val result = BloodGlucoseConverter.convert(glucoseNumber, glucoseUnit)
+    @Command("convert", desc = "Convert blood glucose values between mmol/L and mg/dL")
+    fun convert(event: CommandEvent,
+        @Param("Blood glucose level")
+        glucose: Double,
+        @Param("Blood glucose unit (mmol/L, mg/dL)", optional = true)
+        @Choices("mmol/L", "mg/dL")
+        unit: String?
+    ) {
+        val result = BloodGlucoseConverter.convert(glucose.toString(), unit)
             .getOrElse {
                 if (it is IllegalArgumentException) {
-                    event.reply("Could not convert: ${it.message}").queue()
+                    event.with().ephemeral(true).reply("Could not convert: ${it.message}")
                 }
                 return
             }
@@ -49,11 +39,11 @@ class ConversionApplicationCommand : ApplicationCommand {
                     ).joinToString(
                         "%n"
                     ),
-                    glucoseNumber, result.mmol, glucoseNumber, result.mgdl
+                    glucose, result.mmol, glucose, result.mgdl
                 )
             }
         }
 
-        event.reply(reply).queue()
+        event.reply(reply)
     }
 }

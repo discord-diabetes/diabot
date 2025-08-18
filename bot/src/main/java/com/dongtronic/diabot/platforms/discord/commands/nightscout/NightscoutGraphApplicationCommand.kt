@@ -9,16 +9,18 @@ import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
 import com.dongtronic.diabot.util.logger
 import com.dongtronic.nightscout.EntriesParameters
 import com.dongtronic.nightscout.Nightscout
-import com.dongtronic.nightscout.data.NightscoutDTO
 import com.dongtronic.nightscout.exceptions.NoNightscoutDataException
 import com.fasterxml.jackson.core.JsonProcessingException
-import dev.minn.jda.ktx.coroutines.await
+import com.github.kaktushose.jda.commands.annotations.constraints.Max
+import com.github.kaktushose.jda.commands.annotations.constraints.Min
+import com.github.kaktushose.jda.commands.annotations.interactions.Command
+import com.github.kaktushose.jda.commands.annotations.interactions.Interaction
+import com.github.kaktushose.jda.commands.annotations.interactions.Param
+import com.github.kaktushose.jda.commands.dispatching.events.interactions.CommandEvent
 import kotlinx.coroutines.reactor.awaitSingle
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.Commands
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.utils.FileUpload
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.knowm.xchart.BitmapEncoder.BitmapFormat
 import org.litote.kmongo.MongoOperator
 import reactor.core.publisher.Mono
@@ -30,27 +32,34 @@ import java.time.Instant
 import kotlin.math.abs
 import kotlin.math.max
 
+@Interaction
 class NightscoutGraphApplicationCommand : ApplicationCommand {
-    override val commandName: String = "graph"
     private val logger = logger()
     private val cooldowns = mutableMapOf<String, Long>()
 
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
+    @Command("graph", desc = "Generate a graph from Nightscout")
+    fun execute(
+        event: CommandEvent,
+        @Param("Amount of hours to display on graph", optional = true)
+        @Max(24)
+        @Min(1)
+        hours: Long?
+    ) {
+        runBlocking {
+            graph(event, hours)
+        }
+    }
+
+    suspend fun graph(event: CommandEvent, hours: Long?) {
         val cooldownSeconds = getCooldown(event.user.id)
         if (cooldownSeconds != null) {
             val plural = if (abs(cooldownSeconds) != 1L) "s" else ""
-            event.reply("This command is currently on a cooldown. You can use it again in $cooldownSeconds second$plural")
-                .setEphemeral(true)
-                .queue()
+            event.with().ephemeral(true).reply("This command is currently on a cooldown. You can use it again in $cooldownSeconds second$plural")
             return
         }
 
-        val hours = event.getOption("hours")?.asLong
-
-        if (hours != null && (hours < 1 || hours > 24)) {
-            event.reply("The number of hours must be between 1 and 24")
-                .setEphemeral(true)
-                .queue()
+        if (hours != null && hours !in 1..24) {
+            event.with().ephemeral(true).reply("The number of hours must be between 1 and 24")
             return
         }
 
@@ -59,22 +68,22 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
                 GraphDisableDAO.instance.getGraphEnabled(event.guild!!.id).awaitSingle()
 
             if (!enabled) {
-                event.reply("Nightscout graphs are disabled in this guild").setEphemeral(true).queue()
+                event.with().ephemeral(true).reply("Nightscout graphs are disabled in this guild")
                 return
             }
 
-            event.deferReply(false).queue()
+            event.deferReply(false)
 
             val chart = getDataSet(event.user.id, hours).awaitSingle()
             val imageBytes = chart.getBitmapBytes(BitmapFormat.PNG)
-            event.hook.editOriginalAttachments(FileUpload.fromData(imageBytes, "graph.png")).await()
+            event.reply(MessageCreateData.fromFiles(FileUpload.fromData(imageBytes, "graph.png")))
             applyCooldown(event.user.id)
         } catch (e: Exception) {
             logger.error("Error generating NS graph for ${event.user}")
             if (e is NightscoutFetchException) {
-                event.hook.editOriginal(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO)).queue()
+                event.reply(NightscoutCommand.handleGrabError(e.originalException, event.user, e.userDTO))
             } else {
-                event.hook.editOriginal(NightscoutCommand.handleError(e)).queue()
+                event.reply(NightscoutCommand.handleError(e))
             }
         }
     }
@@ -100,17 +109,12 @@ class NightscoutGraphApplicationCommand : ApplicationCommand {
             .forEach { cooldowns.remove(it.key) }
     }
 
-    override fun config(): CommandData {
-        return Commands.slash(commandName, "Generate a graph from Nightscout")
-            .addOption(OptionType.INTEGER, "hours", "Amount of hours to display on graph")
-    }
-
     private fun getDataSet(senderId: String, hours: Long?): Mono<BgGraph> {
         return NightscoutDAO.instance.getUser(senderId)
             .onErrorMap(NoSuchElementException::class) { UnconfiguredNightscoutException() }
             .zipWhen { userDTO ->
                 if (userDTO.url == null) {
-                    return@zipWhen Mono.error<NightscoutDTO>(UnconfiguredNightscoutException())
+                    return@zipWhen Mono.error(UnconfiguredNightscoutException())
                 }
 
                 val ns = Nightscout(userDTO.url, userDTO.token)

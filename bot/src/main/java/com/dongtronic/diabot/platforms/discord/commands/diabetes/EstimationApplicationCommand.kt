@@ -3,48 +3,19 @@ package com.dongtronic.diabot.platforms.discord.commands.diabetes
 import com.dongtronic.diabot.logic.diabetes.A1cConverter
 import com.dongtronic.diabot.logic.diabetes.GlucoseUnit
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.Commands
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
+import com.github.kaktushose.jda.commands.annotations.interactions.Choices
+import com.github.kaktushose.jda.commands.annotations.interactions.Command
+import com.github.kaktushose.jda.commands.annotations.interactions.Interaction
+import com.github.kaktushose.jda.commands.annotations.interactions.Param
+import com.github.kaktushose.jda.commands.dispatching.events.interactions.CommandEvent
 
+@Interaction
 class EstimationApplicationCommand : ApplicationCommand {
-    private val commandModeA1c = "a1c"
-    private val commandModeAverage = "average"
-    private val commandArgA1c = "a1c"
-    private val commandArgUnit = "unit"
-    private val commandArgAvg = "average"
 
-    override val commandName: String = "estimate"
-
-    override fun config(): CommandData {
-        return Commands.slash(commandName, "Perform A1c and average glucose estimations").addSubcommands(
-            SubcommandData(commandModeA1c, "Estimate A1c from average glucose")
-                .addOption(OptionType.NUMBER, commandArgAvg, "Average glucose", true)
-                .addOptions(
-                    OptionData(OptionType.STRING, commandArgUnit, "Blood glucose unit (mmol/L, mg/dL)")
-                        .addChoice("mmol/L", "mmol/L")
-                        .addChoice("mg/dL", "mg/dL")
-                ),
-            SubcommandData(commandModeAverage, "Estimate average glucose from A1c")
-                .addOption(OptionType.NUMBER, commandArgA1c, "A1c value", true)
-        )
-    }
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        when (event.subcommandName) {
-            commandModeAverage -> estimateAverage(event)
-            commandModeA1c -> estimateA1c(event)
-        }
-    }
-
-    private fun estimateAverage(event: SlashCommandInteractionEvent) {
-        val input = event.getOption(commandArgA1c)!!
-
-        val result = A1cConverter.estimateAverage(input.asString).getOrElse {
-            event.reply("Could not estimate average BG: ${it.message}").queue()
+    @Command("average", desc = "Estimate average glucose from A1c")
+    fun estimateAverage(event: CommandEvent, @Param("A1c value") a1c: Double) {
+        val result = A1cConverter.estimateAverage(a1c.toString()).getOrElse {
+            event.with().ephemeral(true).reply("Could not estimate average BG: ${it.message}")
             return
         }
 
@@ -53,16 +24,21 @@ class EstimationApplicationCommand : ApplicationCommand {
                 "An A1c of **%s%%** (DCCT) or **%s mmol/mol** (IFCC) is about **%s mg/dL** or **%s mmol/L**",
                 result.dcct, result.ifcc, result.original.mgdl, result.original.mmol
             )
-        ).queue()
+        )
     }
 
-    private fun estimateA1c(event: SlashCommandInteractionEvent) {
-        val inputNumber = event.getOption(commandArgAvg)!!
-        val inputUnit = event.getOption(commandArgUnit)
-
-        val result = A1cConverter.estimateA1c(inputNumber.asString, inputUnit?.asString)
+    @Command("a1c", desc = "Estimate A1c from average glucose")
+    fun estimateA1c(
+        event: CommandEvent,
+        @Param("Average glucose")
+        average: Double,
+        @Param("Blood glucose unit (mmol/L, mg/dL)", optional = true)
+        @Choices("mmol/L", "mg/dL")
+        unit: String?
+    ) {
+        val result = A1cConverter.estimateA1c(average.toString(), unit)
             .getOrElse {
-                event.reply("Could not estimate A1c: ${it.message}").queue()
+                event.with().ephemeral(true).reply("Could not estimate A1c: ${it.message}")
                 return
             }
 
@@ -91,6 +67,6 @@ class EstimationApplicationCommand : ApplicationCommand {
             }
         }
 
-        event.reply(message).queue()
+        event.reply(message)
     }
 }

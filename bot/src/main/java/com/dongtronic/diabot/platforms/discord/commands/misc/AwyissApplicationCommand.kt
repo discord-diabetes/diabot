@@ -3,37 +3,32 @@ package com.dongtronic.diabot.platforms.discord.commands.misc
 import com.dongtronic.diabot.exceptions.RequestStatusException
 import com.dongtronic.diabot.logic.`fun`.Awyisser
 import com.dongtronic.diabot.platforms.discord.commands.ApplicationCommand
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.commands.build.Commands
+import com.github.kaktushose.jda.commands.annotations.interactions.Command
+import com.github.kaktushose.jda.commands.annotations.interactions.Interaction
+import com.github.kaktushose.jda.commands.annotations.interactions.Param
+import com.github.kaktushose.jda.commands.dispatching.events.interactions.CommandEvent
 import net.dv8tion.jda.api.utils.FileUpload
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import reactor.core.scheduler.Schedulers
 import java.util.*
 
+@Interaction
 class AwyissApplicationCommand : ApplicationCommand {
-    private val commandArgSfw = "sfw"
-    private val commandArgValue = "value"
+    @Command("awyiss", desc = "Generate Awyiss meme image")
+    fun awyiss(
+        event: CommandEvent,
+        @Param("Awyiss string (max 30 chars)")
+        text: String,
+        @Param("Safe for work", optional = true)
+        sfw: Boolean?
+    ) {
+        event.deferReply(false)
 
-    override val commandName: String = "awyiss"
-
-    override fun config(): CommandData {
-        return Commands.slash(commandName, "Generate Awyiss meme image")
-            .addOption(OptionType.STRING, commandArgValue, "Awyiss string (max 30 chars)", true)
-            .addOption(OptionType.BOOLEAN, commandArgSfw, "Safe for work", false)
-    }
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        val stringValue = event.getOption(commandArgValue)!!.asString
-        val sfwValue = event.getOption(commandArgSfw)?.asBoolean ?: true
-
-        event.deferReply().queue()
-
-        Awyisser.generate(stringValue, sfwValue)
+        Awyisser.generate(text, sfw ?: true)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe({ imageUrl ->
                 val imageStream = Base64.getDecoder().decode(imageUrl.removePrefix("data:image/png;base64,"))
-                event.hook.editOriginalAttachments(FileUpload.fromData(imageStream, "awyiss.png")).queue()
+                event.reply(MessageCreateData.fromFiles(FileUpload.fromData(imageStream, "awyiss.png")))
             }, {
                 if (it is RequestStatusException && it.status == 500) {
                     replyError(event, it, "Server error occurred.")

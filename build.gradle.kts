@@ -61,6 +61,9 @@ allprojects {
 
     kotlin {
         jvmToolchain(23)
+        compilerOptions {
+            javaParameters.set(true)
+        }
     }
 
     tasks.withType<Test>().configureEach {
