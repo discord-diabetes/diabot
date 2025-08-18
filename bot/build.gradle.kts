@@ -2,6 +2,7 @@ dependencies {
     // JDA
     implementation(libs.jda.ktx)
     implementation(libs.jda.chewtils)
+    implementation(libs.jda.commands)
     implementation(libs.jda) {
         exclude(module = "opus-java")
     }
