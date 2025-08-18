@@ -31,6 +31,8 @@ val reportMerge by tasks.registering(io.gitlab.arturbosch.detekt.report.ReportMe
 }
 
 allprojects {
+    group = "com.dongtronic.diabot"
+
     val libs = rootProject.libs
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.gitlab.arturbosch.detekt")
@@ -57,16 +59,14 @@ allprojects {
         api(libs.slf4j.api)
     }
 
-    tasks.withType<Test>().configureEach {
-        useJUnitPlatform()
-        systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
-    }
-
     kotlin {
         jvmToolchain(21)
     }
 
-    group = "com.dongtronic.diabot"
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+        systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+    }
 
     detekt {
         buildUponDefaultConfig = true // preconfigure defaults
@@ -87,13 +87,13 @@ allprojects {
             html.required.set(true)
             html.outputLocation.set(file("build/reports/detekt.html"))
 
-            xml.required.set(false)
-
             txt.required.set(true)
             txt.outputLocation.set(file("build/reports/detekt.txt"))
 
             sarif.required.set(true)
             sarif.outputLocation.set(file("build/reports/detekt.sarif"))
+
+            xml.required.set(false)
         }
     }
 
