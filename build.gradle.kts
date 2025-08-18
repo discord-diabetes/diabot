@@ -82,7 +82,7 @@ allprojects {
         )
     }
 
-    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    tasks.withType<io.gitlab.arturbosch.detekt.Detekt> {
         reports {
             html.required.set(true)
             html.outputLocation.set(file("build/reports/detekt.html"))
@@ -95,10 +95,12 @@ allprojects {
 
             xml.required.set(false)
         }
-    }
 
-    reportMerge {
-        input.from(tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().map { it.reports.sarif.outputLocation }) // or sarif.outputLocation
+        finalizedBy(reportMerge)
+
+        reportMerge {
+            input.from(sarifReportFile)
+        }
     }
 }
 
