@@ -25,7 +25,7 @@ jda-chewtils = "2.0"
 jda-ktx = "0.12.0"
 
 # Parsing
-jsoup = "1.21.1"
+jsoup = "1.21.2"
 jackson = "2.19.2"
 
 # Apache Commons
