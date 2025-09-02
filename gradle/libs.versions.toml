@@ -38,7 +38,7 @@ retrofit = "3.0.0"
 retrofit-reactor = "2.1.0"
 
 # Database
-jedis = "3.3.0"
+jedis = "6.2.0"
 mongodb = "5.5.1"
 kmongo = "5.5.1"
 
