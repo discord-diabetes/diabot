@@ -5,6 +5,11 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: read
+  packages: write
+  checks: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
