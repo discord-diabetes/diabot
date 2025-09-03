@@ -26,7 +26,7 @@ jda-ktx = "0.12.0"
 
 # Parsing
 jsoup = "1.21.2"
-jackson = "2.19.2"
+jackson = "2.20.0"
 
 # Apache Commons
 commons-lang = "3.18.0"
