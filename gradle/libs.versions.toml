@@ -25,7 +25,7 @@ jda-chewtils = "2.1"
 jda-ktx = "0.12.0"
 
 # Parsing
-jsoup = "1.21.1"
+jsoup = "1.21.2"
 jackson = "2.19.2"
 
 # Apache Commons
@@ -38,7 +38,7 @@ retrofit = "3.0.0"
 retrofit-reactor = "2.1.0"
 
 # Database
-jedis = "3.3.0"
+jedis = "3.3.0" # Will be removed in #217
 mongodb = "5.5.1"
 kmongo = "5.5.1"
 
@@ -95,6 +95,7 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 retrofit-jackson = { group = "com.squareup.retrofit2", name = "converter-jackson", version.ref = "retrofit" }
 retrofit-reactor = { group = "com.jakewharton.retrofit", name = "retrofit2-reactor-adapter", version.ref = "retrofit-reactor" }
 
+# Will be removed in #217
 jedis = { group = "redis.clients", name = "jedis", version.ref = "jedis" }
 
 mongodb-reactivestreams = { group = "org.mongodb", name = "mongodb-driver-reactivestreams", version.ref = "mongodb" }

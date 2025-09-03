@@ -31,6 +31,7 @@ class MigrationManager {
          *
          * @return If Redis migration is possible
          */
+        @Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
         fun canRedisMigrate(): Boolean {
             return System.getenv()["REDIS_MONGO_MIGRATE"]?.toBoolean() == true && System.getenv().containsKey("REDIS_URL")
         }
