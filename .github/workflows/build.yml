@@ -45,6 +45,7 @@ jobs:
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
           java-version: 21
+          distribution: temurin
       - name: Build with Gradle
         run: |
           chmod +x gradlew
