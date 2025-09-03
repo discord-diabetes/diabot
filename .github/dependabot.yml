@@ -6,7 +6,7 @@ updates:
       interval: "monthly"
     ignore:
       - dependency-name: "*"
-        versions: ["*-preview", "*-PREVIEW", "*-snapshot", "*-SNAPSHOT", "*-rc", "*-RC"]
+        versions: [ "*-preview", "*-beta", "*-alpha", "*-rc*" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
