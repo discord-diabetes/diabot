@@ -4,7 +4,20 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      jda-dependencies:
+        patterns:
+          - "jda*"
+      gradle-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "jda*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "quarterly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
