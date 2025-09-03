@@ -1,5 +1,6 @@
 package com.dongtronic.diabot.util
 
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 object RedisKeyFormats {
     // Nightscout
     const val nightscoutUrlFormat = "{{userid}}:nightscouturl"

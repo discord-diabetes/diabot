@@ -17,6 +17,7 @@ import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
 @ChangeLog(order = "003")
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 class NSChannelMigrator {
     private val mongo = ChannelDAO.instance
     private val redis by lazy { NightscoutDAO.getInstance() }
