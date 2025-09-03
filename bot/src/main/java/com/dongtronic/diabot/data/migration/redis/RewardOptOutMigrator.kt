@@ -14,6 +14,7 @@ import reactor.kotlin.core.publisher.toMono
 import redis.clients.jedis.Jedis
 
 @ChangeLog(order = "006")
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 class RewardOptOutMigrator {
     private val mongo = RewardsDAO.instance
     private val redis by lazy { com.dongtronic.diabot.data.redis.RewardDAO.getInstance() }

@@ -1,5 +1,8 @@
 # Migrating data from Redis to MongoDB
 
+> [!WARN] Redis deprecation
+> Redis support is deprecated and will be removed in Diabot version 2. We do not recommend setting up diabot with Redis.
+
 Diabot formerly used Redis as a storage backend, however it now uses MongoDB in place of it.
 As a result, the data structure used for persistent storage was modified and is not directly compatible with Redis data.
 
