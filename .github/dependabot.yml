@@ -4,10 +4,20 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    ignore:
-      - dependency-name: "*"
-        versions: ["*-preview", "*-PREVIEW", "*-snapshot", "*-SNAPSHOT", "*-rc", "*-RC"]
+    groups:
+      jda-dependencies:
+        patterns:
+          - "jda*"
+      gradle-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "jda*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "quarterly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
