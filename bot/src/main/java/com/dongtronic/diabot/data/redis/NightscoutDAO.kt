@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Guild
 import redis.clients.jedis.Jedis
 import java.util.*
 
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 class NightscoutDAO private constructor() {
     private var jedis: Jedis? = null
     private val logger = logger()

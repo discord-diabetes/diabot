@@ -1,12 +1,11 @@
 package com.dongtronic.diabot.data.redis
 
 import com.dongtronic.diabot.util.RedisKeyFormats
-import com.dongtronic.diabot.util.logger
 import redis.clients.jedis.Jedis
 
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 class RewardDAO private constructor() {
     private var jedis: Jedis? = null
-    private val logger = logger()
 
     init {
         jedis = Jedis(System.getenv("REDIS_URL"))

@@ -23,7 +23,7 @@ dependencies {
     implementation(libs.retrofit.reactor)
 
     // Database
-    implementation(libs.jedis)
+    implementation(libs.jedis) // Will be removed in #217
     implementation(libs.mongodb.reactivestreams)
     implementation(libs.kmongo.async)
 

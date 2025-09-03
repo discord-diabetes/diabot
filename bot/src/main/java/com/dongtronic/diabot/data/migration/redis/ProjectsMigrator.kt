@@ -13,6 +13,7 @@ import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 @ChangeLog(order = "004")
+@Deprecated(level = DeprecationLevel.WARNING, message = "Support for Redis will be removed in Diabot version 2")
 class ProjectsMigrator {
     private val mongo = ProjectDAO.instance
     private val redis by lazy { com.dongtronic.diabot.data.redis.InfoDAO.getInstance() }
