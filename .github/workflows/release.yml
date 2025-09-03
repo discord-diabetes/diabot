@@ -6,7 +6,8 @@ on:
       - '*'
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
   packages: write
   checks: write
 
