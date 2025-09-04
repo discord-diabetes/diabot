@@ -19,14 +19,14 @@ reactor-core = "3.7.9"
 reactor-kotlin = "1.2.3"
 
 # JDA
-jda = "5.6.1"
+jda = "6.0.0-preview"
 # chewtils is pinned to 2.0 since 2.1 introduces a lot of deprecation warnings as a result of deprecating guildOnly, which is used in all our text commands
-jda-chewtils = "2.0"
+jda-chewtils = "2.1"
 jda-ktx = "0.12.0"
 
 # Parsing
 jsoup = "1.21.2"
-jackson = "2.19.2"
+jackson = "2.20.0"
 
 # Apache Commons
 commons-lang = "3.18.0"
